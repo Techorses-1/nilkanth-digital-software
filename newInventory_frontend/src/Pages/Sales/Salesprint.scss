@@ -1,0 +1,436 @@
+#sales-pdf {
+  width: 210mm;
+  padding: 12mm 15mm;
+  margin: 0 auto;
+  font-family: 'Arial', sans-serif;
+  font-size: 12px;
+  color: #333;
+  background: #fff;
+  box-sizing: border-box;
+  position: relative;
+
+  .invoice-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 100%;
+    position: relative;
+    padding-bottom: 25px;
+  }
+
+  // ===== HEADER =====
+  .invoice-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0;
+
+    .invoice-logo {
+      img {
+        max-width: 140px;
+        height: auto;
+        display: block;
+      }
+    }
+  }
+
+  .invoice-divider {
+    border-bottom: 2px solid #333;
+    margin: 3px 0 10px 0;
+  }
+
+  // ===== INFO SECTION =====
+  .info-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 8px;
+
+    .customer-info {
+      flex: 6;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .info-row {
+        display: flex;
+        align-items: baseline;
+        padding: 1px 0;
+
+        .info-label {
+          font-weight: 600;
+          color: #333;
+          min-width: 85px;
+          font-size: 11px;
+        }
+
+        .info-value {
+          font-weight: 400;
+          color: #333;
+          font-size: 11px;
+          word-break: break-word;
+        }
+      }
+    }
+
+    .owner-info {
+      flex: 4;
+      text-align: left;
+      padding-top: 2px;
+      padding-left: 10px;
+
+      .owner-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2d2f87;
+        letter-spacing: 1px;
+      }
+
+      .owner-address {
+        font-size: 10px;
+        color: #555;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+
+      .owner-gst {
+        font-size: 10px;
+        color: #555;
+        margin-top: 3px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // ===== ITEMS TABLE =====
+  .items-section {
+    margin-bottom: 8px;
+
+    h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2d2f87;
+      margin: 0 0 8px 0;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+
+      th,
+      td {
+        border: 1px solid #333;
+        padding: 6px 8px;
+        text-align: center;
+      }
+
+      th {
+        background: #f0f0f0;
+        font-weight: 700;
+        color: #333;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      td {
+        font-size: 10.5px;
+        color: #333;
+
+        &:nth-child(5),
+        &:nth-child(6),
+        &:nth-child(7) {
+          text-align: right;
+        }
+      }
+    }
+  }
+
+  // ===== CALCULATION SECTION =====
+  .calculation-section {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+
+    .calculation-box {
+      width: 280px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 8px 12px;
+      background: #fafafa;
+
+      .calc-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+        font-size: 11px;
+
+        .calc-label {
+          font-weight: 500;
+          color: #555;
+        }
+
+        .calc-value {
+          font-weight: 500;
+          color: #333;
+        }
+
+        &.grand-total {
+          border-top: 2px solid #333;
+          margin-top: 4px;
+          padding-top: 6px;
+
+          .calc-label,
+          .calc-value {
+            font-weight: 700;
+            font-size: 13px;
+            color: #2d2f87;
+          }
+        }
+      }
+    }
+  }
+
+  // ===== AMOUNT IN WORDS =====
+  .amount-in-words {
+    padding: 6px 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 8px;
+
+    p {
+      margin: 0;
+      font-size: 11px;
+      font-style: italic;
+      color: #555;
+
+      strong {
+        font-style: normal;
+        color: #333;
+      }
+    }
+  }
+
+  // ===== BANK DETAILS =====
+  .bank-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 8px;
+
+    .bank-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+
+      .bank-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 10px;
+        min-width: 85px;
+      }
+
+      .bank-value {
+        color: #333;
+        font-size: 10px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // ===== DECLARATION & TERMS =====
+  .declaration-terms-section {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 8px;
+
+    .declaration-section,
+    .terms-section {
+      flex: 1;
+
+      h3 {
+        font-size: 11px;
+        font-weight: 700;
+        color: #2d2f87;
+        margin: 0 0 4px 0;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 3px;
+      }
+
+      p {
+        margin: 0;
+        font-size: 9.5px;
+        line-height: 1.5;
+        color: #444;
+        text-align: justify;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 16px;
+        list-style: disc;
+
+        li {
+          font-size: 9.5px;
+          line-height: 1.5;
+          color: #444;
+          margin-bottom: 1px;
+        }
+      }
+    }
+  }
+
+  // ===== FOOTER =====
+  .invoice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+
+    .footer-left {
+      p {
+        margin: 0;
+        font-size: 10px;
+        font-weight: 600;
+        color: #333;
+        letter-spacing: 0.3px;
+      }
+    }
+
+    .footer-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .signature-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .signature-image {
+          max-width: 120px;
+          height: auto;
+          display: block;
+        }
+
+        .signature-label {
+          margin: 2px 0 0 0;
+          font-size: 9px;
+          color: #555;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+  }
+
+  // ===== DEVELOPER NOTE =====
+  .developer-note {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 8px;
+    color: #999;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    padding: 4px 0;
+  }
+}
+
+// ===== PRINT STYLES =====
+@media print {
+  #sales-pdf {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 12mm 15mm;
+    box-shadow: none;
+
+    .invoice-container {
+      min-height: auto;
+      padding-bottom: 25px;
+    }
+
+    .items-table {
+      page-break-inside: auto;
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+    }
+
+    .declaration-terms-section,
+    .invoice-footer,
+    .bank-details,
+    .amount-in-words,
+    .calculation-section {
+      page-break-inside: avoid;
+      page-break-before: auto;
+    }
+
+    .developer-note {
+      position: fixed;
+      bottom: 10mm;
+      right: 15mm;
+    }
+  }
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 768px) {
+  #sales-pdf {
+    padding: 8mm 10mm;
+
+    .info-section {
+      flex-direction: column;
+      gap: 12px;
+
+      .owner-info {
+        padding-left: 0;
+      }
+    }
+
+    .declaration-terms-section {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bank-details {
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .invoice-footer {
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .calculation-section {
+      justify-content: center;
+
+      .calculation-box {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    .developer-note {
+      position: static;
+      text-align: right;
+      margin-top: 8px;
+    }
+  }
+}

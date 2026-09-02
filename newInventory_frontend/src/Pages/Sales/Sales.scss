@@ -1,0 +1,1815 @@
+// ============================================
+// SALES MODULE - Component Specific Classes
+// ============================================
+
+.sales-module-wrapper {
+    background: #dfeafb !important;
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+// ============================================
+// HEADER
+// ============================================
+.sales-page-header {
+    max-width: 1200px;
+    margin: 0 auto 25px;
+    padding: 20px 25px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+
+    .sales-page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2d2f87;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        &::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(135deg, #7366ff, #948cff);
+            border-radius: 2px;
+        }
+    }
+}
+
+// ============================================
+// CONTENT WRAPPER
+// ============================================
+.sales-content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 0 20px;
+}
+
+// ============================================
+// FORM CONTAINER
+// ============================================
+.sales-form-container {
+    background: white;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+    animation: salesFormSlideDown 0.3s ease-out;
+
+    @keyframes salesFormSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+.sales-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .sales-form-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2d2f87;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sales-form-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: #f5f5f5;
+        border: none;
+        border-radius: 50%;
+        font-size: 18px;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #dc3545;
+            color: white;
+            transform: rotate(90deg);
+        }
+    }
+}
+
+// ============================================
+// FORM SECTIONS
+// ============================================
+.sales-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .sales-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #3f3f91;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+}
+
+// ============================================
+// CUSTOMER ROW
+// ============================================
+.sales-customer-row-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sales-customer-select {
+    flex: 1;
+}
+
+.sales-new-customer-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    height: 40px;
+    white-space: nowrap;
+    min-width: 40px;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    svg {
+        font-size: 14px;
+    }
+}
+
+.sales-customer-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #555;
+
+    span {
+        display: flex;
+        gap: 4px;
+
+        strong {
+            color: #333;
+        }
+    }
+}
+
+// ============================================
+// PRODUCT ROW
+// ============================================
+.sales-product-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+
+    .sales-product-select {
+        flex: 1;
+    }
+
+    .sales-add-product-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #7366ff, #948cff);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 40px;
+        white-space: nowrap;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(115, 102, 255, 0.4);
+        }
+    }
+}
+
+// ============================================
+// ITEMS TABLE
+// ============================================
+.sales-items-table-wrap {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+.sales-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th,
+    td {
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .sales-item-name {
+        font-weight: 500;
+        min-width: 150px;
+    }
+
+    .sales-item-input {
+        width: 60px;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        text-align: center;
+        transition: border 0.3s;
+
+        &:focus {
+            border-color: #7366ff;
+            outline: none;
+        }
+
+        &.sales-item-discount {
+            width: 50px;
+        }
+    }
+
+    .sales-item-final {
+        font-weight: 600;
+        color: #2d2f87;
+    }
+
+    .sales-item-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 8px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        svg {
+            font-size: 12px;
+        }
+    }
+}
+
+// ============================================
+// FORM FIELDS
+// ============================================
+.sales-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 14px;
+
+    .sales-form-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        &.sales-form-field-full {
+            flex: 1 1 100%;
+        }
+
+        .sales-form-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #444;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+
+            svg {
+                color: #7366ff;
+                font-size: 14px;
+            }
+        }
+
+        .sales-input-field {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+            background-color: white;
+
+            &:focus {
+                border-color: #7366ff;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
+            }
+        }
+
+        .sales-textarea-field {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+            background-color: white;
+            resize: vertical;
+            font-family: inherit;
+
+            &:focus {
+                border-color: #7366ff;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
+            }
+        }
+
+        .sales-error {
+            color: #dc3545;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+    }
+}
+
+// ============================================
+// REACT-SELECT STYLES
+// ============================================
+.sales-react-select {
+    .sales-select__control {
+        min-height: 40px;
+        border-color: #ddd;
+        border-radius: 6px;
+        box-shadow: none;
+
+        &:hover {
+            border-color: #7366ff;
+        }
+
+        &--is-focused {
+            border-color: #7366ff;
+            box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
+        }
+    }
+
+    .sales-select__option {
+        padding: 8px 12px;
+        cursor: pointer;
+
+        &--is-focused {
+            background: #f0f0ff;
+        }
+
+        &--is-selected {
+            background: #7366ff;
+            color: white;
+        }
+    }
+
+    .sales-select__menu {
+        z-index: 999;
+    }
+
+    .sales-select__placeholder {
+        color: #999;
+    }
+}
+
+// ============================================
+// SUMMARY - COLUMN VIEW
+// ============================================
+.sales-summary-column {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+
+    .sales-summary-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d2f87;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e8e8ff;
+    }
+
+    .sales-summary-items {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 15px;
+
+        .sales-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 14px;
+
+            span:first-child {
+                color: #555;
+                font-weight: 500;
+            }
+
+            span:last-child {
+                color: #333;
+                font-weight: 600;
+            }
+
+            &.sales-summary-discount {
+                span:last-child {
+                    color: #dc3545;
+                }
+            }
+
+            &.sales-summary-grand {
+                padding-top: 10px;
+                border-top: 2px solid #ddd;
+                font-size: 18px;
+
+                span:first-child {
+                    color: #2d2f87;
+                    font-weight: 700;
+                }
+
+                span:last-child {
+                    color: #2d2f87;
+                    font-weight: 700;
+                }
+            }
+        }
+    }
+}
+
+// ============================================
+// SUBMIT BUTTON
+// ============================================
+.sales-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #7366ff, #948cff);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(115, 102, 255, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// ============================================
+// TABLE CONTAINER
+// ============================================
+.sales-table-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+    .sales-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+
+        .sales-search-container {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+
+            .sales-search-input {
+                width: 100%;
+                padding: 10px 14px 10px 40px;
+                border: none;
+                border-radius: 50px;
+                background: #f5f7fa;
+                font-size: 15px;
+                color: #333;
+                transition: 0.3s;
+                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0, 0, 0, 0.08);
+
+                &:focus {
+                    outline: none;
+                    background: #fff;
+                    box-shadow: 0 0 8px rgba(115, 102, 255, 0.5);
+                }
+            }
+
+            .sales-search-icon {
+                position: absolute;
+                top: 50%;
+                left: 15px;
+                transform: translateY(-50%);
+                color: #666;
+                font-size: 16px;
+            }
+        }
+
+        .sales-action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+    }
+}
+
+// ============================================
+// ACTION BUTTONS
+// ============================================
+.sales-create-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #7366ff, #948cff);
+    color: white;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(115, 102, 255, 0.4);
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+    }
+}
+
+.sales-export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(39, 174, 96, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// ============================================
+// TABLE ROW ACTION BUTTONS
+// ============================================
+.sales-action-btns {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 13px;
+        color: white;
+
+        &:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    .sales-view-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    }
+
+    .sales-edit-btn {
+        background: linear-gradient(135deg, #ff9800, #ffb74d);
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+    }
+
+    .sales-delete-btn {
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+
+        &:hover {
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+    }
+}
+
+// ============================================
+// MAIN TABLE
+// ============================================
+.sales-table-responsive {
+    overflow-x: auto;
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 14px;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .sales-table-row {
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #f8f8ff;
+        }
+    }
+
+    .sales-invoice-number {
+        font-weight: 500;
+        color: #2d2f87;
+    }
+
+    .sales-total-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
+        color: #3f3f91;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+.sales-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    .sales-pagination-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .sales-pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sales-page-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        &:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        svg {
+            font-size: 12px;
+        }
+    }
+
+    .sales-page-info {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        min-width: 100px;
+        text-align: center;
+    }
+}
+
+// ============================================
+// LOADING SPINNER
+// ============================================
+.sales-loading-spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #fff;
+    border-radius: 50%;
+    animation: sales-spin 0.8s linear infinite;
+    margin-right: 6px;
+}
+
+// ============================================
+// EMPTY STATE & LOADING
+// ============================================
+.sales-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+
+    svg {
+        margin-bottom: 15px;
+        color: #ccc;
+    }
+
+    p {
+        color: #888;
+        font-size: 16px;
+        margin: 0;
+    }
+}
+
+.sales-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+
+    .sales-loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f0f0f0;
+        border-top: 4px solid #7366ff;
+        border-radius: 50%;
+        animation: sales-spin 1s linear infinite;
+        margin-bottom: 15px;
+    }
+
+    p {
+        color: #888;
+        font-size: 15px;
+    }
+}
+
+@keyframes sales-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// ============================================
+// MODAL OVERLAY & CONTENT
+// ============================================
+.sales-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.sales-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: salesModalSlideUp 0.3s ease-out;
+
+    &.sales-modal-small {
+        max-width: 550px;
+    }
+
+    &.sales-modal-large {
+        max-width: 950px;
+    }
+
+    @keyframes salesModalSlideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+}
+
+// ============================================
+// MODAL HEADER
+// ============================================
+.sales-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    .sales-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2d2f87;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sales-modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #999;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+    }
+}
+
+// ============================================
+// MODAL BODY & FOOTER
+// ============================================
+.sales-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.sales-modal-footer {
+    padding: 12px 24px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+
+    .sales-modal-close-btn {
+        padding: 8px 24px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #5a6268;
+        }
+    }
+}
+
+// ============================================
+// VIEW MODAL
+// ============================================
+.sales-view-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    .sales-view-item {
+        display: flex;
+        justify-content: space-between;
+
+        .sales-view-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+        }
+
+        .sales-view-value {
+            color: #333;
+            font-size: 13px;
+        }
+    }
+}
+
+.sales-view-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 20px;
+
+    .sales-view-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        th,
+        td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+    }
+}
+
+.sales-view-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    .sales-view-total {
+        display: flex;
+        gap: 30px;
+        font-size: 14px;
+
+        span:first-child {
+            font-weight: 500;
+            color: #555;
+            min-width: 80px;
+        }
+
+        span:last-child {
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        &.sales-view-grand {
+            font-size: 16px;
+            padding-top: 4px;
+            border-top: 2px solid #ddd;
+
+            span:last-child {
+                color: #2d2f87;
+                font-weight: 700;
+            }
+        }
+    }
+}
+
+// ============================================
+// RESPONSIVE - TABLET (max-width: 992px)
+// ============================================
+@media (max-width: 992px) {
+    .sales-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sales-modal-content.sales-modal-large {
+        max-width: 100%;
+        margin: 10px;
+    }
+}
+
+// ============================================
+// RESPONSIVE - MOBILE (max-width: 768px)
+// ============================================
+@media (max-width: 768px) {
+    .sales-content-wrapper {
+        padding: 0 10px;
+    }
+
+    .sales-form-container {
+        padding: 20px;
+    }
+
+    .sales-form-header {
+        flex-wrap: wrap;
+
+        .sales-form-title {
+            font-size: 17px;
+        }
+    }
+
+    .sales-customer-row-inline {
+        flex-direction: column;
+        align-items: stretch;
+
+        .sales-new-customer-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .sales-product-row {
+        flex-direction: column;
+        align-items: stretch;
+
+        .sales-add-product-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .sales-form-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .sales-items-table {
+        font-size: 12px;
+
+        th,
+        td {
+            padding: 6px 8px;
+        }
+
+        .sales-item-input {
+            width: 40px;
+            font-size: 12px;
+
+            &.sales-item-discount {
+                width: 35px;
+            }
+        }
+    }
+
+    .sales-table-container {
+        padding: 15px;
+
+        .sales-table-header {
+            flex-direction: column;
+            align-items: stretch;
+
+            .sales-search-container {
+                max-width: 100%;
+                min-width: auto;
+            }
+
+            .sales-action-buttons {
+                width: 100%;
+                justify-content: stretch;
+
+                button {
+                    flex: 1;
+                    justify-content: center;
+                    padding: 8px 14px;
+                    font-size: 12px;
+                }
+            }
+        }
+
+        .sales-table {
+            font-size: 12px;
+
+            th,
+            td {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+        }
+    }
+
+    .sales-pagination {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        .sales-pagination-buttons {
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .sales-page-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        .sales-page-info {
+            font-size: 13px;
+            min-width: 80px;
+        }
+    }
+
+    .sales-modal-content {
+        max-width: 100%;
+        max-height: 90vh;
+        margin: 10px;
+    }
+
+    .sales-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-action-btns {
+        flex-wrap: wrap;
+
+        button {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+    }
+
+    .sales-summary-column {
+        padding: 15px;
+
+        .sales-summary-items .sales-summary-row {
+            font-size: 13px;
+
+            &.sales-summary-grand {
+                font-size: 15px;
+            }
+        }
+    }
+}
+
+// ============================================
+// RESPONSIVE - SMALL MOBILE (max-width: 480px)
+// ============================================
+@media (max-width: 480px) {
+    .sales-page-header {
+        padding: 15px;
+
+        .sales-page-title {
+            font-size: 18px;
+        }
+    }
+
+    .sales-form-container {
+        padding: 12px;
+    }
+
+    .sales-modal-body {
+        padding: 15px;
+    }
+
+    .sales-modal-header {
+        .sales-modal-title {
+            font-size: 16px;
+        }
+    }
+
+    .sales-table-container {
+        padding: 10px;
+
+        .sales-table {
+
+            th,
+            td {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+
+            .sales-total-badge {
+                font-size: 11px;
+                padding: 2px 10px;
+            }
+
+            .sales-invoice-number {
+                font-size: 11px;
+            }
+        }
+
+        .sales-table-header .sales-action-buttons button {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
+    }
+
+    .sales-pagination {
+        .sales-pagination-info {
+            font-size: 12px;
+        }
+
+        .sales-page-btn {
+            padding: 5px 12px;
+            font-size: 11px;
+
+            svg {
+                font-size: 10px;
+            }
+        }
+
+        .sales-page-info {
+            font-size: 12px;
+            min-width: 60px;
+        }
+    }
+
+    .sales-view-summary .sales-view-total {
+        font-size: 12px;
+        gap: 15px;
+
+        &.sales-view-grand {
+            font-size: 14px;
+        }
+    }
+
+    .sales-customer-info {
+        font-size: 12px;
+        padding: 8px 12px;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .sales-summary-column {
+        padding: 12px;
+
+        .sales-summary-items .sales-summary-row {
+            font-size: 12px;
+
+            &.sales-summary-grand {
+                font-size: 14px;
+            }
+        }
+    }
+
+    .sales-submit-btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+
+// ===== PDF BUTTON STYLES =====
+.sales-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// ===== PDF BUTTON IN TABLE ROW =====
+.sales-pdf-row-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 10px;
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+
+    &:hover:not(:disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// ===== ACTION BUTTONS IN TABLE =====
+.sales-action-btns {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 13px;
+        color: white;
+
+        &:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    }
+
+    .sales-view-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+        &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    }
+
+    .sales-edit-btn {
+        background: linear-gradient(135deg, #ff9800, #ffb74d);
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+
+        &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+    }
+
+    .sales-delete-btn {
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+
+        &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+    }
+
+    .sales-pdf-row-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+
+        &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+    }
+}
+
+// ===== MODAL FOOTER WITH PDF BUTTON =====
+.sales-modal-footer {
+    padding: 12px 24px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+
+    .sales-pdf-btn {
+        padding: 8px 20px;
+        font-size: 14px;
+    }
+
+    .sales-modal-close-btn {
+        padding: 8px 24px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #5a6268;
+        }
+    }
+}
+
+// ===== RESPONSIVE ACTION BUTTONS =====
+@media (max-width: 768px) {
+    .sales-action-btns {
+        flex-wrap: wrap;
+        gap: 4px;
+
+        button {
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+    }
+
+    .sales-pdf-row-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sales-action-btns {
+        button {
+            padding: 3px 6px;
+            font-size: 10px;
+        }
+    }
+
+    .sales-pdf-row-btn {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
+    .sales-modal-footer {
+        flex-direction: column;
+
+        .sales-pdf-btn,
+        .sales-modal-close-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+}
+
+
+// ===== GST TOGGLE =====
+.sales-toggle-section {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+
+    .sales-toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        .sales-toggle-label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .sales-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #e8e8e8;
+            color: #888;
+
+            svg {
+                font-size: 24px;
+                transition: all 0.3s ease;
+            }
+
+            &.active {
+                background: linear-gradient(135deg, #7366ff, #948cff);
+                color: white;
+                box-shadow: 0 4px 15px rgba(115, 102, 255, 0.3);
+
+                &:hover {
+                    box-shadow: 0 6px 20px rgba(115, 102, 255, 0.4);
+                    transform: translateY(-1px);
+                }
+            }
+
+            &:not(.active) {
+                &:hover {
+                    background: #d5d5d5;
+                }
+            }
+        }
+    }
+}
+
+// ===== INTERNAL NUMBER =====
+.sales-internal-number {
+    font-weight: 500;
+    color: #6c757d;
+    font-size: 13px;
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+
+// ===== PAYMENT TYPE =====
+.sales-payment-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
+    color: #3f3f91;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+// ===== RESPONSIVE TOGGLE =====
+@media (max-width: 768px) {
+    .sales-toggle-section {
+        .sales-toggle-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+
+            .sales-toggle-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 10px;
+            }
+        }
+    }
+}
+
+
+// ===== UNIQUE NUMBERS SECTION =====
+.sales-unique-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+
+    .sales-section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2d2f87;
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sales-unique-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .sales-unique-product {
+        background: white;
+        border-radius: 8px;
+        padding: 12px 16px;
+        border: 1px solid #e8e8e8;
+
+        .sales-unique-product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+
+            .sales-unique-product-name {
+                font-weight: 600;
+                color: #333;
+                font-size: 14px;
+            }
+        }
+
+        .sales-unique-numbers-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sales-unique-number-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            .sales-unique-input {
+                width: 120px;
+                padding: 6px 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 13px;
+                font-family: monospace;
+                transition: all 0.3s;
+
+                &:focus {
+                    border-color: #7366ff;
+                    outline: none;
+                    box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.1);
+                }
+
+                &::placeholder {
+                    color: #bbb;
+                    font-size: 12px;
+                }
+            }
+
+            .sales-unique-remove-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                background: #f5f5f5;
+                border: none;
+                border-radius: 4px;
+                color: #999;
+                cursor: pointer;
+                transition: all 0.3s;
+
+                &:hover {
+                    background: #ffebee;
+                    color: #dc3545;
+                }
+            }
+        }
+    }
+}
+
+// ===== UNIQUE TAGS IN VIEW MODAL =====
+.sales-unique-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
+    color: #3f3f91;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: monospace;
+    margin: 2px 3px;
+    white-space: nowrap;
+}
+
+// ===== RESPONSIVE UNIQUE NUMBERS =====
+@media (max-width: 768px) {
+    .sales-unique-section {
+        padding: 12px;
+
+        .sales-unique-product {
+            padding: 10px 12px;
+
+            .sales-unique-numbers-row {
+                gap: 6px;
+            }
+
+            .sales-unique-number-item {
+                .sales-unique-input {
+                    width: 90px;
+                    font-size: 12px;
+                    padding: 4px 8px;
+                }
+
+                .sales-unique-remove-btn {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 10px;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .sales-unique-section {
+        .sales-unique-product {
+            .sales-unique-number-item {
+                .sales-unique-input {
+                    width: 70px;
+                    font-size: 11px;
+                }
+            }
+        }
+    }
+}
