@@ -129,7 +129,7 @@ const Sales = () => {
     const [saleDate, setSaleDate] = useState(new Date().toISOString().split("T")[0]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editSaleId, setEditSaleId] = useState(null);
-    
+
     // ============= NEW FIELDS =============
     const [paymentType, setPaymentType] = useState("Cash");
     const [isGstMode, setIsGstMode] = useState(true);
@@ -363,13 +363,13 @@ const Sales = () => {
     const handleRemoveUniqueNumber = (productIndex, numberIndex) => {
         const updated = [...lineItems];
         const item = updated[productIndex];
-        
+
         // Don't allow removing if it would make count less than quantity
         if (item.uniqueNumbers.length <= item.quantity) {
             toast.warning("Cannot remove. Quantity is " + item.quantity);
             return;
         }
-        
+
         item.uniqueNumbers.splice(numberIndex, 1);
         setLineItems(updated);
     };
@@ -393,14 +393,14 @@ const Sales = () => {
         });
 
         const taxableAmount = subtotal - totalDiscount;
-        
+
         if (!isGstMode) {
-            return { 
-                subtotal, 
-                totalDiscount, 
-                totalTax: 0, 
-                grandTotal: taxableAmount, 
-                taxableAmount: taxableAmount 
+            return {
+                subtotal,
+                totalDiscount,
+                totalTax: 0,
+                grandTotal: taxableAmount,
+                taxableAmount: taxableAmount
             };
         }
 
@@ -447,9 +447,29 @@ const Sales = () => {
                 }
             };
 
+            // ✅ Add "Developed by Techorses" on EVERY page bottom-right using jsPDF directly
             await html2pdf()
                 .set(opt)
                 .from(element)
+                .toPdf()
+                .get('pdf')
+                .then((pdf) => {
+                    const totalPages = pdf.internal.getNumberOfPages();
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        pdf.setPage(i);
+                        pdf.setFontSize(8);
+                        pdf.setTextColor(150);
+                        pdf.text(
+                            "Developed by Techorses",
+                            pageWidth - 15,
+                            pageHeight - 10,
+                            { align: "right" }
+                        );
+                    }
+                })
                 .save();
 
             toast.success("PDF generated successfully!");
@@ -648,7 +668,7 @@ const Sales = () => {
                     "Discount": sale.totalDiscount || 0,
                     "Tax": sale.totalTax || 0,
                     "Grand Total": sale.grandTotal || 0,
-                    "Unique Numbers": sale.items?.map(item => 
+                    "Unique Numbers": sale.items?.map(item =>
                         item.uniqueNumbers?.filter(un => un.number).map(un => un.number).join(', ') || ''
                     ).filter(Boolean).join('; ') || ''
                 }));
@@ -699,7 +719,7 @@ const Sales = () => {
                     {lineItems.map((item, productIndex) => {
                         const hasNumbers = item.uniqueNumbers && item.uniqueNumbers.length > 0;
                         const displayNumbers = item.uniqueNumbers || [];
-                        
+
                         return (
                             <div key={productIndex} className="sales-unique-product">
                                 <div className="sales-unique-product-header">

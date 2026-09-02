@@ -1,7 +1,14 @@
 import React from "react";
-import "./SalesPrint.scss";
+import "./Salesprint.scss";
 import logo1 from "../../Assets/logo/logo.jpeg";
 import authorized from "../../Assets/logo/auth.png";
+
+import img1 from "../../Assets/pdf/img1.jpg"
+import img2 from "../../Assets/pdf/img2.jpg"
+import img3 from "../../Assets/pdf/img3.jpg"
+import img4 from "../../Assets/pdf/img4.jpg"
+import img5 from "../../Assets/pdf/img5.jpg"
+import img6 from "../../Assets/pdf/img6.jpg"
 
 const SalesPrint = ({ invoice }) => {
   if (!invoice) return null;
@@ -172,7 +179,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
     <div id="sales-pdf">
       <div className="invoice-container">
 
-        {/* ===== HEADER ===== */}
+        {/* ===== HEADER (Logo) ===== */}
         <div className="invoice-header">
           <div className="invoice-logo">
             <img src={logo1} alt="Company Logo" />
@@ -181,7 +188,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
 
         <div className="invoice-divider"></div>
 
-        {/* ===== CUSTOMER INFO (LEFT) & OWNER INFO (RIGHT) ===== */}
+        {/* ===== BILLING INFO (LEFT 40%) & OWNER INFO (RIGHT 60%) - SAME ROW, BOTH LEFT ALIGNED ===== */}
         <div className="info-section">
           <div className="customer-info">
             <div className="info-row">
@@ -235,7 +242,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
         </div>
 
-        {/* ===== ITEMS TABLE ===== */}
+        {/* ===== ITEMS TABLE (Heading Left Aligned) ===== */}
         <div className="items-section">
           <h3>ITEMS DETAILS</h3>
           <table className="items-table">
@@ -266,7 +273,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </table>
         </div>
 
-        {/* ===== CALCULATIONS (Right Side) ===== */}
+        {/* ===== CALCULATIONS (Right Aligned Box) ===== */}
         <div className="calculation-section">
           <div className="calculation-box">
             <div className="calc-row">
@@ -319,14 +326,14 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
         </div>
 
-        {/* ===== DECLARATION & TERMS ===== */}
+        {/* ===== DECLARATION (LEFT) & TERMS (RIGHT) - SAME ROW ===== */}
         <div className="declaration-terms-section">
           <div className="declaration-section">
             <h3>DECLARATION</h3>
             <p>{declaration}</p>
           </div>
           <div className="terms-section">
-            <h3>TERMS & CONDITIONS</h3>
+            <h3>TERMS &amp; CONDITIONS</h3>
             <ul>
               {termsAndConditions.split('\n').map((term, index) => (
                 term.trim() && <li key={index}>{term.trim()}</li>
@@ -335,7 +342,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
         </div>
 
-        {/* ===== FOOTER ===== */}
+        {/* ===== FOOTER: JURISDICTION (LEFT) & SIGNATURE (RIGHT) - SAME ROW ===== */}
         <div className="invoice-footer">
           <div className="footer-left">
             <p>Subject To Vadodara Jurisdiction</p>
@@ -348,10 +355,11 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
         </div>
 
-        {/* ===== DEVELOPER NOTE (Bottom Right of each page) ===== */}
-        <div className="developer-note">
-          Developed by Techorses
-        </div>
+        {/* NOTE: "Developed by Techorses" is NOT rendered here anymore.
+            It is added on every PDF page (bottom-right) directly via jsPDF
+            in the generatePDF() function inside Sales.jsx using pdf.text() 
+            looped over all pages — since html2canvas only captures this 
+            HTML once and can't repeat it per page. */}
 
       </div>
     </div>
