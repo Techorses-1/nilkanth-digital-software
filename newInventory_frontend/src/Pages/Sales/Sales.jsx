@@ -413,7 +413,6 @@ const Sales = () => {
 
     const totals = calculateTotals();
 
-    // ============= PDF GENERATION =============
     const generatePDF = async (sale, openWhatsApp = true) => {
         if (isGeneratingPDF) return;
         setIsGeneratingPDF(true);
@@ -447,7 +446,8 @@ const Sales = () => {
                 }
             };
 
-            // ✅ Add "Developed by Techorses" on EVERY page bottom-right using jsPDF directly
+            // ✅ Add "Developed by Techorses" on EVERY page bottom-right
+            // "Developed by " stays plain grey text, "Techorses" is blue + clickable (opens in new tab)
             await html2pdf()
                 .set(opt)
                 .from(element)
@@ -458,16 +458,31 @@ const Sales = () => {
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
 
+                    const websiteUrl = "https://www.techorses.com"; // 👈 replace with your real website URL
+
+                    const label = "Developed by ";
+                    const linkText = "Techorses";
+
                     for (let i = 1; i <= totalPages; i++) {
                         pdf.setPage(i);
                         pdf.setFontSize(8);
+
+                        // measure widths so the whole line stays right-aligned at the same spot
+                        const labelWidth = pdf.getTextWidth(label);
+                        const linkWidth = pdf.getTextWidth(linkText);
+                        const totalWidth = labelWidth + linkWidth;
+
+                        const rightEdge = pageWidth - 15;
+                        const startX = rightEdge - totalWidth;
+                        const y = pageHeight - 10;
+
+                        // "Developed by " in grey
                         pdf.setTextColor(150);
-                        pdf.text(
-                            "Developed by Techorses",
-                            pageWidth - 15,
-                            pageHeight - 10,
-                            { align: "right" }
-                        );
+                        pdf.text(label, startX, y);
+
+                        // "Techorses" in blue, clickable, opens in a new tab
+                        pdf.setTextColor(0, 0, 255);
+                        pdf.textWithLink(linkText, startX + labelWidth, y, { url: websiteUrl });
                     }
                 })
                 .save();

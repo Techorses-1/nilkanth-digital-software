@@ -29,8 +29,7 @@ const SalesPrint = ({ invoice }) => {
     grandTotal,
     taxBreakdown,
     notes,
-    paymentType,
-    internalInvoiceNumber
+    paymentType
   } = invoice;
 
   // ===== STATIC DATA =====
@@ -40,8 +39,8 @@ const SalesPrint = ({ invoice }) => {
 
   const bankDetails = {
     bankName: "Central Bank of India",
-    branch: "Rajmahal Road",
-    accountNo: "595669435",
+    branch: "RAJMAHAL ROAD, VADODARA",
+    accountNo: "5955669435",
     ifscCode: "CBIN0280489"
   };
 
@@ -143,54 +142,45 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
     });
   };
 
-  // ===== Get tax breakdown =====
-  const getTaxDisplay = () => {
-    if (!taxBreakdown) {
-      return { label: 'GST', amount: totalTax || 0 };
-    }
-    if (taxBreakdown.cgst > 0 || taxBreakdown.sgst > 0) {
-      return {
-        label: 'CGST/SGST',
-        cgst: taxBreakdown.cgst || 0,
-        sgst: taxBreakdown.sgst || 0
-      };
-    } else if (taxBreakdown.igst > 0) {
-      return {
-        label: 'IGST',
-        amount: taxBreakdown.igst || totalTax || 0
-      };
-    } else if (taxBreakdown.gst > 0) {
-      return {
-        label: 'GST',
-        amount: taxBreakdown.gst || totalTax || 0
-      };
-    }
-    return { label: 'GST', amount: totalTax || 0 };
-  };
-
-  const taxDisplay = getTaxDisplay();
-
   // ===== Helper: Check if value exists =====
   const hasValue = (val) => {
     return val && val !== 'N/A' && val !== '' && val !== null && val !== undefined;
   };
 
+  // ===== Tax split flags for calculation section =====
+  const hasCgstSgst = taxBreakdown && (taxBreakdown.cgst > 0 || taxBreakdown.sgst > 0);
+  const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
+  const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
+
   return (
     <div id="sales-pdf">
       <div className="invoice-container">
 
-        {/* ===== HEADER (Logo) ===== */}
+        {/* ===== HEADER (Logo + Product Image Clusters) ===== */}
         <div className="invoice-header">
+          <div className="header-images header-images-left">
+            <img src={img1} alt="" className="header-img img-pos-1" />
+            <img src={img2} alt="" className="header-img img-pos-2" />
+            <img src={img3} alt="" className="header-img img-pos-3" />
+          </div>
+
           <div className="invoice-logo">
             <img src={logo1} alt="Company Logo" />
+          </div>
+
+          <div className="header-images header-images-right">
+            <img src={img4} alt="" className="header-img img-pos-4" />
+            <img src={img5} alt="" className="header-img img-pos-5" />
+            <img src={img6} alt="" className="header-img img-pos-6" />
           </div>
         </div>
 
         <div className="invoice-divider"></div>
 
-        {/* ===== BILLING INFO (LEFT 40%) & OWNER INFO (RIGHT 60%) - SAME ROW, BOTH LEFT ALIGNED ===== */}
+        {/* ===== BILLING INFO (LEFT 50%) & OWNER INFO (RIGHT 50%) - SAME ROW ===== */}
         <div className="info-section">
           <div className="customer-info">
+            <h3 className="info-heading">Billing Info</h3>
             <div className="info-row">
               <span className="info-label">Invoice No:</span>
               <span className="info-value">{invoiceNumber || "N/A"}</span>
@@ -227,15 +217,10 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
                 <span className="info-value">{customerGstin}</span>
               </div>
             )}
-            {hasValue(internalInvoiceNumber) && (
-              <div className="info-row">
-                <span className="info-label">Internal No:</span>
-                <span className="info-value">{internalInvoiceNumber}</span>
-              </div>
-            )}
           </div>
 
           <div className="owner-info">
+            <h3 className="info-heading">Owner Info</h3>
             <div className="owner-name">{companyName}</div>
             <div className="owner-address">{companyAddress}</div>
             <div className="owner-gst">GST: {companyGst}</div>
@@ -280,20 +265,46 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
               <span className="calc-label">Subtotal:</span>
               <span className="calc-value">{formatCurrency(subtotal)}</span>
             </div>
-            <div className="calc-row">
-              <span className="calc-label">Discount:</span>
-              <span className="calc-value">{formatCurrency(totalDiscount)}</span>
-            </div>
+
+            {totalDiscount > 0 && (
+              <div className="calc-row">
+                <span className="calc-label">Discount:</span>
+                <span className="calc-value">{formatCurrency(totalDiscount)}</span>
+              </div>
+            )}
+
             <div className="calc-row">
               <span className="calc-label">Taxable Amount:</span>
               <span className="calc-value">{formatCurrency(subtotal - totalDiscount)}</span>
             </div>
-            {totalTax > 0 && (
+
+            {hasCgstSgst && (
+              <>
+                <div className="calc-row">
+                  <span className="calc-label">CGST:</span>
+                  <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
+                </div>
+                <div className="calc-row">
+                  <span className="calc-label">SGST:</span>
+                  <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
+                </div>
+              </>
+            )}
+
+            {hasIgst && (
               <div className="calc-row">
-                <span className="calc-label">Tax ({taxDisplay.label}):</span>
+                <span className="calc-label">IGST:</span>
+                <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
+              </div>
+            )}
+
+            {hasPlainTax && (
+              <div className="calc-row">
+                <span className="calc-label">Tax (GST):</span>
                 <span className="calc-value">{formatCurrency(totalTax)}</span>
               </div>
             )}
+
             <div className="calc-row grand-total">
               <span className="calc-label">Grand Total:</span>
               <span className="calc-value">{formatCurrency(grandTotal)}</span>

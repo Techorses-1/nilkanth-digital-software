@@ -21,15 +21,65 @@
   // ===== HEADER =====
   .invoice-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 5px 0;
+    gap: 10px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #ff9a2e 0%, #f7931e 45%, #ff7b00 100%);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
 
     .invoice-logo {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+      border-radius: 10px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      z-index: 2;
+
       img {
-        max-width: 140px;
+        max-width: 130px;
         height: auto;
         display: block;
+      }
+    }
+
+    // ===== Redesigned product image cluster: overlapping circular avatar stack =====
+    .header-images {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      z-index: 1;
+
+      .header-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        background: #fff;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .header-img:not(:first-child) {
+        margin-left: -14px; // creates the overlapping stack effect
+      }
+    }
+
+    .header-images-left {
+      justify-content: flex-start;
+    }
+
+    .header-images-right {
+      justify-content: flex-end;
+
+      // mirror the overlap direction so images stack neatly toward the logo
+      .header-img:not(:first-child) {
+        margin-left: -14px;
       }
     }
   }
@@ -39,15 +89,27 @@
     margin: 3px 0 10px 0;
   }
 
-  // ===== INFO SECTION (Billing 40% Left / Owner 60% Right - both left aligned) =====
+  // ===== INFO SECTION (Billing 50% Left / Owner 50% Right - both left aligned) =====
   .info-section {
     display: flex;
     gap: 20px;
     margin-bottom: 8px;
 
+    .info-heading {
+      font-size: 13px;
+      font-weight: 700;
+      color: #2d2f87;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0 0 6px 0;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #2d2f87;
+      text-align: left;
+    }
+
     .customer-info {
-      flex: 0 0 40%;
-      max-width: 40%;
+      flex: 0 0 50%;
+      max-width: 50%;
       display: flex;
       flex-direction: column;
       gap: 2px;
@@ -78,14 +140,14 @@
     }
 
     .owner-info {
-      flex: 0 0 60%;
-      max-width: 60%;
+      flex: 0 0 50%;
+      max-width: 50%;
       text-align: left;
       padding-top: 2px;
       padding-left: 10px;
 
       .owner-name {
-        font-size: 16px;
+        font-size: 13px;
         font-weight: 700;
         color: #2d2f87;
         letter-spacing: 1px;
@@ -328,7 +390,7 @@
         align-items: center;
 
         .signature-image {
-          max-width: 120px;
+          max-width: 190px;
           height: auto;
           display: block;
         }
@@ -388,6 +450,16 @@
 @media (max-width: 768px) {
   #sales-pdf {
     padding: 8mm 10mm;
+
+    .invoice-header {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+
+      .header-images {
+        order: 3;
+      }
+    }
 
     .info-section {
       flex-direction: column;
