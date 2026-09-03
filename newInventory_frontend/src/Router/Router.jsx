@@ -37,7 +37,7 @@ const Router = () => {
             <Route path="/" element={
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="invoice">  {/* Sales page requires invoice permission */}
-                  <Customer />
+                  <Sales />
                 </PermissionRoute>
               </ProtectedRoute>
             } />

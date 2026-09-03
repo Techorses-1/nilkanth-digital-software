@@ -3,13 +3,14 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
 // Icon imports
 import { BiLogOut, BiLayout, BiLogIn } from "react-icons/bi";
-import { TbUsers } from "react-icons/tb";
-import { LuFile } from "react-icons/lu";
-import { PiBasket } from "react-icons/pi";
+import { TbUsers, TbReportAnalytics } from "react-icons/tb";
+import { LuFile, LuFileText } from "react-icons/lu";
+import { PiBasket, PiShoppingCart } from "react-icons/pi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import { FiUser } from "react-icons/fi";
-import { MdDiscount } from "react-icons/md";
+import { MdDiscount, MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
+import { FaStore, FaTruck } from "react-icons/fa";
 
 import logo from "../../Assets/logo/logo.png";
 import "./Navbar.css";
@@ -78,26 +79,28 @@ const Navbar = ({
   const getPageTitle = () => {
     const route = location.pathname;
     switch (route) {
+      case '/':
+        return 'Sales / Invoice Management';
       case '/customer':
         return 'Customer Dashboard';
-      case '/purchase':
-        return 'Purchase Management';
+      case '/vendor':
+        return 'Vendor Management';
       case '/items':
         return 'Products Management';
+      case '/purchase':
+        return 'Purchase Management';
       case '/inventory':
         return 'Inventory Management';
-      case '/dashboard':
-        return 'Dashboard';
       case '/admin':
         return 'Admin Management Dashboard';
+      case '/dashboard':
+        return 'Dashboard';
       case '/productdiscount':
         return 'Discount Dashboard';
       case '/defective':
         return 'Product Disposal Dashboard';
       case '/report':
         return 'Business Reports And Analytics';
-      case '/':
-        return 'Reports Dashboard';
       default:
         return '';
     }
@@ -107,17 +110,13 @@ const Navbar = ({
 
   // Define all possible menu items with their required permissions
   const allMenuData = [
-    { icon: <PiBasket />, title: "Reports", path: "/", permission: "invoice" },
-    // { icon: <HiOutlineHome />, title: "Dashboard", path: "/dashboard", permission: "dashboard" }, 
+    { icon: <MdReceiptLong />, title: "Sales", path: "/", permission: "invoice" },
     { icon: <TbUsers />, title: "Customer", path: "/customer", permission: "customer" },
-    { icon: <TbUsers />, title: "Vendor", path: "/vendor", permission: "customer" },
-    { icon: <LuFile />, title: "Products", path: "/items", permission: "products" },
-    { icon: <TbUsers />, title: "Purchase", path: "/purchase", permission: "purchase" },
-    { icon: <MdDiscount />, title: "Sales", path: "/invoice", permission: "invoice" },
-    { icon: <BiLayout />, title: "Inventory", path: "/inventory", permission: "inventory" },
-    { icon: <BiLayout />, title: "Admin", path: "/admin", permission: "admin" },
-    // { icon: <TbTrash  />, title: "Product Disposal", path: "/defective", permission: "disposal" }, 
-    // { icon: <TbReportAnalytics  />, title: "Report", path: "/report", permission: "report" },
+    { icon: <FaTruck />, title: "Vendor", path: "/vendor", permission: "customer" },
+    { icon: <PiShoppingCart />, title: "Products", path: "/items", permission: "products" },
+    { icon: <FaStore />, title: "Purchase", path: "/purchase", permission: "purchase" },
+    { icon: <MdInventory />, title: "Inventory", path: "/inventory", permission: "inventory" },
+    { icon: <MdAdminPanelSettings />, title: "Admin", path: "/admin", permission: "admin" },
   ];
 
   // Filter menu items based on user permissions

@@ -1,7 +1,7 @@
 import React from "react";
 import "./Salesprint.scss";
 import logo1 from "../../Assets/logo/logo.jpeg";
-import authorized from "../../Assets/logo/auth.png";
+import authorized from "../../Assets/pdf/auth.png";
 
 import width from "../../Assets/pdf/width.png"
 
@@ -41,10 +41,10 @@ const SalesPrint = ({ invoice }) => {
   } = invoice;
 
   // ===== STATIC DATA =====
-  const companyName = "TECHORSES";
-  const companyAddress = "B-224, Samanvay Silicon, Opp Kalyan Hotel, Dairy Den Circle, Sayajigunj, Vadodara, 390020 (Gujarat, India)";
-  const companyGst = "24AAICS9235N...";
-  const companyPhone = "+91 1234567890";
+  const companyName = "Nilkanth digital scale co.";
+  const companyAddress = "Dayal Bhuvan lane opp lalcourt rajmahel road vadodara 390001)";
+  // const companyGst = "24AAICS9235N...";
+  const companyPhone = "+91 8485921934";
   const companyEmail = "nilkanthdigitalscale@gmail.com";
 
   const bankDetails = {
@@ -255,7 +255,7 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
             <div className="owner-email">{companyEmail}</div>
             <div className="owner-phone">{companyPhone}</div>
             <div className="owner-address">{companyAddress}</div>
-            <div className="owner-gst">GST: {companyGst}</div>
+            {/* <div className="owner-gst">GST: {companyGst}</div> */}
           </div>
         </div>
 
