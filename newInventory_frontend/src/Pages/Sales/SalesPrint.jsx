@@ -3,12 +3,20 @@ import "./Salesprint.scss";
 import logo1 from "../../Assets/logo/logo.jpeg";
 import authorized from "../../Assets/logo/auth.png";
 
-import img1 from "../../Assets/pdf/img1.jpg"
-import img2 from "../../Assets/pdf/img2.jpg"
-import img3 from "../../Assets/pdf/img3.jpg"
-import img4 from "../../Assets/pdf/img4.jpg"
-import img5 from "../../Assets/pdf/img5.jpg"
-import img6 from "../../Assets/pdf/img6.jpg"
+import width from "../../Assets/pdf/width.png"
+
+import product1 from "../../Assets/pdf/p1.png";
+import product2 from "../../Assets/pdf/p2.png";
+import product3 from "../../Assets/pdf/p3.png";
+import product4 from "../../Assets/pdf/p4.png";
+import product5 from "../../Assets/pdf/p5.png";
+import product6 from "../../Assets/pdf/p6.png";
+import product7 from "../../Assets/pdf/p7.png";
+import product8 from "../../Assets/pdf/p8.png";
+import product9 from "../../Assets/pdf/p9.png";
+import product10 from "../../Assets/pdf/p10.png";
+import product11 from "../../Assets/pdf/p11.png";
+import product12 from "../../Assets/pdf/p12.png";
 
 const SalesPrint = ({ invoice }) => {
   if (!invoice) return null;
@@ -36,10 +44,12 @@ const SalesPrint = ({ invoice }) => {
   const companyName = "TECHORSES";
   const companyAddress = "B-224, Samanvay Silicon, Opp Kalyan Hotel, Dairy Den Circle, Sayajigunj, Vadodara, 390020 (Gujarat, India)";
   const companyGst = "24AAICS9235N...";
+  const companyPhone = "+91 1234567890";
+  const companyEmail = "nilkanthdigitalscale@gmail.com";
 
   const bankDetails = {
     bankName: "Central Bank of India",
-    branch: "RAJMAHAL ROAD, VADODARA",
+    branch: "Rajmahal Road",
     accountNo: "5955669435",
     ifscCode: "CBIN0280489"
   };
@@ -48,7 +58,7 @@ const SalesPrint = ({ invoice }) => {
 
   const termsAndConditions = `Warranty: Warranty is applicable against manufacturing defects only.
 Battery: Battery is not covered under warranty under any circumstances.
-Re-Stamping / Re-Verification: If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
+Stamping/Verification: If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
 Goods Once Delivered: Once the goods are delivered, they will not be taken back or returned.`;
 
   // ===== Convert numbers to words =====
@@ -152,6 +162,26 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
   const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
   const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
 
+  // ===== Product showcase data (shared across pages 2-4) =====
+  // Real product images (product1-product12) used for header clusters,
+  // gallery grid, hero small-grid and the polaroid page.
+  const productImages = [
+    product1, product2, product3, product4, product5, product6,
+    product7, product8, product9, product10, product11, product12
+  ];
+
+  const productCaptions = productImages.map((_, index) => {
+    if (items && items.length > 0) {
+      const item = items[index % items.length];
+      return item?.productName || `Product ${index + 1}`;
+    }
+    return `Product ${index + 1}`;
+  });
+
+  // Wide hero image (separate from the 12 products) used only on page 4
+  const heroImage = width;
+  const heroCaption = (items && items[0]?.productName) || "Featured Product";
+
   return (
     <div id="sales-pdf">
       <div className="invoice-container">
@@ -159,9 +189,9 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
         {/* ===== HEADER (Logo + Product Image Clusters) ===== */}
         <div className="invoice-header">
           <div className="header-images header-images-left">
-            <img src={img1} alt="" className="header-img img-pos-1" />
-            <img src={img2} alt="" className="header-img img-pos-2" />
-            <img src={img3} alt="" className="header-img img-pos-3" />
+            <img src={product1} alt="" className="header-img img-pos-1" />
+            <img src={product2} alt="" className="header-img img-pos-2" />
+            <img src={product3} alt="" className="header-img img-pos-3" />
           </div>
 
           <div className="invoice-logo">
@@ -169,9 +199,9 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
 
           <div className="header-images header-images-right">
-            <img src={img4} alt="" className="header-img img-pos-4" />
-            <img src={img5} alt="" className="header-img img-pos-5" />
-            <img src={img6} alt="" className="header-img img-pos-6" />
+            <img src={product4} alt="" className="header-img img-pos-4" />
+            <img src={product5} alt="" className="header-img img-pos-5" />
+            <img src={product6} alt="" className="header-img img-pos-6" />
           </div>
         </div>
 
@@ -222,6 +252,8 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           <div className="owner-info">
             <h3 className="info-heading">Owner Info</h3>
             <div className="owner-name">{companyName}</div>
+            <div className="owner-email">{companyEmail}</div>
+            <div className="owner-phone">{companyPhone}</div>
             <div className="owner-address">{companyAddress}</div>
             <div className="owner-gst">GST: {companyGst}</div>
           </div>
@@ -373,6 +405,73 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
             HTML once and can't repeat it per page. */}
 
       </div>
+
+      {/* ==========================================================
+          PAGE 2: PRODUCT GALLERY (plain 3-column captioned grid)
+      ========================================================== */}
+      <div className="product-gallery-page">
+        <div className="gallery-banner">
+          <h2>OUR PRODUCT RANGE</h2>
+          <p>A glimpse of the products &amp; equipment we deal in</p>
+        </div>
+
+        <div className="gallery-grid">
+          {productImages.map((src, index) => (
+            <div className="gallery-card" key={index}>
+              <div className="gallery-img-wrap">
+                <img src={src} alt={productCaptions[index]} />
+              </div>
+              <p className="gallery-caption">{productCaptions[index]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ==========================================================
+          PAGE 3: BIG HERO (wide image) + SMALL GRID (all 12 products)
+      ========================================================== */}
+      <div className="hero-grid-page">
+        <div className="gallery-banner">
+          <h2>FEATURED PRODUCTS</h2>
+          <p>Highlighting our best-selling range</p>
+        </div>
+
+        <div className="hero-image-wrap">
+          <img src={heroImage} alt={heroCaption} />
+          <p className="hero-caption">{heroCaption}</p>
+        </div>
+
+        <div className="hero-small-grid">
+          {productImages.map((src, index) => (
+            <div className="small-card" key={index}>
+              <img src={src} alt={productCaptions[index]} />
+              <p>{productCaptions[index]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ==========================================================
+          PAGE 4: POLAROID / SCATTERED CARD STYLE
+      ========================================================== */}
+      <div className="polaroid-page">
+        <div className="gallery-banner">
+          <h2>PRODUCT GALLERY</h2>
+          <p>A closer look at what we offer</p>
+        </div>
+
+        <div className="polaroid-grid">
+          {productImages.map((src, index) => (
+            <div className={`polaroid-card polaroid-pos-${(index % 6) + 1}`} key={index}>
+              <div className="polaroid-img-wrap">
+                <img src={src} alt={productCaptions[index]} />
+              </div>
+              <p className="polaroid-caption">{productCaptions[index]}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 };

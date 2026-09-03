@@ -506,6 +506,23 @@ const Sales = () => {
         }
     };
 
+    // ============= VALIDATE UNIQUE NUMBERS =============
+    const validateUniqueNumbers = () => {
+        for (let i = 0; i < lineItems.length; i++) {
+            const item = lineItems[i];
+            const uniqueNumbers = item.uniqueNumbers || [];
+
+            // Check if all unique numbers are filled
+            for (let j = 0; j < uniqueNumbers.length; j++) {
+                if (!uniqueNumbers[j].number || uniqueNumbers[j].number.trim() === '') {
+                    toast.error(`Please add unique number for Unit ${j + 1} of "${item.productName}"`);
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
     // ============= HANDLE SUBMIT =============
     const handleSubmit = async () => {
         if (!selectedCustomer) {
@@ -518,7 +535,12 @@ const Sales = () => {
             return;
         }
 
-        // ✅ Validate unique numbers
+        // ✅ Validate unique numbers - FIX #3
+        if (!validateUniqueNumbers()) {
+            return;
+        }
+
+        // ✅ Validate duplicate unique numbers
         const allNumbers = [];
         for (const item of lineItems) {
             if (item.uniqueNumbers && item.uniqueNumbers.length > 0) {
@@ -859,6 +881,46 @@ const Sales = () => {
     const renderViewModal = () => {
         if (!selectedSale) return null;
 
+        // FIX #2: Get tax breakdown based on tax type
+        const getTaxDisplay = () => {
+            if (!selectedSale.isGstMode) {
+                return null;
+            }
+
+            const taxBreakdown = selectedSale.taxBreakdown || {};
+            const taxType = selectedSale.taxType || 'IGST';
+
+            if (taxType === 'IGST') {
+                return (
+                    <div className="sales-view-total">
+                        <span>IGST:</span>
+                        <span>₹{(taxBreakdown.igst || selectedSale.totalTax || 0).toFixed(2)}</span>
+                    </div>
+                );
+            } else if (taxType === 'CGST_SGST') {
+                return (
+                    <>
+                        <div className="sales-view-total">
+                            <span>CGST:</span>
+                            <span>₹{(taxBreakdown.cgst || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="sales-view-total">
+                            <span>SGST:</span>
+                            <span>₹{(taxBreakdown.sgst || 0).toFixed(2)}</span>
+                        </div>
+                    </>
+                );
+            } else {
+                // Default fallback
+                return (
+                    <div className="sales-view-total">
+                        <span>Tax ({selectedSale.taxSlab || 0}%):</span>
+                        <span>₹{(selectedSale.totalTax || 0).toFixed(2)}</span>
+                    </div>
+                );
+            }
+        };
+
         return (
             <div className="sales-modal-overlay" onClick={() => setShowViewModal(false)}>
                 <div className="sales-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -909,6 +971,11 @@ const Sales = () => {
                                 <span className="sales-view-label">Tax Slab:</span>
                                 <span className="sales-view-value">{selectedSale.taxSlab}%</span>
                             </div>
+                            {/* FIX #1: Added Notes field */}
+                            <div className="sales-view-item sales-view-item-full">
+                                <span className="sales-view-label">Notes:</span>
+                                <span className="sales-view-value">{selectedSale.notes || 'No notes'}</span>
+                            </div>
                         </div>
 
                         <div className="sales-view-table-wrap">
@@ -955,12 +1022,8 @@ const Sales = () => {
                                 <span>Discount:</span>
                                 <span>₹{selectedSale.totalDiscount?.toFixed(2) || 0}</span>
                             </div>
-                            {selectedSale.isGstMode && (
-                                <div className="sales-view-total">
-                                    <span>Tax ({selectedSale.taxSlab}%):</span>
-                                    <span>₹{selectedSale.totalTax?.toFixed(2) || 0}</span>
-                                </div>
-                            )}
+                            {/* FIX #2: Show tax breakdown based on type */}
+                            {selectedSale.isGstMode && getTaxDisplay()}
                             <div className="sales-view-total sales-view-grand">
                                 <span>Grand Total:</span>
                                 <span>₹{selectedSale.grandTotal?.toFixed(2) || 0}</span>
