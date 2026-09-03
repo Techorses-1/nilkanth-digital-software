@@ -45,7 +45,8 @@ const SalesPrint = ({ invoice }) => {
     grandTotal,
     taxBreakdown,
     notes,
-    paymentType
+    paymentType,
+    repairingDescription
   } = invoice;
 
   // ===== STATIC DATA =====
@@ -132,8 +133,8 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     return words || 'Zero Only';
   };
 
-  // ===== Calculate item discounted total =====
-  const calculateItemDiscountedTotal = (item) => {
+  // ===== Calculate item total =====
+  const calculateItemTotal = (item) => {
     const quantity = item.quantity || 1;
     const price = item.unitPrice || 0;
     const discountPercentage = item.discountPercent || 0;
@@ -153,7 +154,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     return Number(value).toFixed(2);
   };
 
-  // ===== Format a tax amount as a clean percentage string (of taxable amount) =====
+  // ===== Format a tax amount as a clean percentage string =====
   const formatTaxPercent = (amount, base) => {
     if (!base || base <= 0 || !amount || isNaN(amount)) return "0";
     const pct = (amount / base) * 100;
@@ -176,27 +177,24 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     return val && val !== 'N/A' && val !== '' && val !== null && val !== undefined;
   };
 
-  // ===== Tax split flags for calculation section =====
+  // ===== Tax split flags =====
   const hasCgstSgst = taxBreakdown && (taxBreakdown.cgst > 0 || taxBreakdown.sgst > 0);
   const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
   const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
 
-  // Taxable amount is the base on which CGST/SGST/IGST % is calculated
   const taxableAmount = (subtotal || 0) - (totalDiscount || 0);
   const cgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.cgst, taxableAmount) : "0";
   const sgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.sgst, taxableAmount) : "0";
   const igstPercent = hasIgst ? formatTaxPercent(taxBreakdown.igst, taxableAmount) : "0";
 
-  // ===== Product showcase data (Page 2 gallery — 8 category cards) =====
+  // ===== Product showcase data =====
   const allProductImages = [
     product1, product2, product3, product4, product5, product6,
     product7, product8, product9, product10, product11, product12
   ];
 
-  // Only the first 8 images are used for the gallery, laid out 3 / 3 / 2
   const galleryImages = allProductImages.slice(0, 8);
 
-  // For now the top category label and the name below the image are the same text
   const galleryLabels = [
     "PLATFORM SCALES",
     "TABLE TOP SCALES",
@@ -215,7 +213,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     <div id="sales-pdf">
       <div className="invoice-container">
 
-        {/* ===== HEADER (Logo + Heading Image Clusters) ===== */}
+        {/* ===== HEADER ===== */}
         <div className="invoice-header">
           <div className="header-images header-images-left">
             <img src={heading1} alt="" className="header-img img-pos-1" />
@@ -236,7 +234,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
 
         <div className="invoice-divider"></div>
 
-        {/* ===== BILLING INFO (LEFT 50%) & OWNER INFO (RIGHT 50%) - SAME ROW ===== */}
+        {/* ===== BILLING INFO & OWNER INFO ===== */}
         <div className="info-section">
           <div className="customer-info">
             <h3 className="info-heading">Billing Info</h3>
@@ -302,7 +300,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
           </div>
         </div>
 
-        {/* ===== ITEMS TABLE (Heading Left Aligned) ===== */}
+        {/* ===== ITEMS TABLE - NO DISCOUNT COLUMN, HAS CAPACITY ===== */}
         <div className="items-section">
           <h3>ITEMS DETAILS</h3>
           <table className="items-table">
@@ -310,10 +308,10 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
               <tr>
                 <th>SR NO</th>
                 <th>PRODUCT NAME</th>
+                <th>CAPACITY</th>
                 <th>HSN CODE</th>
                 <th>QTY</th>
                 <th>PRICE</th>
-                <th>DISC %</th>
                 <th>TOTAL</th>
               </tr>
             </thead>
@@ -322,21 +320,20 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                 <tr key={index}>
                   <td>{index + 1}</td>
                   <td>{item.productName || "N/A"}</td>
+                  <td>{hasValue(item.capacity) ? item.capacity : '-'}</td>
                   <td>{item.hsnCode || "N/A"}</td>
                   <td>{item.quantity || 1}</td>
                   <td>{formatCurrency(item.unitPrice)}</td>
-                  <td>{formatNumber(item.discountPercent)}</td>
-                  <td>{formatCurrency(calculateItemDiscountedTotal(item))}</td>
+                  <td>{formatCurrency(calculateItemTotal(item))}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* ===== TOTALS ROW: BANK + AMOUNT IN WORDS (LEFT) & CALCULATIONS (RIGHT) ===== */}
+        {/* ===== TOTALS ROW ===== */}
         <div className="totals-row">
           <div className="totals-left">
-            {/* ===== BANK DETAILS ===== */}
             <div className="bank-details">
               <div className="bank-row">
                 <span className="bank-label">Bank Name:</span>
@@ -356,14 +353,12 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
               </div>
             </div>
 
-            {/* ===== AMOUNT IN WORDS ===== */}
             <div className="amount-in-words">
               <p><strong>Amount in Words:</strong> {numberToWords(grandTotal)} Only</p>
             </div>
           </div>
 
           <div className="totals-right">
-            {/* ===== CALCULATIONS ===== */}
             <div className="calculation-section">
               <div className="calculation-box">
                 <div className="calc-row">
@@ -419,11 +414,20 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
           </div>
         </div>
 
-        {/* ===== DECLARATION (LEFT) & TERMS (RIGHT) - SAME ROW ===== */}
+        {/* ===== DECLARATION + REPAIRING DESCRIPTION (LEFT) & TERMS (RIGHT) ===== */}
         <div className="declaration-terms-section">
-          <div className="declaration-section">
-            <h3>DECLARATION</h3>
-            <p>{declaration}</p>
+          <div className="declaration-left">
+            <div className="declaration-section">
+              <h3>DECLARATION</h3>
+              <p>{declaration}</p>
+            </div>
+            {/* ✅ Show Repairing Description only if available */}
+            {hasValue(repairingDescription) && (
+              <div className="repairing-description-section">
+                <h3>REPAIRING DESCRIPTION</h3>
+                <p>{repairingDescription}</p>
+              </div>
+            )}
           </div>
           <div className="terms-section">
             <h3>TERMS &amp; CONDITIONS</h3>
@@ -435,7 +439,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
           </div>
         </div>
 
-        {/* ===== FOOTER: JURISDICTION (LEFT) & SIGNATURE (RIGHT) - SAME ROW ===== */}
+        {/* ===== FOOTER ===== */}
         <div className="invoice-footer">
           <div className="footer-left">
             <p>Subject To Vadodara Jurisdiction</p>
@@ -450,10 +454,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
 
       </div>
 
-      {/* ==========================================================
-          PAGE 2: PRODUCT GALLERY (8 category cards, 3 / 3 / 2 layout)
-          Each card: blue category label on top -> image -> name below
-      ========================================================== */}
+      {/* ===== PAGE 2: PRODUCT GALLERY ===== */}
       <div className="product-gallery-page">
         <div className="gallery-banner">
           <h2>OUR PRODUCT RANGE</h2>

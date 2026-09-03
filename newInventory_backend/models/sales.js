@@ -28,6 +28,13 @@ const salesSchema = new mongoose.Schema({
         required: true
     },
 
+    // ===== REPAIRING DESCRIPTION (Only for Repairing invoice type) =====
+    repairingDescription: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+
     // ===== CUSTOMER INFO =====
     customerId: {
         type: String,
@@ -116,6 +123,11 @@ const salesSchema = new mongoose.Schema({
             type: String,
             required: true,
             trim: true
+        },
+        capacity: {
+            type: String,
+            trim: true,
+            default: ''
         },
         quantity: {
             type: Number,

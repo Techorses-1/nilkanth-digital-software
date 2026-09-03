@@ -18,7 +18,6 @@ import {
     FaTimes,
     FaChevronLeft,
     FaChevronRight,
-    FaShoppingCart,
     FaRupeeSign,
     FaBuilding,
     FaPercent,
@@ -34,7 +33,9 @@ import {
     FaToggleOn,
     FaToggleOff,
     FaHashtag,
-    FaFileInvoiceDollar
+    FaFileInvoiceDollar,
+    FaWeightHanging,
+    FaWrench
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import html2pdf from "html2pdf.js";
@@ -135,6 +136,7 @@ const Sales = () => {
     const [storeType, setStoreType] = useState("Vadodara");
     const [taxSlab, setTaxSlab] = useState(18);
     const [notes, setNotes] = useState("");
+    const [repairingDescription, setRepairingDescription] = useState("");
     const [saleDate, setSaleDate] = useState(new Date().toISOString().split("T")[0]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editSaleId, setEditSaleId] = useState(null);
@@ -144,7 +146,7 @@ const Sales = () => {
     const [isGstMode, setIsGstMode] = useState(true);
     const [invoiceType, setInvoiceType] = useState("Sales");
 
-    // ============= CUSTOMER FORM FIELDS (NO STATE) =============
+    // ============= CUSTOMER FORM FIELDS =============
     const [customerName, setCustomerName] = useState("");
     const [customerEmail, setCustomerEmail] = useState("");
     const [customerPhone, setCustomerPhone] = useState("");
@@ -297,6 +299,7 @@ const Sales = () => {
             productDescription: product.productDescription || '',
             hsnCode: product.hsnCode || '',
             unitName: '',
+            capacity: '',
             quantity: 1,
             unitPrice: 0,
             discountPercent: 0,
@@ -615,6 +618,7 @@ const Sales = () => {
                 isGstMode: isGstMode,
                 saleDate: saleDate,
                 invoiceType: invoiceType,
+                repairingDescription: repairingDescription || '',
                 items: lineItems.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity,
@@ -622,7 +626,8 @@ const Sales = () => {
                     discountPercent: item.discountPercent,
                     uniqueNumbers: item.uniqueNumbers || [],
                     hsnCode: item.hsnCode || '',
-                    unitName: item.unitName || ''
+                    unitName: item.unitName || '',
+                    capacity: item.capacity || ''
                 })),
                 taxSlab: isGstMode ? taxSlab : 0,
                 notes: notes
@@ -665,6 +670,7 @@ const Sales = () => {
         setSelectedCustomer(null);
         setSelectedProduct(null);
         setNotes("");
+        setRepairingDescription("");
         setStoreType("Vadodara");
         setTaxSlab(18);
         setPaymentType("Cash");
@@ -705,12 +711,15 @@ const Sales = () => {
         setPaymentType(sale.paymentType || "Cash");
         setIsGstMode(sale.isGstMode !== undefined ? sale.isGstMode : true);
         setInvoiceType(sale.invoiceType || "Sales");
+        setRepairingDescription(sale.repairingDescription || "");
         setNotes(sale.notes || "");
         setSaleDate(sale.saleDate ? new Date(sale.saleDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
 
+        // ✅ FIX: Properly load capacity from sale data
         const items = sale.items.map(item => ({
             ...item,
-            uniqueNumbers: item.uniqueNumbers || []
+            uniqueNumbers: item.uniqueNumbers || [],
+            capacity: item.capacity || ''  // ✅ Ensure capacity is loaded
         }));
         setLineItems(items);
     };
@@ -952,6 +961,12 @@ const Sales = () => {
                                 <span className="sales-view-label">Tax Slab:</span>
                                 <span className="sales-view-value">{selectedSale.taxSlab}%</span>
                             </div>
+                            {selectedSale.invoiceType === 'Repairing' && selectedSale.repairingDescription && (
+                                <div className="sales-view-item sales-view-item-full">
+                                    <span className="sales-view-label">Repairing Description:</span>
+                                    <span className="sales-view-value">{selectedSale.repairingDescription}</span>
+                                </div>
+                            )}
                             <div className="sales-view-item sales-view-item-full">
                                 <span className="sales-view-label">Notes:</span>
                                 <span className="sales-view-value">{selectedSale.notes || 'No notes'}</span>
@@ -966,8 +981,8 @@ const Sales = () => {
                                         <th>Product</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
+                                        <th>Capacity</th>
                                         <th>Price</th>
-                                        <th>Disc%</th>
                                         <th>Final</th>
                                         <th>HSN Code</th>
                                         <th>Unique Numbers</th>
@@ -980,8 +995,8 @@ const Sales = () => {
                                             <td>{item.productName}</td>
                                             <td>{item.quantity}</td>
                                             <td>{item.unitName || 'NOS'}</td>
+                                            <td>{item.capacity || '-'}</td>
                                             <td>₹{item.unitPrice.toFixed(2)}</td>
-                                            <td>{item.discountPercent}%</td>
                                             <td>₹{item.finalPrice.toFixed(2)}</td>
                                             <td>{item.hsnCode || '-'}</td>
                                             <td>
@@ -1033,6 +1048,8 @@ const Sales = () => {
 
     // ============= RENDER FORM =============
     const renderForm = () => {
+        const isRepairing = invoiceType === 'Repairing';
+
         return (
             <div className="sales-form-container">
                 <div className="sales-form-header">
@@ -1045,10 +1062,9 @@ const Sales = () => {
                     </button>
                 </div>
 
-                {/* GST Mode + Invoice Type - SAME ROW (Left & Right) */}
+                {/* GST Mode + Invoice Type - SAME ROW */}
                 <div className="sales-toggle-section">
                     <div className="sales-toggle-row">
-                        {/* LEFT: GST Mode Toggle */}
                         <div className="sales-toggle-container">
                             <span className="sales-toggle-label">GST Mode</span>
                             <button
@@ -1066,7 +1082,6 @@ const Sales = () => {
                             </button>
                         </div>
 
-                        {/* RIGHT: Invoice Type */}
                         <div className="sales-invoice-type-container">
                             <span className="sales-toggle-label">
                                 <FaFileInvoiceDollar /> Invoice Type
@@ -1078,7 +1093,13 @@ const Sales = () => {
                                 classNamePrefix="sales-select"
                                 placeholder="Select Invoice Type"
                                 value={INVOICE_TYPE_OPTIONS.find(opt => opt.value === invoiceType)}
-                                onChange={(option) => setInvoiceType(option?.value || "Sales")}
+                                onChange={(option) => {
+                                    setInvoiceType(option?.value || "Sales");
+                                    // Clear repairing description when not repairing
+                                    if (option?.value !== 'Repairing') {
+                                        setRepairingDescription('');
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -1248,7 +1269,7 @@ const Sales = () => {
                     </div>
                 </div>
 
-                {/* Line Items Table */}
+                {/* Line Items Table - NO DISCOUNT FIELD */}
                 {lineItems.length > 0 && (
                     <div className="sales-section">
                         <div className="sales-items-table-wrap">
@@ -1258,10 +1279,10 @@ const Sales = () => {
                                         <th>#</th>
                                         <th>Product</th>
                                         <th>Unit</th>
+                                        <th>Capacity</th>
                                         <th>HSN</th>
                                         <th>Qty</th>
                                         <th>Price</th>
-                                        <th>Disc%</th>
                                         <th>Final</th>
                                         <th>Action</th>
                                     </tr>
@@ -1278,6 +1299,15 @@ const Sales = () => {
                                                     value={item.unitName || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'unitName', e.target.value)}
                                                     placeholder="Unit"
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    className="sales-item-input sales-capacity-input"
+                                                    value={item.capacity || ''}
+                                                    onChange={(e) => handleUpdateLineItemText(idx, 'capacity', e.target.value)}
+                                                    placeholder="Capacity"
                                                 />
                                             </td>
                                             <td>
@@ -1307,17 +1337,6 @@ const Sales = () => {
                                                     min="0"
                                                     step="1"
                                                     onChange={(e) => handleUpdateLineItem(idx, 'unitPrice', e.target.value)}
-                                                />
-                                            </td>
-                                            <td>
-                                                <input
-                                                    type="number"
-                                                    className="sales-item-input sales-item-discount"
-                                                    value={item.discountPercent}
-                                                    min="0"
-                                                    max="100"
-                                                    step="1"
-                                                    onChange={(e) => handleUpdateLineItem(idx, 'discountPercent', e.target.value)}
                                                 />
                                             </td>
                                             <td className="sales-item-final">
@@ -1393,8 +1412,23 @@ const Sales = () => {
                         </div>
                     </div>
 
+                    {/* Notes and Repairing Description - SAME ROW */}
                     <div className="sales-form-row">
-                        <div className="sales-form-field sales-form-field-full">
+                        {isRepairing && (
+                            <div className="sales-form-field">
+                                <label className="sales-form-label">
+                                    <FaWrench /> Repairing Description
+                                </label>
+                                <textarea
+                                    className="sales-textarea-field"
+                                    rows="2"
+                                    placeholder="Enter repairing description..."
+                                    value={repairingDescription}
+                                    onChange={(e) => setRepairingDescription(e.target.value)}
+                                />
+                            </div>
+                        )}
+                        <div className={`sales-form-field ${!isRepairing ? 'sales-form-field-full' : ''}`}>
                             <label className="sales-form-label">
                                 <FaInfoCircle /> Notes (Optional)
                             </label>
@@ -1478,6 +1512,7 @@ const Sales = () => {
                                 setSelectedCustomer(null);
                                 setSelectedProduct(null);
                                 setNotes("");
+                                setRepairingDescription("");
                                 setStoreType("Vadodara");
                                 setTaxSlab(18);
                                 setPaymentType("Cash");

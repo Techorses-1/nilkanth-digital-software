@@ -103,26 +103,20 @@ router.post("/create-sale", async (req, res) => {
       paymentType,
       isGstMode,
       invoiceType,
-      customerName,
-      customerEmail,
-      customerPhone,
-      customerAddress
+      repairingDescription
     } = req.body;
 
     console.log("🔍 EXTRACTED VALUES:");
     console.log("  - customerId:", customerId);
-    console.log("  - customerName:", customerName);
-    console.log("  - customerEmail:", customerEmail);
-    console.log("  - customerPhone:", customerPhone);
     console.log("  - customerGstin FROM REQUEST:", customerGstin);
     console.log("  - customerState:", customerState);
-    console.log("  - customerAddress:", customerAddress);
     console.log("  - storeType:", storeType);
     console.log("  - paymentType:", paymentType);
     console.log("  - isGstMode:", isGstMode);
     console.log("  - taxSlab:", taxSlab);
-    console.log("  - notes:", notes);
     console.log("  - invoiceType:", invoiceType);
+    console.log("  - repairingDescription:", repairingDescription);
+    console.log("  - notes:", notes);
     console.log("  - items count:", items?.length || 0);
 
     if (!customerId) {
@@ -161,7 +155,6 @@ router.post("/create-sale", async (req, res) => {
     }
     console.log("✅ User found:", user.name, user.userId);
 
-    // Get customer from DB
     const customer = await Customer.findOne({ customerId });
     if (!customer) {
       console.log("❌ ERROR: Customer not found:", customerId);
@@ -171,10 +164,8 @@ router.post("/create-sale", async (req, res) => {
       });
     }
     console.log("✅ Customer found:", customer.customerName);
-    console.log("  - Customer GST from DB (gstNumber):", customer.gstNumber);
-    console.log("  - Customer GST from DB (gstin):", customer.gstin);
 
-    // ===== PROCESS ITEMS WITH UNIQUE NUMBERS =====
+    // ===== PROCESS ITEMS =====
     const processedItems = [];
     const allUniqueNumbers = [];
 
@@ -196,7 +187,7 @@ router.post("/create-sale", async (req, res) => {
       const discountAmount = unitPrice - discountedUnitPrice;
       const finalPrice = discountedUnitPrice * quantity;
 
-      // ✅ Process unique numbers for this product
+      // ✅ Process unique numbers
       const uniqueNumbers = [];
       if (item.uniqueNumbers && Array.isArray(item.uniqueNumbers)) {
         for (const un of item.uniqueNumbers) {
@@ -227,18 +218,20 @@ router.post("/create-sale", async (req, res) => {
         uniqueNumbers.splice(quantity);
       }
 
-      // ✅ Use HSN from frontend if provided, fallback to product's HSN
+      // ✅ Use HSN from frontend, fallback to product
       const hsnCode = item.hsnCode || product.hsnCode || '';
-      // ✅ Use unitName from frontend if provided, fallback to product's unitName
       const unitName = item.unitName || product.unitName || 'NOS';
-      console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}`);
+      const capacity = item.capacity || '';
+
+      console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}, Capacity: ${capacity}`);
 
       processedItems.push({
         productId: product.productId,
         productName: product.productName,
         productDescription: product.productDescription || '',
         hsnCode: hsnCode,
-        unitName: unitName,  // ✅ USE FROM FRONTEND
+        unitName: unitName,
+        capacity: capacity,
         quantity: quantity,
         unitPrice: unitPrice,
         discountPercent: discountPercent,
@@ -250,27 +243,16 @@ router.post("/create-sale", async (req, res) => {
     }
 
     // ✅ GSTIN LOGIC
-    console.log("🔄 ===== GSTIN PROCESSING =====");
-    console.log("  - customerGstin FROM REQUEST:", customerGstin);
-    console.log("  - customer.gstNumber FROM DB:", customer.gstNumber);
-    console.log("  - customer.gstin FROM DB:", customer.gstin);
-
     const gstin = customerGstin || customer.gstNumber || '';
-    console.log("  - FINAL GSTIN USED:", gstin);
-
     const taxType = determineTaxType(gstin);
-    console.log("  - TAX TYPE DETERMINED:", taxType);
-
     const invoiceNumber = await generateInvoiceNumber();
     const internalInvoiceNumber = await generateInternalInvoiceNumber();
-    console.log("  - invoiceNumber:", invoiceNumber);
-    console.log("  - internalInvoiceNumber:", internalInvoiceNumber);
 
-    // ✅ Create Sale with all fields including invoiceType
     const newSale = new Sales({
       invoiceNumber,
       internalInvoiceNumber,
-      invoiceType: invoiceType || 'Sales',  // ✅ NEW FIELD
+      invoiceType: invoiceType || 'Sales',
+      repairingDescription: repairingDescription || '',
       customerId: customer.customerId,
       customerName: customer.customerName,
       customerEmail: customer.email || '',
@@ -296,6 +278,7 @@ router.post("/create-sale", async (req, res) => {
     console.log("  - taxType:", newSale.taxType);
     console.log("  - isGstMode:", newSale.isGstMode);
     console.log("  - invoiceType:", newSale.invoiceType);
+    console.log("  - repairingDescription:", newSale.repairingDescription);
 
     newSale.recalculateTotals();
     const savedSale = await newSale.save();
@@ -303,9 +286,6 @@ router.post("/create-sale", async (req, res) => {
     console.log("✅ SALE SAVED SUCCESSFULLY!");
     console.log("  - Sale ID:", savedSale.saleId);
     console.log("  - Invoice:", savedSale.invoiceNumber);
-    console.log("  - customerGstin SAVED:", savedSale.customerGstin);
-    console.log("  - taxType SAVED:", savedSale.taxType);
-    console.log("  - invoiceType SAVED:", savedSale.invoiceType);
 
     res.status(201).json({
       success: true,
@@ -339,9 +319,8 @@ router.put("/update-sale/:id", async (req, res) => {
 
     console.log("🔍 EXTRACTED updateData:", JSON.stringify(updateData, null, 2));
     console.log("🔍 customerGstin IN updateData:", updateData.customerGstin);
-    console.log("🔍 customerState IN updateData:", updateData.customerState);
     console.log("🔍 invoiceType IN updateData:", updateData.invoiceType);
-    console.log("🔍 items IN updateData:", updateData.items?.length || 0);
+    console.log("🔍 repairingDescription IN updateData:", updateData.repairingDescription);
 
     const decoded = getUserFromToken(req);
     if (!decoded) {
@@ -364,11 +343,10 @@ router.put("/update-sale/:id", async (req, res) => {
     console.log("✅ Existing sale found:");
     console.log("  - Sale ID:", existingSale.saleId);
     console.log("  - Invoice:", existingSale.invoiceNumber);
-    console.log("  - customerGstin (EXISTING):", existingSale.customerGstin);
-    console.log("  - taxType (EXISTING):", existingSale.taxType);
     console.log("  - invoiceType (EXISTING):", existingSale.invoiceType);
+    console.log("  - repairingDescription (EXISTING):", existingSale.repairingDescription);
 
-    // ===== PROCESS ITEMS WITH UNIQUE NUMBERS =====
+    // ===== PROCESS ITEMS =====
     if (updateData.items && Array.isArray(updateData.items)) {
       console.log("🔄 Processing items...");
       const processedItems = [];
@@ -423,18 +401,20 @@ router.put("/update-sale/:id", async (req, res) => {
           uniqueNumbers.splice(quantity);
         }
 
-        // ✅ Use HSN from frontend if provided, fallback to product's HSN
+        // ✅ Use HSN from frontend, fallback to product
         const hsnCode = item.hsnCode || product.hsnCode || '';
-        // ✅ Use unitName from frontend if provided, fallback to product's unitName
         const unitName = item.unitName || product.unitName || 'NOS';
-        console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}`);
+        const capacity = item.capacity || '';
+
+        console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}, Capacity: ${capacity}`);
 
         processedItems.push({
           productId: product.productId,
           productName: product.productName,
           productDescription: product.productDescription || '',
           hsnCode: hsnCode,
-          unitName: unitName,  // ✅ USE FROM FRONTEND
+          unitName: unitName,
+          capacity: capacity,
           quantity: quantity,
           unitPrice: unitPrice,
           discountPercent: discountPercent,
@@ -449,11 +429,7 @@ router.put("/update-sale/:id", async (req, res) => {
       console.log("✅ Items processed successfully");
     }
 
-    // ✅ ===== GSTIN PROCESSING =====
-    console.log("🔄 ===== GSTIN PROCESSING FOR UPDATE =====");
-    console.log("  - updateData.customerGstin:", updateData.customerGstin);
-    console.log("  - existingSale.customerGstin:", existingSale.customerGstin);
-
+    // ✅ GSTIN PROCESSING
     if (!updateData.customerGstin || updateData.customerGstin.trim() === '') {
       updateData.customerGstin = existingSale.customerGstin || '';
       console.log("  - ✅ Keeping EXISTING GSTIN:", updateData.customerGstin);
@@ -462,23 +438,21 @@ router.put("/update-sale/:id", async (req, res) => {
     }
 
     updateData.taxType = determineTaxType(updateData.customerGstin || '');
-    console.log("  - TAX TYPE DETERMINED:", updateData.taxType);
-    console.log("  - FINAL GSTIN TO SAVE:", updateData.customerGstin);
 
-    // ✅ Handle invoiceType
+    // ✅ Invoice Type - keep existing if not provided
     if (!updateData.invoiceType) {
       updateData.invoiceType = existingSale.invoiceType || 'Sales';
-      console.log("  - ✅ Keeping EXISTING invoiceType:", updateData.invoiceType);
-    } else {
-      console.log("  - ✅ Using NEW invoiceType:", updateData.invoiceType);
+    }
+
+    // ✅ Repairing Description - keep existing if not provided
+    if (updateData.repairingDescription === undefined) {
+      updateData.repairingDescription = existingSale.repairingDescription || '';
     }
 
     if (updateData.isGstMode === false) {
-      console.log("  - isGstMode is false, setting taxSlab to 0");
       updateData.taxSlab = 0;
     }
 
-    console.log("📝 Creating tempSale for recalculation...");
     const tempSale = new Sales({
       ...existingSale.toObject(),
       ...updateData,
@@ -500,12 +474,8 @@ router.put("/update-sale/:id", async (req, res) => {
     };
 
     console.log("📝 FINAL UPDATE DATA BEFORE SAVE:");
-    console.log("  - customerGstin:", finalUpdateData.customerGstin);
-    console.log("  - customerState:", finalUpdateData.customerState);
-    console.log("  - taxType:", finalUpdateData.taxType);
-    console.log("  - taxSlab:", finalUpdateData.taxSlab);
-    console.log("  - isGstMode:", finalUpdateData.isGstMode);
     console.log("  - invoiceType:", finalUpdateData.invoiceType);
+    console.log("  - repairingDescription:", finalUpdateData.repairingDescription);
 
     const updatedSale = await Sales.findOneAndUpdate(
       { saleId: req.params.id },
@@ -524,9 +494,8 @@ router.put("/update-sale/:id", async (req, res) => {
     console.log("✅ SALE UPDATED SUCCESSFULLY!");
     console.log("  - Sale ID:", updatedSale.saleId);
     console.log("  - Invoice:", updatedSale.invoiceNumber);
-    console.log("  - customerGstin SAVED:", updatedSale.customerGstin);
-    console.log("  - taxType SAVED:", updatedSale.taxType);
     console.log("  - invoiceType SAVED:", updatedSale.invoiceType);
+    console.log("  - repairingDescription SAVED:", updatedSale.repairingDescription);
 
     res.status(200).json({
       success: true,
