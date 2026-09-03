@@ -76,7 +76,7 @@ const Router = () => {
 
             <Route path="/purchase" element={
               <ProtectedRoute>
-                <PermissionRoute requiredPermission="products">
+                <PermissionRoute requiredPermission="purchase">
                   <Purchase />
                 </PermissionRoute>
               </ProtectedRoute>
