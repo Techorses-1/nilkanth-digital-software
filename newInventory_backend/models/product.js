@@ -16,22 +16,13 @@ const productSchema = new mongoose.Schema({
   productDescription: {
     type: String,
     trim: true,
-    default: '' // Optional - not required
+    default: ''
   },
   hsnCode: {
     type: String,
     required: [true, 'HSN Code is required'],
-    trim: true
-  },
-  unitId: {
-    type: String,
-    required: [true, 'Unit is required'],
-    ref: 'Unit'
-  },
-  unitName: {
-    type: String,
-    required: true,
-    trim: true
+    trim: true,
+    default: '8423'
   }
 }, {
   timestamps: true,
@@ -40,7 +31,6 @@ const productSchema = new mongoose.Schema({
 // Indexes
 productSchema.index({ productName: 1 });
 productSchema.index({ hsnCode: 1 });
-productSchema.index({ unitId: 1 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 module.exports = Product;

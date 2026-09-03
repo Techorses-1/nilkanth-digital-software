@@ -30,6 +30,7 @@ const SalesPrint = ({ invoice }) => {
 
   const {
     invoiceNumber,
+    invoiceType,
     saleDate,
     customerName,
     customerEmail,
@@ -152,6 +153,14 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     return Number(value).toFixed(2);
   };
 
+  // ===== Format a tax amount as a clean percentage string (of taxable amount) =====
+  const formatTaxPercent = (amount, base) => {
+    if (!base || base <= 0 || !amount || isNaN(amount)) return "0";
+    const pct = (amount / base) * 100;
+    const rounded = Math.round(pct * 100) / 100;
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+  };
+
   // ===== Format date =====
   const formatDate = (date) => {
     if (!date) return "N/A";
@@ -172,23 +181,33 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
   const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
   const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
 
-  // ===== Product showcase data (shared across pages 2-4) =====
-  // Real product images (product1-product12) used for gallery grid,
-  // hero small-grid and the polaroid page.
-  const productImages = [
+  // Taxable amount is the base on which CGST/SGST/IGST % is calculated
+  const taxableAmount = (subtotal || 0) - (totalDiscount || 0);
+  const cgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.cgst, taxableAmount) : "0";
+  const sgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.sgst, taxableAmount) : "0";
+  const igstPercent = hasIgst ? formatTaxPercent(taxBreakdown.igst, taxableAmount) : "0";
+
+  // ===== Product showcase data (Page 2 gallery — 8 category cards) =====
+  const allProductImages = [
     product1, product2, product3, product4, product5, product6,
     product7, product8, product9, product10, product11, product12
   ];
 
-  const productCaptions = productImages.map((_, index) => {
-    if (items && items.length > 0) {
-      const item = items[index % items.length];
-      return item?.productName || `Product ${index + 1}`;
-    }
-    return `Product ${index + 1}`;
-  });
+  // Only the first 8 images are used for the gallery, laid out 3 / 3 / 2
+  const galleryImages = allProductImages.slice(0, 8);
 
-  // Wide hero image (separate from the 12 products) used only on page 4
+  // For now the top category label and the name below the image are the same text
+  const galleryLabels = [
+    "PLATFORM SCALES",
+    "TABLE TOP SCALES",
+    "JEWELLERY SCALES",
+    "HANGING SCALES",
+    "BABY SCALES",
+    "INDUSTRIAL SCALES",
+    "WEIGH BRIDGE",
+    "LABORATORY SCALES"
+  ];
+
   const heroImage = width;
   const heroCaption = (items && items[0]?.productName) || "Featured Product";
 
@@ -223,7 +242,10 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
             <h3 className="info-heading">Billing Info</h3>
             <div className="info-row">
               <span className="info-label">Invoice No:</span>
-              <span className="info-value">{invoiceNumber || "N/A"}</span>
+              <span className="info-value">
+                {invoiceNumber || "N/A"}
+                {invoiceType && ` - ${invoiceType}`}
+              </span>
             </div>
             <div className="info-row">
               <span className="info-label">Date:</span>
@@ -364,11 +386,11 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                 {hasCgstSgst && (
                   <>
                     <div className="calc-row">
-                      <span className="calc-label">CGST:</span>
+                      <span className="calc-label">CGST ({cgstPercent}%):</span>
                       <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
                     </div>
                     <div className="calc-row">
-                      <span className="calc-label">SGST:</span>
+                      <span className="calc-label">SGST ({sgstPercent}%):</span>
                       <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
                     </div>
                   </>
@@ -376,7 +398,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
 
                 {hasIgst && (
                   <div className="calc-row">
-                    <span className="calc-label">IGST:</span>
+                    <span className="calc-label">IGST ({igstPercent}%):</span>
                     <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
                   </div>
                 )}
@@ -426,16 +448,11 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
           </div>
         </div>
 
-        {/* NOTE: "Developed by Techorses" is NOT rendered here anymore.
-            It is added on every PDF page (bottom-right) directly via jsPDF
-            in the generatePDF() function inside Sales.jsx using pdf.text() 
-            looped over all pages — since html2canvas only captures this 
-            HTML once and can't repeat it per page. */}
-
       </div>
 
       {/* ==========================================================
-          PAGE 2: PRODUCT GALLERY (plain 3-column captioned grid)
+          PAGE 2: PRODUCT GALLERY (8 category cards, 3 / 3 / 2 layout)
+          Each card: blue category label on top -> image -> name below
       ========================================================== */}
       <div className="product-gallery-page">
         <div className="gallery-banner">
@@ -444,57 +461,13 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
         </div>
 
         <div className="gallery-grid">
-          {productImages.map((src, index) => (
+          {galleryImages.map((src, index) => (
             <div className="gallery-card" key={index}>
+              <div className="gallery-category">{galleryLabels[index]}</div>
               <div className="gallery-img-wrap">
-                <img src={src} alt={productCaptions[index]} />
+                <img src={src} alt={galleryLabels[index]} />
               </div>
-              <p className="gallery-caption">{productCaptions[index]}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ==========================================================
-          PAGE 3: BIG HERO (wide image) + SMALL GRID (all 12 products)
-      ========================================================== */}
-      <div className="hero-grid-page">
-        <div className="gallery-banner">
-          <h2>FEATURED PRODUCTS</h2>
-          <p>Highlighting our best-selling range</p>
-        </div>
-
-        <div className="hero-image-wrap">
-          <img src={heroImage} alt={heroCaption} />
-          <p className="hero-caption">{heroCaption}</p>
-        </div>
-
-        <div className="hero-small-grid">
-          {productImages.map((src, index) => (
-            <div className="small-card" key={index}>
-              <img src={src} alt={productCaptions[index]} />
-              <p>{productCaptions[index]}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ==========================================================
-          PAGE 4: POLAROID / SCATTERED CARD STYLE
-      ========================================================== */}
-      <div className="polaroid-page">
-        <div className="gallery-banner">
-          <h2>PRODUCT GALLERY</h2>
-          <p>A closer look at what we offer</p>
-        </div>
-
-        <div className="polaroid-grid">
-          {productImages.map((src, index) => (
-            <div className={`polaroid-card polaroid-pos-${(index % 6) + 1}`} key={index}>
-              <div className="polaroid-img-wrap">
-                <img src={src} alt={productCaptions[index]} />
-              </div>
-              <p className="polaroid-caption">{productCaptions[index]}</p>
+              <p className="gallery-caption">{galleryLabels[index]}</p>
             </div>
           ))}
         </div>

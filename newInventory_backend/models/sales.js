@@ -20,6 +20,14 @@ const salesSchema = new mongoose.Schema({
         required: true,
     },
 
+    // ===== INVOICE TYPE =====
+    invoiceType: {
+        type: String,
+        enum: ['Sales', 'AMC', 'Repairing', 'Stamping'],
+        default: 'Sales',
+        required: true
+    },
+
     // ===== CUSTOMER INFO =====
     customerId: {
         type: String,
@@ -254,6 +262,7 @@ salesSchema.index({ saleDate: -1 });
 salesSchema.index({ storeType: 1 });
 salesSchema.index({ isDeleted: 1 });
 salesSchema.index({ 'items.uniqueNumbers.number': 1 });
+salesSchema.index({ invoiceType: 1 });
 
 // ===== VIRTUALS =====
 salesSchema.virtual('totalItems').get(function () {
@@ -326,7 +335,6 @@ salesSchema.methods.validateUniqueNumbers = function () {
         if (item.uniqueNumbers && item.uniqueNumbers.length > 0) {
             for (const un of item.uniqueNumbers) {
                 if (un.number) {
-                    // Check if number already exists in the list
                     if (allNumbers.includes(un.number)) {
                         throw new Error(`Duplicate unique number found: ${un.number}`);
                     }
@@ -345,7 +353,6 @@ salesSchema.methods.addUniqueNumber = function (productIndex, number) {
         throw new Error('Product not found');
     }
 
-    // Check if number already exists in the invoice
     const allNumbers = [];
     for (const item of this.items) {
         for (const un of item.uniqueNumbers) {
@@ -387,13 +394,9 @@ salesSchema.methods.syncUniqueNumbersWithQuantity = function (productIndex) {
     const currentQty = item.quantity;
     const currentUniqueNumbers = item.uniqueNumbers || [];
 
-    // If quantity is less than unique numbers count, remove extras
     if (currentUniqueNumbers.length > currentQty) {
-        // Keep only the first 'qty' numbers
         item.uniqueNumbers = currentUniqueNumbers.slice(0, currentQty);
-    }
-    // If quantity is more, add empty slots
-    else if (currentUniqueNumbers.length < currentQty) {
+    } else if (currentUniqueNumbers.length < currentQty) {
         const difference = currentQty - currentUniqueNumbers.length;
         for (let i = 0; i < difference; i++) {
             item.uniqueNumbers.push({ number: '', isUsed: false });

@@ -33,7 +33,8 @@ import {
     FaFilePdf,
     FaToggleOn,
     FaToggleOff,
-    FaHashtag
+    FaHashtag,
+    FaFileInvoiceDollar
 } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import html2pdf from "html2pdf.js";
@@ -106,6 +107,14 @@ const PAYMENT_OPTIONS = [
     { value: "Cheque", label: "Cheque" }
 ];
 
+// Invoice Type Options
+const INVOICE_TYPE_OPTIONS = [
+    { value: "Sales", label: "Sales" },
+    { value: "AMC", label: "AMC" },
+    { value: "Repairing", label: "Repairing" },
+    { value: "Stamping", label: "Stamping" }
+];
+
 const Sales = () => {
     // ============= STATE =============
     const [customers, setCustomers] = useState([]);
@@ -133,9 +142,17 @@ const Sales = () => {
     // ============= NEW FIELDS =============
     const [paymentType, setPaymentType] = useState("Cash");
     const [isGstMode, setIsGstMode] = useState(true);
+    const [invoiceType, setInvoiceType] = useState("Sales");
+
+    // ============= CUSTOMER FORM FIELDS (NO STATE) =============
+    const [customerName, setCustomerName] = useState("");
+    const [customerEmail, setCustomerEmail] = useState("");
+    const [customerPhone, setCustomerPhone] = useState("");
+    const [customerGstin, setCustomerGstin] = useState("");
+    const [customerAddress, setCustomerAddress] = useState("");
+    const [isCustomerFieldsReadOnly, setIsCustomerFieldsReadOnly] = useState(false);
 
     // ============= MODAL STATES =============
-    const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [selectedSale, setSelectedSale] = useState(null);
 
@@ -150,29 +167,6 @@ const Sales = () => {
         totalPages: 0,
         hasNext: false,
         hasPrev: false
-    });
-
-    // ============= CUSTOMER FORM =============
-    const customerInitialValues = {
-        customerName: "",
-        email: "",
-        contactNumber: "",
-        address: "",
-        gstin: "",
-        state: ""
-    };
-
-    const customerValidationSchema = Yup.object({
-        customerName: Yup.string().required("Customer name is required"),
-        email: Yup.string().email("Invalid email"),
-        contactNumber: Yup.string()
-            .required("Contact number is required")
-            .matches(/^[0-9]{10}$/, "Must be exactly 10 digits"),
-        address: Yup.string(),
-        gstin: Yup.string()
-            .matches(/^[0-9A-Z]{15}$/, "GSTIN must be 15 characters")
-            .nullable(),
-        state: Yup.string()
     });
 
     // ============= DEBOUNCE =============
@@ -264,42 +258,33 @@ const Sales = () => {
     };
 
     // ============= CUSTOMER HANDLERS =============
-    const handleCreateCustomer = async (values, { resetForm, setFieldError }) => {
-        try {
-            const headers = getAuthHeaders();
-            const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/customer/create-customer`,
-                values,
-                headers
-            );
+    const handleCustomerSelect = (option) => {
+        const customer = customers.find(c => c.customerId === option?.value);
+        setSelectedCustomer(customer || null);
 
-            toast.success(response.data.message || "Customer created successfully!");
-            const newCustomer = response.data.data || response.data;
-            setCustomers(prev => [...prev, newCustomer]);
-            setSelectedCustomer(newCustomer);
-            setShowCustomerModal(false);
-            resetForm();
-        } catch (error) {
-            if (error.response?.data?.field === "email") {
-                setFieldError("email", "Customer with this email already exists");
-                toast.error("Customer with this email already exists");
-            } else if (error.response?.data?.field === "contactNumber") {
-                setFieldError("contactNumber", "Customer with this mobile number already exists");
-                toast.error("Customer with this mobile number already exists");
-            } else {
-                toast.error(error.response?.data?.message || "Failed to create customer");
-            }
+        if (customer) {
+            setCustomerName(customer.customerName || '');
+            setCustomerEmail(customer.email || '');
+            setCustomerPhone(customer.contactNumber || '');
+            setCustomerGstin(customer.gstNumber || '');
+            setCustomerAddress(customer.address || '');
+            setIsCustomerFieldsReadOnly(true);
+        } else {
+            setCustomerName('');
+            setCustomerEmail('');
+            setCustomerPhone('');
+            setCustomerGstin('');
+            setCustomerAddress('');
+            setIsCustomerFieldsReadOnly(false);
         }
     };
 
     // ============= PRODUCT HANDLERS =============
-    const handleAddProduct = () => {
-        if (!selectedProduct) {
-            toast.warning("Please select a product");
-            return;
-        }
+    const handleProductSelect = (option) => {
+        const product = products.find(p => p.productId === option?.value);
+        if (!product) return;
 
-        const exists = lineItems.some(item => item.productId === selectedProduct.productId);
+        const exists = lineItems.some(item => item.productId === product.productId);
         if (exists) {
             toast.warning("Product already added");
             setSelectedProduct(null);
@@ -307,23 +292,23 @@ const Sales = () => {
         }
 
         const newItem = {
-            productId: selectedProduct.productId,
-            productName: selectedProduct.productName,
-            productDescription: selectedProduct.productDescription || '',
-            hsnCode: selectedProduct.hsnCode || '',
-            unitName: selectedProduct.unitName || 'NOS',
+            productId: product.productId,
+            productName: product.productName,
+            productDescription: product.productDescription || '',
+            hsnCode: product.hsnCode || '',
+            unitName: '',
             quantity: 1,
             unitPrice: 0,
             discountPercent: 0,
             discountAmount: 0,
             discountedUnitPrice: 0,
             finalPrice: 0,
-            uniqueNumbers: [{ number: '', isUsed: false }] // ✅ Initialize with 1 empty slot
+            uniqueNumbers: [{ number: '', isUsed: false }]
         };
 
         setLineItems(prev => [...prev, newItem]);
         setSelectedProduct(null);
-        toast.success("Product added to cart");
+        toast.success(`${product.productName} added to cart`);
     };
 
     const handleUpdateLineItem = (index, field, value) => {
@@ -335,7 +320,6 @@ const Sales = () => {
         updated[index].discountAmount = updated[index].unitPrice - updated[index].discountedUnitPrice;
         updated[index].finalPrice = updated[index].discountedUnitPrice * updated[index].quantity;
 
-        // ✅ Sync unique numbers with quantity
         const quantity = updated[index].quantity;
         const currentUniqueCount = updated[index].uniqueNumbers?.length || 0;
 
@@ -345,26 +329,28 @@ const Sales = () => {
                 updated[index].uniqueNumbers.push({ number: '', isUsed: false });
             }
         } else if (currentUniqueCount > quantity) {
-            // Keep only first 'quantity' numbers
             updated[index].uniqueNumbers = updated[index].uniqueNumbers.slice(0, quantity);
         }
 
         setLineItems(updated);
     };
 
-    // ✅ Handle unique number change
+    const handleUpdateLineItemText = (index, field, value) => {
+        const updated = [...lineItems];
+        updated[index][field] = value;
+        setLineItems(updated);
+    };
+
     const handleUniqueNumberChange = (productIndex, numberIndex, value) => {
         const updated = [...lineItems];
         updated[productIndex].uniqueNumbers[numberIndex].number = value;
         setLineItems(updated);
     };
 
-    // ✅ Remove unique number manually (only when admin wants to)
     const handleRemoveUniqueNumber = (productIndex, numberIndex) => {
         const updated = [...lineItems];
         const item = updated[productIndex];
 
-        // Don't allow removing if it would make count less than quantity
         if (item.uniqueNumbers.length <= item.quantity) {
             toast.warning("Cannot remove. Quantity is " + item.quantity);
             return;
@@ -446,8 +432,6 @@ const Sales = () => {
                 }
             };
 
-            // ✅ Add "Developed by Techorses" on EVERY page bottom-right
-            // "Developed by " stays plain grey text, "Techorses" is blue + clickable (opens in new tab)
             await html2pdf()
                 .set(opt)
                 .from(element)
@@ -458,7 +442,7 @@ const Sales = () => {
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
 
-                    const websiteUrl = "https://www.techorses.com"; // 👈 replace with your real website URL
+                    const websiteUrl = "https://www.techorses.com";
 
                     const label = "Developed by ";
                     const linkText = "Techorses";
@@ -467,7 +451,6 @@ const Sales = () => {
                         pdf.setPage(i);
                         pdf.setFontSize(8);
 
-                        // measure widths so the whole line stays right-aligned at the same spot
                         const labelWidth = pdf.getTextWidth(label);
                         const linkWidth = pdf.getTextWidth(linkText);
                         const totalWidth = labelWidth + linkWidth;
@@ -476,11 +459,9 @@ const Sales = () => {
                         const startX = rightEdge - totalWidth;
                         const y = pageHeight - 10;
 
-                        // "Developed by " in grey
                         pdf.setTextColor(150);
                         pdf.text(label, startX, y);
 
-                        // "Techorses" in blue, clickable, opens in a new tab
                         pdf.setTextColor(0, 0, 255);
                         pdf.textWithLink(linkText, startX + labelWidth, y, { url: websiteUrl });
                     }
@@ -512,7 +493,6 @@ const Sales = () => {
             const item = lineItems[i];
             const uniqueNumbers = item.uniqueNumbers || [];
 
-            // Check if all unique numbers are filled
             for (let j = 0; j < uniqueNumbers.length; j++) {
                 if (!uniqueNumbers[j].number || uniqueNumbers[j].number.trim() === '') {
                     toast.error(`Please add unique number for Unit ${j + 1} of "${item.productName}"`);
@@ -523,10 +503,48 @@ const Sales = () => {
         return true;
     };
 
+    // ============= VALIDATE CUSTOMER FIELDS =============
+    const validateCustomerFields = () => {
+        if (selectedCustomer) {
+            if (isGstMode && !selectedCustomer.gstNumber) {
+                toast.error("GSTIN is required in GST Mode. Please add GSTIN to customer or switch to Non-GST mode.");
+                return false;
+            }
+            return true;
+        }
+
+        if (!customerName.trim()) {
+            toast.error("Customer Name is required");
+            return false;
+        }
+
+        if (!customerPhone.trim() || customerPhone.trim().length !== 10) {
+            toast.error("Valid 10-digit Phone Number is required");
+            return false;
+        }
+
+        if (isGstMode) {
+            if (!customerGstin.trim()) {
+                toast.error("GSTIN is required in GST Mode");
+                return false;
+            }
+            if (customerGstin.trim().length !== 15) {
+                toast.error("GSTIN must be 15 characters");
+                return false;
+            }
+        }
+
+        if (customerEmail && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(customerEmail)) {
+            toast.error("Invalid email format");
+            return false;
+        }
+
+        return true;
+    };
+
     // ============= HANDLE SUBMIT =============
     const handleSubmit = async () => {
-        if (!selectedCustomer) {
-            toast.warning("Please select a customer");
+        if (!validateCustomerFields()) {
             return;
         }
 
@@ -535,12 +553,10 @@ const Sales = () => {
             return;
         }
 
-        // ✅ Validate unique numbers - FIX #3
         if (!validateUniqueNumbers()) {
             return;
         }
 
-        // ✅ Validate duplicate unique numbers
         const allNumbers = [];
         for (const item of lineItems) {
             if (item.uniqueNumbers && item.uniqueNumbers.length > 0) {
@@ -564,27 +580,55 @@ const Sales = () => {
                 return;
             }
 
-            // ✅ FIX: Use gstNumber instead of gstin
+            let finalCustomerId = selectedCustomer?.customerId;
+
+            if (!selectedCustomer) {
+                const customerData = {
+                    customerName: customerName,
+                    email: customerEmail,
+                    contactNumber: customerPhone,
+                    gstNumber: customerGstin,
+                    address: customerAddress
+                };
+
+                const customerResponse = await axios.post(
+                    `${import.meta.env.VITE_API_URL}/customer/create-customer`,
+                    customerData,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                if (customerResponse.data.success) {
+                    const newCustomer = customerResponse.data.data;
+                    finalCustomerId = newCustomer.customerId;
+                    setCustomers(prev => [...prev, newCustomer]);
+                    toast.success("Customer created successfully!");
+                } else {
+                    throw new Error("Failed to create customer");
+                }
+            }
+
             const payload = {
-                customerId: selectedCustomer.customerId,
-                customerGstin: selectedCustomer.gstNumber || '',  // ← FIXED: gstNumber
-                customerState: selectedCustomer.state || '',
+                customerId: finalCustomerId,
+                customerGstin: selectedCustomer ? selectedCustomer.gstNumber || '' : customerGstin,
                 storeType: storeType,
                 paymentType: paymentType,
                 isGstMode: isGstMode,
                 saleDate: saleDate,
+                invoiceType: invoiceType,
                 items: lineItems.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
                     discountPercent: item.discountPercent,
-                    uniqueNumbers: item.uniqueNumbers || []
+                    uniqueNumbers: item.uniqueNumbers || [],
+                    hsnCode: item.hsnCode || '',
+                    unitName: item.unitName || ''
                 })),
                 taxSlab: isGstMode ? taxSlab : 0,
                 notes: notes
             };
 
-            console.log("📦 Sending payload:", payload); // For debugging
+            console.log("📦 Sending payload:", payload);
 
             let response;
             if (isEditMode && editSaleId) {
@@ -625,10 +669,17 @@ const Sales = () => {
         setTaxSlab(18);
         setPaymentType("Cash");
         setIsGstMode(true);
+        setInvoiceType("Sales");
         setSaleDate(new Date().toISOString().split("T")[0]);
         setIsEditMode(false);
         setEditSaleId(null);
         setShowForm(false);
+        setCustomerName("");
+        setCustomerEmail("");
+        setCustomerPhone("");
+        setCustomerGstin("");
+        setCustomerAddress("");
+        setIsCustomerFieldsReadOnly(false);
     };
 
     // ============= EDIT SALE =============
@@ -640,14 +691,23 @@ const Sales = () => {
         const customer = customers.find(c => c.customerId === sale.customerId);
         setSelectedCustomer(customer || null);
 
+        if (customer) {
+            setCustomerName(customer.customerName || '');
+            setCustomerEmail(customer.email || '');
+            setCustomerPhone(customer.contactNumber || '');
+            setCustomerGstin(customer.gstNumber || '');
+            setCustomerAddress(customer.address || '');
+            setIsCustomerFieldsReadOnly(true);
+        }
+
         setStoreType(sale.storeType || "Vadodara");
         setTaxSlab(sale.taxSlab || 18);
         setPaymentType(sale.paymentType || "Cash");
         setIsGstMode(sale.isGstMode !== undefined ? sale.isGstMode : true);
+        setInvoiceType(sale.invoiceType || "Sales");
         setNotes(sale.notes || "");
         setSaleDate(sale.saleDate ? new Date(sale.saleDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
 
-        // ✅ Load items with unique numbers
         const items = sale.items.map(item => ({
             ...item,
             uniqueNumbers: item.uniqueNumbers || []
@@ -698,6 +758,7 @@ const Sales = () => {
                 const exportData = data.map((sale) => ({
                     "Invoice No": sale.invoiceNumber,
                     "Internal No": sale.internalInvoiceNumber,
+                    "Invoice Type": sale.invoiceType || 'Sales',
                     "Customer": sale.customerName,
                     "Store": sale.storeType,
                     "Payment": sale.paymentType,
@@ -757,7 +818,6 @@ const Sales = () => {
                 </h3>
                 <div className="sales-unique-grid">
                     {lineItems.map((item, productIndex) => {
-                        const hasNumbers = item.uniqueNumbers && item.uniqueNumbers.length > 0;
                         const displayNumbers = item.uniqueNumbers || [];
 
                         return (
@@ -796,95 +856,10 @@ const Sales = () => {
         );
     };
 
-    // ============= RENDER CUSTOMER MODAL =============
-    const renderCustomerModal = () => (
-        <div className="sales-modal-overlay" onClick={() => setShowCustomerModal(false)}>
-            <div className="sales-modal-content sales-modal-small" onClick={(e) => e.stopPropagation()}>
-                <div className="sales-modal-header">
-                    <h3 className="sales-modal-title">
-                        <FaPlus style={{ color: '#28a745' }} /> New Customer
-                    </h3>
-                    <button className="sales-modal-close" onClick={() => setShowCustomerModal(false)}>
-                        <FaTimes />
-                    </button>
-                </div>
-
-                <div className="sales-modal-body">
-                    <Formik
-                        initialValues={customerInitialValues}
-                        validationSchema={customerValidationSchema}
-                        onSubmit={handleCreateCustomer}
-                    >
-                        <Form className="sales-form">
-                            <div className="sales-form-row">
-                                <div className="sales-form-field sales-form-field-full">
-                                    <label className="sales-form-label">
-                                        <FaUser /> Customer Name *
-                                    </label>
-                                    <Field name="customerName" type="text" placeholder="Enter customer name" />
-                                    <ErrorMessage name="customerName" component="div" className="sales-error" />
-                                </div>
-                            </div>
-
-                            <div className="sales-form-row">
-                                <div className="sales-form-field">
-                                    <label className="sales-form-label">
-                                        <FaEnvelope /> Email
-                                    </label>
-                                    <Field name="email" type="email" placeholder="Enter email" />
-                                    <ErrorMessage name="email" component="div" className="sales-error" />
-                                </div>
-                                <div className="sales-form-field">
-                                    <label className="sales-form-label">
-                                        <FaPhone /> Contact Number *
-                                    </label>
-                                    <Field name="contactNumber" type="text" placeholder="10 digits" />
-                                    <ErrorMessage name="contactNumber" component="div" className="sales-error" />
-                                </div>
-                            </div>
-
-                            <div className="sales-form-row">
-                                <div className="sales-form-field">
-                                    <label className="sales-form-label">
-                                        <FaInfoCircle /> GSTIN
-                                    </label>
-                                    <Field name="gstin" type="text" placeholder="15 characters" />
-                                    <ErrorMessage name="gstin" component="div" className="sales-error" />
-                                </div>
-                                <div className="sales-form-field">
-                                    <label className="sales-form-label">
-                                        <FaBuilding /> State
-                                    </label>
-                                    <Field name="state" type="text" placeholder="e.g., Gujarat" />
-                                    <ErrorMessage name="state" component="div" className="sales-error" />
-                                </div>
-                            </div>
-
-                            <div className="sales-form-row">
-                                <div className="sales-form-field sales-form-field-full">
-                                    <label className="sales-form-label">
-                                        <FaMapMarkerAlt /> Address
-                                    </label>
-                                    <Field name="address" as="textarea" rows="2" placeholder="Enter address" />
-                                    <ErrorMessage name="address" component="div" className="sales-error" />
-                                </div>
-                            </div>
-
-                            <button type="submit" className="sales-submit-btn">
-                                Create Customer
-                            </button>
-                        </Form>
-                    </Formik>
-                </div>
-            </div>
-        </div>
-    );
-
     // ============= RENDER VIEW MODAL =============
     const renderViewModal = () => {
         if (!selectedSale) return null;
 
-        // FIX #2: Get tax breakdown based on tax type
         const getTaxDisplay = () => {
             if (!selectedSale.isGstMode) {
                 return null;
@@ -914,7 +889,6 @@ const Sales = () => {
                     </>
                 );
             } else {
-                // Default fallback
                 return (
                     <div className="sales-view-total">
                         <span>Tax ({selectedSale.taxSlab || 0}%):</span>
@@ -947,6 +921,10 @@ const Sales = () => {
                                 <span className="sales-view-value">{selectedSale.internalInvoiceNumber}</span>
                             </div>
                             <div className="sales-view-item">
+                                <span className="sales-view-label">Invoice Type:</span>
+                                <span className="sales-view-value">{selectedSale.invoiceType || 'Sales'}</span>
+                            </div>
+                            <div className="sales-view-item">
                                 <span className="sales-view-label">Customer:</span>
                                 <span className="sales-view-value">{selectedSale.customerName}</span>
                             </div>
@@ -974,7 +952,6 @@ const Sales = () => {
                                 <span className="sales-view-label">Tax Slab:</span>
                                 <span className="sales-view-value">{selectedSale.taxSlab}%</span>
                             </div>
-                            {/* FIX #1: Added Notes field */}
                             <div className="sales-view-item sales-view-item-full">
                                 <span className="sales-view-label">Notes:</span>
                                 <span className="sales-view-value">{selectedSale.notes || 'No notes'}</span>
@@ -988,9 +965,11 @@ const Sales = () => {
                                         <th>#</th>
                                         <th>Product</th>
                                         <th>Qty</th>
+                                        <th>Unit</th>
                                         <th>Price</th>
                                         <th>Disc%</th>
                                         <th>Final</th>
+                                        <th>HSN Code</th>
                                         <th>Unique Numbers</th>
                                     </tr>
                                 </thead>
@@ -1000,9 +979,11 @@ const Sales = () => {
                                             <td>{idx + 1}</td>
                                             <td>{item.productName}</td>
                                             <td>{item.quantity}</td>
+                                            <td>{item.unitName || 'NOS'}</td>
                                             <td>₹{item.unitPrice.toFixed(2)}</td>
                                             <td>{item.discountPercent}%</td>
                                             <td>₹{item.finalPrice.toFixed(2)}</td>
+                                            <td>{item.hsnCode || '-'}</td>
                                             <td>
                                                 {item.uniqueNumbers?.filter(un => un.number).map((un, i) => (
                                                     <span key={i} className="sales-unique-tag">
@@ -1025,7 +1006,6 @@ const Sales = () => {
                                 <span>Discount:</span>
                                 <span>₹{selectedSale.totalDiscount?.toFixed(2) || 0}</span>
                             </div>
-                            {/* FIX #2: Show tax breakdown based on type */}
                             {selectedSale.isGstMode && getTaxDisplay()}
                             <div className="sales-view-total sales-view-grand">
                                 <span>Grand Total:</span>
@@ -1065,23 +1045,42 @@ const Sales = () => {
                     </button>
                 </div>
 
-                {/* GST/Non-GST Toggle */}
+                {/* GST Mode + Invoice Type - SAME ROW (Left & Right) */}
                 <div className="sales-toggle-section">
-                    <div className="sales-toggle-container">
-                        <span className="sales-toggle-label">GST Mode</span>
-                        <button
-                            className={`sales-toggle-btn ${isGstMode ? 'active' : ''}`}
-                            onClick={() => {
-                                setIsGstMode(!isGstMode);
-                                if (!isGstMode) {
-                                    setTaxSlab(18);
-                                }
-                            }}
-                            type="button"
-                        >
-                            {isGstMode ? <FaToggleOn /> : <FaToggleOff />}
-                            <span>{isGstMode ? "GST" : "Non-GST"}</span>
-                        </button>
+                    <div className="sales-toggle-row">
+                        {/* LEFT: GST Mode Toggle */}
+                        <div className="sales-toggle-container">
+                            <span className="sales-toggle-label">GST Mode</span>
+                            <button
+                                className={`sales-toggle-btn ${isGstMode ? 'active' : ''}`}
+                                onClick={() => {
+                                    setIsGstMode(!isGstMode);
+                                    if (!isGstMode) {
+                                        setTaxSlab(18);
+                                    }
+                                }}
+                                type="button"
+                            >
+                                {isGstMode ? <FaToggleOn /> : <FaToggleOff />}
+                                <span>{isGstMode ? "GST" : "Non-GST"}</span>
+                            </button>
+                        </div>
+
+                        {/* RIGHT: Invoice Type */}
+                        <div className="sales-invoice-type-container">
+                            <span className="sales-toggle-label">
+                                <FaFileInvoiceDollar /> Invoice Type
+                            </span>
+                            <Select
+                                options={INVOICE_TYPE_OPTIONS}
+                                styles={selectStyles}
+                                className="sales-react-select"
+                                classNamePrefix="sales-select"
+                                placeholder="Select Invoice Type"
+                                value={INVOICE_TYPE_OPTIONS.find(opt => opt.value === invoiceType)}
+                                onChange={(option) => setInvoiceType(option?.value || "Sales")}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -1090,36 +1089,28 @@ const Sales = () => {
                     <div className="sales-form-row">
                         <div className="sales-form-field" style={{ flex: 7 }}>
                             <label className="sales-form-label">
-                                <FaUser /> Select Customer *
+                                <FaUser /> Select Customer
                             </label>
                             <div className="sales-customer-row-inline">
                                 <div className="sales-customer-select" style={{ flex: 1 }}>
                                     <Select
                                         options={customers.map(c => ({
                                             value: c.customerId,
-                                            label: `${c.customerName} ${c.contactNumber ? `(${c.contactNumber})` : ''}${c.gstin ? ` - GST: ${c.gstin}` : ''}`
+                                            label: `${c.customerName} ${c.contactNumber ? `(${c.contactNumber})` : ''}${c.gstNumber ? ` - GST: ${c.gstNumber}` : ''}`
                                         }))}
                                         styles={selectStyles}
                                         className="sales-react-select"
                                         classNamePrefix="sales-select"
                                         placeholder="Search Customer..."
                                         isSearchable
+                                        isClearable
                                         value={selectedCustomer ? {
                                             value: selectedCustomer.customerId,
-                                            label: `${selectedCustomer.customerName} ${selectedCustomer.contactNumber ? `(${selectedCustomer.contactNumber})` : ''}${selectedCustomer.gstin ? ` - GST: ${selectedCustomer.gstin}` : ''}`
+                                            label: `${selectedCustomer.customerName} ${selectedCustomer.contactNumber ? `(${selectedCustomer.contactNumber})` : ''}${selectedCustomer.gstNumber ? ` - GST: ${selectedCustomer.gstNumber}` : ''}`
                                         } : null}
-                                        onChange={(option) => {
-                                            const customer = customers.find(c => c.customerId === option?.value);
-                                            setSelectedCustomer(customer || null);
-                                        }}
+                                        onChange={handleCustomerSelect}
                                     />
                                 </div>
-                                <button
-                                    className="sales-new-customer-btn"
-                                    onClick={() => setShowCustomerModal(true)}
-                                >
-                                    <FaPlus />
-                                </button>
                             </div>
                         </div>
 
@@ -1136,50 +1127,124 @@ const Sales = () => {
                         </div>
                     </div>
 
-                    {selectedCustomer && (
-                        <div className="sales-customer-info">
-                            <span><strong>Email:</strong> {selectedCustomer.email || 'N/A'}</span>
-                            <span><strong>Phone:</strong> {selectedCustomer.contactNumber || 'N/A'}</span>
-                            {selectedCustomer.gstin && <span><strong>GSTIN:</strong> {selectedCustomer.gstin}</span>}
-                            {selectedCustomer.state && <span><strong>State:</strong> {selectedCustomer.state}</span>}
-                            {selectedCustomer.address && <span><strong>Address:</strong> {selectedCustomer.address}</span>}
+                    {/* Customer Details Fields */}
+                    <div className="sales-customer-details">
+                        <div className="sales-form-row">
+                            <div className="sales-form-field">
+                                <label className="sales-form-label">
+                                    <FaUser /> Customer Name {!selectedCustomer && '*'}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="sales-input-field"
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    readOnly={isCustomerFieldsReadOnly}
+                                    placeholder={isCustomerFieldsReadOnly ? "" : "Enter customer name"}
+                                />
+                            </div>
+                            <div className="sales-form-field">
+                                <label className="sales-form-label">
+                                    <FaEnvelope /> Email
+                                </label>
+                                <input
+                                    type="email"
+                                    className="sales-input-field"
+                                    value={customerEmail}
+                                    onChange={(e) => setCustomerEmail(e.target.value)}
+                                    readOnly={isCustomerFieldsReadOnly}
+                                    placeholder={isCustomerFieldsReadOnly ? "" : "Enter email"}
+                                />
+                            </div>
                         </div>
-                    )}
+
+                        <div className="sales-form-row">
+                            <div className="sales-form-field">
+                                <label className="sales-form-label">
+                                    <FaPhone /> Phone Number {!selectedCustomer && '*'}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="sales-input-field"
+                                    value={customerPhone}
+                                    onChange={(e) => setCustomerPhone(e.target.value)}
+                                    readOnly={isCustomerFieldsReadOnly}
+                                    placeholder={isCustomerFieldsReadOnly ? "" : "10 digits"}
+                                    maxLength="10"
+                                />
+                            </div>
+                            <div className="sales-form-field">
+                                <label className="sales-form-label">
+                                    <FaInfoCircle /> GSTIN {isGstMode && '*'}
+                                </label>
+                                <input
+                                    type="text"
+                                    className="sales-input-field"
+                                    value={customerGstin}
+                                    onChange={(e) => setCustomerGstin(e.target.value.toUpperCase())}
+                                    readOnly={isCustomerFieldsReadOnly}
+                                    placeholder={isCustomerFieldsReadOnly ? "" : "15 characters"}
+                                    maxLength="15"
+                                />
+                                {isGstMode && !selectedCustomer && (
+                                    <div className="sales-field-hint">Required in GST Mode</div>
+                                )}
+                                {isGstMode && selectedCustomer && !selectedCustomer.gstNumber && (
+                                    <div className="sales-field-hint sales-field-hint-warning">
+                                        ⚠️ Customer has no GSTIN
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="sales-form-row">
+                            <div className="sales-form-field sales-form-field-full">
+                                <label className="sales-form-label">
+                                    <FaMapMarkerAlt /> Address
+                                </label>
+                                <input
+                                    type="text"
+                                    className="sales-input-field"
+                                    value={customerAddress}
+                                    onChange={(e) => setCustomerAddress(e.target.value)}
+                                    readOnly={isCustomerFieldsReadOnly}
+                                    placeholder={isCustomerFieldsReadOnly ? "" : "Enter address"}
+                                />
+                            </div>
+                        </div>
+
+                        {selectedCustomer && (
+                            <div className="sales-customer-selected-badge">
+                                <span>✅ Customer selected: {selectedCustomer.customerName}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Product Selection */}
                 <div className="sales-section">
                     <div className="sales-product-row">
-                        <div className="sales-product-select">
+                        <div className="sales-product-select" style={{ flex: 1 }}>
                             <label className="sales-form-label">
                                 <FaBox /> Select Product
                             </label>
                             <Select
                                 options={products.map(p => ({
                                     value: p.productId,
-                                    label: `${p.productName} (${p.unitName || 'NOS'})`
+                                    label: `${p.productName}`
                                 }))}
                                 styles={selectStyles}
                                 className="sales-react-select"
                                 classNamePrefix="sales-select"
-                                placeholder="Search Product..."
+                                placeholder="Search and select product..."
                                 isSearchable
                                 value={selectedProduct ? {
                                     value: selectedProduct.productId,
-                                    label: `${selectedProduct.productName} (${selectedProduct.unitName || 'NOS'})`
+                                    label: `${selectedProduct.productName}`
                                 } : null}
-                                onChange={(option) => {
-                                    const product = products.find(p => p.productId === option?.value);
-                                    setSelectedProduct(product || null);
-                                }}
+                                onChange={handleProductSelect}
                             />
                         </div>
-                        <button
-                            className="sales-add-product-btn"
-                            onClick={handleAddProduct}
-                        >
-                            <FaPlus /> Add
-                        </button>
                     </div>
                 </div>
 
@@ -1192,6 +1257,7 @@ const Sales = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
+                                        <th>Unit</th>
                                         <th>HSN</th>
                                         <th>Qty</th>
                                         <th>Price</th>
@@ -1205,7 +1271,24 @@ const Sales = () => {
                                         <tr key={idx}>
                                             <td>{idx + 1}</td>
                                             <td className="sales-item-name">{item.productName}</td>
-                                            <td>{item.hsnCode || '-'}</td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    className="sales-item-input sales-unit-input"
+                                                    value={item.unitName || ''}
+                                                    onChange={(e) => handleUpdateLineItemText(idx, 'unitName', e.target.value)}
+                                                    placeholder="Unit"
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    type="text"
+                                                    className="sales-item-input sales-hsn-input"
+                                                    value={item.hsnCode || ''}
+                                                    onChange={(e) => handleUpdateLineItemText(idx, 'hsnCode', e.target.value)}
+                                                    placeholder="HSN"
+                                                />
+                                            </td>
                                             <td>
                                                 <input
                                                     type="number"
@@ -1256,7 +1339,7 @@ const Sales = () => {
                     </div>
                 )}
 
-                {/* ✅ Unique Numbers Section */}
+                {/* Unique Numbers Section */}
                 {lineItems.length > 0 && renderUniqueNumbers()}
 
                 {/* Store, Tax, Payment */}
@@ -1358,7 +1441,7 @@ const Sales = () => {
                         <button
                             className="sales-submit-btn"
                             onClick={handleSubmit}
-                            disabled={isSubmitting || !selectedCustomer || lineItems.length === 0}
+                            disabled={isSubmitting || lineItems.length === 0}
                         >
                             {isSubmitting ? "Saving..." : isEditMode ? "Update Invoice" : "Create Invoice"}
                         </button>
@@ -1399,7 +1482,14 @@ const Sales = () => {
                                 setTaxSlab(18);
                                 setPaymentType("Cash");
                                 setIsGstMode(true);
+                                setInvoiceType("Sales");
                                 setSaleDate(new Date().toISOString().split("T")[0]);
+                                setCustomerName("");
+                                setCustomerEmail("");
+                                setCustomerPhone("");
+                                setCustomerGstin("");
+                                setCustomerAddress("");
+                                setIsCustomerFieldsReadOnly(false);
                                 setShowForm(true);
                             }
                         }}
@@ -1443,6 +1533,7 @@ const Sales = () => {
                                     <th>#</th>
                                     <th>Invoice</th>
                                     <th>Internal No</th>
+                                    <th>Invoice Type</th>
                                     <th>Customer</th>
                                     <th>Store</th>
                                     <th>Payment</th>
@@ -1464,6 +1555,7 @@ const Sales = () => {
                                             <td className="sales-internal-number">
                                                 {sale.internalInvoiceNumber}
                                             </td>
+                                            <td>{sale.invoiceType || 'Sales'}</td>
                                             <td>{sale.customerName}</td>
                                             <td>{sale.storeType}</td>
                                             <td>{sale.paymentType}</td>
@@ -1563,10 +1655,8 @@ const Sales = () => {
                     {renderTable()}
                 </div>
 
-                {showCustomerModal && renderCustomerModal()}
                 {showViewModal && renderViewModal()}
 
-                {/* Hidden SalesPrint component for PDF generation */}
                 <div style={{ position: "absolute", left: "-9999px", top: 0, visibility: "hidden" }}>
                     {saleForPrint && <SalesPrint invoice={saleForPrint} />}
                 </div>

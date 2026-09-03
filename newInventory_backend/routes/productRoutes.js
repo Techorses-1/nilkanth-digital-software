@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
 const ProductInventory = require("../models/productInventory");
-const Unit = require("../models/unit");
 
 // ===== HELPER: Create inventory for BOTH stores =====
 const createProductInventoryForBothStores = async (product) => {
@@ -22,8 +21,6 @@ const createProductInventoryForBothStores = async (product) => {
                     productName: product.productName,
                     productDescription: product.productDescription || '',
                     hsnCode: product.hsnCode,
-                    unitId: product.unitId,
-                    unitName: product.unitName,
                     storeType: storeType,
                     totalQuantity: 0,
                     purchasePrice: 0,
@@ -164,7 +161,7 @@ router.get("/get-product/:id", async (req, res) => {
 // =============================================
 router.post("/create-product", async (req, res) => {
     try {
-        const { productName, unitId } = req.body;
+        const { productName, productDescription, hsnCode } = req.body;
 
         if (!productName) {
             return res.status(400).json({
@@ -183,26 +180,16 @@ router.post("/create-product", async (req, res) => {
             });
         }
 
-        const unit = await Unit.findOne({ unitId });
-        if (!unit) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid unit selected",
-                field: "unitId"
-            });
-        }
-
+        // ✅ Create product WITHOUT unitId and unitName
         const product = new Product({
             productName,
-            productDescription: req.body.productDescription || '',
-            hsnCode: req.body.hsnCode,
-            unitId: unit.unitId,
-            unitName: unit.unitName
+            productDescription: productDescription || '',
+            hsnCode: hsnCode || '8423'
         });
 
         const savedProduct = await product.save();
 
-        // ✅ FIX: Create inventory for BOTH stores
+        // ✅ Create inventory for BOTH stores
         const inventoryResults = await createProductInventoryForBothStores(savedProduct);
 
         res.status(201).json({
@@ -249,18 +236,6 @@ router.put("/update-product/:id", async (req, res) => {
             }
         }
 
-        if (updateData.unitId) {
-            const unit = await Unit.findOne({ unitId: updateData.unitId });
-            if (!unit) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid unit selected",
-                    field: "unitId"
-                });
-            }
-            updateData.unitName = unit.unitName;
-        }
-
         const updatedProduct = await Product.findOneAndUpdate(
             { productId: req.params.id },
             updateData,
@@ -274,13 +249,11 @@ router.put("/update-product/:id", async (req, res) => {
             });
         }
 
-        // ✅ FIX: Update inventory for BOTH stores
+        // ✅ Update inventory for BOTH stores
         const inventoryUpdateData = {
             productName: updatedProduct.productName,
             productDescription: updatedProduct.productDescription,
-            hsnCode: updatedProduct.hsnCode,
-            unitId: updatedProduct.unitId,
-            unitName: updatedProduct.unitName
+            hsnCode: updatedProduct.hsnCode
         };
 
         await ProductInventory.updateMany(
@@ -316,7 +289,7 @@ router.put("/update-product/:id", async (req, res) => {
 // =============================================
 router.delete("/delete-product/:id", async (req, res) => {
     try {
-        // ✅ FIX: Check inventory for BOTH stores
+        // ✅ Check inventory for BOTH stores
         const inventories = await ProductInventory.find({ productId: req.params.id });
         const hasStock = inventories.some(inv => inv.totalQuantity > 0);
 
@@ -335,7 +308,7 @@ router.delete("/delete-product/:id", async (req, res) => {
             });
         }
 
-        // ✅ FIX: Delete inventory for BOTH stores
+        // ✅ Delete inventory for BOTH stores
         await ProductInventory.deleteMany({ productId: req.params.id });
 
         res.status(200).json({

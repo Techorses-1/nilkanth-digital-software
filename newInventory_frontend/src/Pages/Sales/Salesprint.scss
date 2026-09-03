@@ -542,7 +542,7 @@ $primary-blue-light: #e9eefb;
     }
   }
 
-  // ===== PAGE 2: PRODUCT GALLERY (plain grid) =====
+  // ===== PAGE 2: PRODUCT GALLERY (8 category cards, 3 / 3 / 2) =====
   .product-gallery-page {
     page-break-before: always;
     break-before: page;
@@ -562,10 +562,24 @@ $primary-blue-light: #e9eefb;
       box-shadow: 0 2px 5px rgba(22, 63, 161, 0.12);
       page-break-inside: avoid;
       break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+
+      // Blue category label pinned at the top of the card
+      .gallery-category {
+        background: $primary-blue;
+        color: #fff;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        padding: 6px 8px;
+      }
 
       .gallery-img-wrap {
         width: 100%;
-        height: 42mm;
+        height: 38mm;
         background: $primary-blue-light;
         display: flex;
         align-items: center;
@@ -795,67 +809,3 @@ $primary-blue-light: #e9eefb;
   }
 }
 
-// ===== RESPONSIVE =====
-@media (max-width: 768px) {
-  #sales-pdf {
-    padding: 8mm 10mm;
-
-    .invoice-header {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-
-      .header-images {
-        order: 3;
-      }
-    }
-
-    .info-section {
-      flex-direction: column;
-      gap: 12px;
-
-      .customer-info,
-      .owner-info {
-        flex: 0 0 100%;
-        max-width: 100%;
-      }
-
-      .owner-info {
-        padding-left: 0;
-      }
-    }
-
-    .totals-row {
-      flex-direction: column;
-
-      .totals-right {
-        flex: 0 0 auto;
-        width: 100%;
-      }
-    }
-
-    .declaration-terms-section {
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .invoice-footer {
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-      text-align: center;
-    }
-
-    .product-gallery-page .gallery-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .hero-grid-page .hero-small-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .polaroid-page .polaroid-card {
-      width: 45%;
-    }
-  }
-}
