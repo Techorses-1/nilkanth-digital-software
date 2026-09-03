@@ -4,8 +4,8 @@ require('dotenv').config();
 const connectDB = async () => {
   try {
     await mongoose.connect(
-      "mongodb://admin:Admin%402025@93.127.167.226:27017/newinventory?authSource=admin&authMechanism=SCRAM-SHA-256",
-      // "mongodb://admin:Admin%402025@93.127.167.226:27017/nilkanthdigital?authSource=admin&authMechanism=SCRAM-SHA-256",
+      // "mongodb://admin:Admin%402025@93.127.167.226:27017/newinventory?authSource=admin&authMechanism=SCRAM-SHA-256",
+      "mongodb://admin:Admin%402025@93.127.167.226:27017/nilkanthdigital?authSource=admin&authMechanism=SCRAM-SHA-256",
       {
         useNewUrlParser: true,
         useUnifiedTopology: true
