@@ -71,11 +71,11 @@ cron.schedule("0 0 1 1 *", async () => {
 
 // Basic Route
 app.get('/', (req, res) => {
-  res.send('New Inventory Backend Running !');
+  res.send('New Updated Inventory Backend Running !');
 });
 
 // Server
-const PORT = process.env.PORT || 3037;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
