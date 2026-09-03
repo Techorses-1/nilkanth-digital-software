@@ -564,9 +564,10 @@ const Sales = () => {
                 return;
             }
 
+            // ✅ FIX: Use gstNumber instead of gstin
             const payload = {
                 customerId: selectedCustomer.customerId,
-                customerGstin: selectedCustomer.gstin || '',
+                customerGstin: selectedCustomer.gstNumber || '',  // ← FIXED: gstNumber
                 customerState: selectedCustomer.state || '',
                 storeType: storeType,
                 paymentType: paymentType,
@@ -582,6 +583,8 @@ const Sales = () => {
                 taxSlab: isGstMode ? taxSlab : 0,
                 notes: notes
             };
+
+            console.log("📦 Sending payload:", payload); // For debugging
 
             let response;
             if (isEditMode && editSaleId) {

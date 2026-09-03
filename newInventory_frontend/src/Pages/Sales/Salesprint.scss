@@ -210,9 +210,31 @@ $primary-blue-light: #e9eefb;
       .owner-gst {
         font-size: 10px;
         color: #444;
-        margin-top: 3px;
-        font-weight: 500;
+        margin-top: 2px;
+        line-height: 1.4;
         text-align: left;
+      }
+
+      .owner-website-row {
+        margin-top: 2px;
+        font-size: 10px;
+        line-height: 1.4;
+        text-align: left;
+
+        .owner-website-label {
+          color: #444;
+        }
+
+        .owner-website-link {
+          color: $primary-blue;
+          text-decoration: none;
+          font-weight: 600;
+          word-break: break-all;
+
+          &:hover {
+            text-decoration: none;
+          }
+        }
       }
     }
   }
@@ -271,14 +293,88 @@ $primary-blue-light: #e9eefb;
     }
   }
 
-  // ===== CALCULATION SECTION =====
-  .calculation-section {
+  // ===== TOTALS ROW: BANK + AMOUNT IN WORDS (LEFT) / CALCULATIONS (RIGHT) =====
+  .totals-row {
     display: flex;
-    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 20px;
     margin-bottom: 8px;
 
+    .totals-left {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .totals-right {
+      flex: 0 0 280px;
+    }
+  }
+
+  // ===== BANK DETAILS =====
+  .bank-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 12px;
+    background: $primary-blue-light;
+    border: 1px solid $primary-blue;
+    border-radius: 4px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+
+    .bank-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+
+      .bank-label {
+        font-weight: 600;
+        color: $primary-blue-dark;
+        font-size: 10px;
+        min-width: 85px;
+      }
+
+      .bank-value {
+        color: #222;
+        font-size: 10px;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // ===== AMOUNT IN WORDS =====
+  .amount-in-words {
+    padding: 6px 10px;
+    background: $primary-blue-light;
+    border: 1px solid $primary-blue;
+    border-radius: 4px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+
+    p {
+      margin: 0;
+      font-size: 11px;
+      font-style: italic;
+      color: #333;
+
+      strong {
+        font-style: normal;
+        color: $primary-blue-dark;
+      }
+    }
+  }
+
+  // ===== CALCULATIONS =====
+  .calculation-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+
     .calculation-box {
-      width: 280px;
+      width: 100%;
+      box-sizing: border-box;
       border: 1px solid $primary-blue;
       border-radius: 4px;
       padding: 8px 12px;
@@ -316,58 +412,6 @@ $primary-blue-light: #e9eefb;
     }
   }
 
-  // ===== AMOUNT IN WORDS =====
-  .amount-in-words {
-    padding: 6px 10px;
-    background: $primary-blue-light;
-    border: 1px solid $primary-blue;
-    border-radius: 4px;
-    margin-bottom: 8px;
-
-    p {
-      margin: 0;
-      font-size: 11px;
-      font-style: italic;
-      color: #333;
-
-      strong {
-        font-style: normal;
-        color: $primary-blue-dark;
-      }
-    }
-  }
-
-  // ===== BANK DETAILS =====
-  .bank-details {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 6px 12px;
-    background: $primary-blue-light;
-    border: 1px solid $primary-blue;
-    border-radius: 4px;
-    margin-bottom: 8px;
-
-    .bank-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-
-      .bank-label {
-        font-weight: 600;
-        color: $primary-blue-dark;
-        font-size: 10px;
-        min-width: 85px;
-      }
-
-      .bank-value {
-        color: #222;
-        font-size: 10px;
-        font-weight: 500;
-      }
-    }
-  }
-
   // ===== DECLARATION & TERMS =====
   .declaration-terms-section {
     display: flex;
@@ -397,16 +441,33 @@ $primary-blue-light: #e9eefb;
         text-align: justify;
       }
 
+      // NOTE: native <ul> "list-style: disc" bullets are unreliable with
+      // html2canvas (the marker box often doesn't get captured), so
+      // bullets are drawn manually with ::before instead — this always
+      // renders correctly in the generated PDF.
       ul {
+        list-style: none;
         margin: 0;
-        padding-left: 0px;
-        list-style: disc;
+        padding: 0;
 
         li {
+          position: relative;
+          padding-left: 14px;
+          margin-bottom: 4px;
           font-size: 9.5px;
-          line-height: 1.5;
+          line-height: 1.3;
           color: #333;
-          margin-bottom: 1px;
+
+          &::before {
+            content: "\2022";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: $primary-blue;
+            font-weight: 700;
+            font-size: 12px;
+            line-height: 1.3;
+          }
         }
       }
     }
@@ -709,6 +770,7 @@ $primary-blue-light: #e9eefb;
 
     .declaration-terms-section,
     .invoice-footer,
+    .totals-row,
     .bank-details,
     .amount-in-words,
     .calculation-section {
@@ -763,14 +825,18 @@ $primary-blue-light: #e9eefb;
       }
     }
 
+    .totals-row {
+      flex-direction: column;
+
+      .totals-right {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+    }
+
     .declaration-terms-section {
       flex-direction: column;
       gap: 10px;
-    }
-
-    .bank-details {
-      flex-direction: column;
-      gap: 2px;
     }
 
     .invoice-footer {
@@ -778,15 +844,6 @@ $primary-blue-light: #e9eefb;
       gap: 10px;
       align-items: center;
       text-align: center;
-    }
-
-    .calculation-section {
-      justify-content: center;
-
-      .calculation-box {
-        width: 100%;
-        max-width: 300px;
-      }
     }
 
     .product-gallery-page .gallery-grid {

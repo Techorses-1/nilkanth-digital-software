@@ -10,7 +10,7 @@ router.post("/register", async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email: req.body.email });
     if (existingUser) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Email already registered",
         field: "email"
       });
@@ -34,7 +34,7 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(
       { userId: savedUser.userId },
       process.env.JWT_SECRET,
-      { expiresIn: "10h" }
+      { expiresIn: "7d" }
     );
 
     res.status(201).json({
@@ -50,17 +50,17 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.error("Registration error:", error);
-    
+
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         message: "Validation error",
         error: error.message
       });
     }
-    
-    res.status(500).json({ 
-      message: "Registration failed", 
-      error: error.message 
+
+    res.status(500).json({
+      message: "Registration failed",
+      error: error.message
     });
   }
 });
@@ -71,7 +71,7 @@ router.post("/login", async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         message: "Invalid credentials",
         field: "email"
       });
@@ -80,7 +80,7 @@ router.post("/login", async (req, res) => {
     // Compare passwords
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         message: "Invalid credentials",
         field: "password"
       });
@@ -90,7 +90,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { userId: user.userId },
       process.env.JWT_SECRET,
-      { expiresIn: "10h" }
+      { expiresIn: "7d" }
     );
 
     res.status(200).json({
@@ -101,14 +101,14 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        permissions: user.permissions || [] 
+        permissions: user.permissions || []
       }
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ 
-      message: "Login failed", 
-      error: error.message 
+    res.status(500).json({
+      message: "Login failed",
+      error: error.message
     });
   }
 });
@@ -117,14 +117,14 @@ router.post("/login", async (req, res) => {
 router.get("/me", async (req, res) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findOne({ userId: decoded.userId });
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -140,9 +140,9 @@ router.get("/me", async (req, res) => {
     });
   } catch (error) {
     console.error("Get profile error:", error);
-    res.status(401).json({ 
-      message: "Invalid token", 
-      error: error.message 
+    res.status(401).json({
+      message: "Invalid token",
+      error: error.message
     });
   }
 });

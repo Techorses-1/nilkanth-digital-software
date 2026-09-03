@@ -18,6 +18,13 @@ import product10 from "../../Assets/pdf/p10.png";
 import product11 from "../../Assets/pdf/p11.png";
 import product12 from "../../Assets/pdf/p12.png";
 
+import heading1 from "../../Assets/pdf/h1.png";
+import heading2 from "../../Assets/pdf/h2.png";
+import heading3 from "../../Assets/pdf/h3.png";
+import heading6 from "../../Assets/pdf/h4.png";
+import heading5 from "../../Assets/pdf/h5.png";
+import heading4 from "../../Assets/pdf/h6.png";
+
 const SalesPrint = ({ invoice }) => {
   if (!invoice) return null;
 
@@ -43,7 +50,8 @@ const SalesPrint = ({ invoice }) => {
   // ===== STATIC DATA =====
   const companyName = "Nilkanth digital scale co.";
   const companyAddress = "Dayal Bhuvan lane opp lalcourt rajmahel road vadodara 390001)";
-  // const companyGst = "24AAICS9235N...";
+  const companyGst = "24GJOPM0742J1ZY";
+  const companyWebsite = "https://nilkanthdigitalscale.in";
   const companyPhone = "+91 8485921934";
   const companyEmail = "nilkanthdigitalscale@gmail.com";
 
@@ -57,9 +65,11 @@ const SalesPrint = ({ invoice }) => {
   const declaration = `We hereby declare that the information provided in this invoice is true and correct to the best of our knowledge and belief. The goods/services mentioned in this invoice are supplied as per the agreed terms and conditions.`;
 
   const termsAndConditions = `Warranty: Warranty is applicable against manufacturing defects only.
-Battery: Battery is not covered under warranty under any circumstances.
+Battery is not covered under warranty under any circumstances.
 Stamping/Verification: If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
-Goods Once Delivered: Once the goods are delivered, they will not be taken back or returned.`;
+Once the goods are delivered, they will not be taken back or returned.
+To get free repairing service, client needs to bring the product to our workshop.
+For repairing, if we visit your site, charges will be taken accordingly.`;
 
   // ===== Convert numbers to words =====
   const numberToWords = (num) => {
@@ -163,8 +173,8 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
   const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
 
   // ===== Product showcase data (shared across pages 2-4) =====
-  // Real product images (product1-product12) used for header clusters,
-  // gallery grid, hero small-grid and the polaroid page.
+  // Real product images (product1-product12) used for gallery grid,
+  // hero small-grid and the polaroid page.
   const productImages = [
     product1, product2, product3, product4, product5, product6,
     product7, product8, product9, product10, product11, product12
@@ -186,12 +196,12 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
     <div id="sales-pdf">
       <div className="invoice-container">
 
-        {/* ===== HEADER (Logo + Product Image Clusters) ===== */}
+        {/* ===== HEADER (Logo + Heading Image Clusters) ===== */}
         <div className="invoice-header">
           <div className="header-images header-images-left">
-            <img src={product1} alt="" className="header-img img-pos-1" />
-            <img src={product2} alt="" className="header-img img-pos-2" />
-            <img src={product3} alt="" className="header-img img-pos-3" />
+            <img src={heading1} alt="" className="header-img img-pos-1" />
+            <img src={heading2} alt="" className="header-img img-pos-2" />
+            <img src={heading3} alt="" className="header-img img-pos-3" />
           </div>
 
           <div className="invoice-logo">
@@ -199,9 +209,9 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </div>
 
           <div className="header-images header-images-right">
-            <img src={product4} alt="" className="header-img img-pos-4" />
-            <img src={product5} alt="" className="header-img img-pos-5" />
-            <img src={product6} alt="" className="header-img img-pos-6" />
+            <img src={heading4} alt="" className="header-img img-pos-4" />
+            <img src={heading5} alt="" className="header-img img-pos-5" />
+            <img src={heading6} alt="" className="header-img img-pos-6" />
           </div>
         </div>
 
@@ -255,7 +265,18 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
             <div className="owner-email">{companyEmail}</div>
             <div className="owner-phone">{companyPhone}</div>
             <div className="owner-address">{companyAddress}</div>
-            {/* <div className="owner-gst">GST: {companyGst}</div> */}
+            <div className="owner-gst">GST: {companyGst}</div>
+            <div className="owner-website-row">
+              <span className="owner-website-label">Website: </span>
+              <a
+                href={companyWebsite}
+                target="_blank"
+                rel="noreferrer"
+                className="owner-website-link"
+              >
+                {companyWebsite}
+              </a>
+            </div>
           </div>
         </div>
 
@@ -290,82 +311,89 @@ Goods Once Delivered: Once the goods are delivered, they will not be taken back 
           </table>
         </div>
 
-        {/* ===== CALCULATIONS (Right Aligned Box) ===== */}
-        <div className="calculation-section">
-          <div className="calculation-box">
-            <div className="calc-row">
-              <span className="calc-label">Subtotal:</span>
-              <span className="calc-value">{formatCurrency(subtotal)}</span>
-            </div>
-
-            {totalDiscount > 0 && (
-              <div className="calc-row">
-                <span className="calc-label">Discount:</span>
-                <span className="calc-value">{formatCurrency(totalDiscount)}</span>
+        {/* ===== TOTALS ROW: BANK + AMOUNT IN WORDS (LEFT) & CALCULATIONS (RIGHT) ===== */}
+        <div className="totals-row">
+          <div className="totals-left">
+            {/* ===== BANK DETAILS ===== */}
+            <div className="bank-details">
+              <div className="bank-row">
+                <span className="bank-label">Bank Name:</span>
+                <span className="bank-value">{bankDetails.bankName}</span>
               </div>
-            )}
-
-            <div className="calc-row">
-              <span className="calc-label">Taxable Amount:</span>
-              <span className="calc-value">{formatCurrency(subtotal - totalDiscount)}</span>
+              <div className="bank-row">
+                <span className="bank-label">Branch:</span>
+                <span className="bank-value">{bankDetails.branch}</span>
+              </div>
+              <div className="bank-row">
+                <span className="bank-label">A/c No.:</span>
+                <span className="bank-value">{bankDetails.accountNo}</span>
+              </div>
+              <div className="bank-row">
+                <span className="bank-label">IFSC Code:</span>
+                <span className="bank-value">{bankDetails.ifscCode}</span>
+              </div>
             </div>
 
-            {hasCgstSgst && (
-              <>
+            {/* ===== AMOUNT IN WORDS ===== */}
+            <div className="amount-in-words">
+              <p><strong>Amount in Words:</strong> {numberToWords(grandTotal)} Only</p>
+            </div>
+          </div>
+
+          <div className="totals-right">
+            {/* ===== CALCULATIONS ===== */}
+            <div className="calculation-section">
+              <div className="calculation-box">
                 <div className="calc-row">
-                  <span className="calc-label">CGST:</span>
-                  <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
+                  <span className="calc-label">Subtotal:</span>
+                  <span className="calc-value">{formatCurrency(subtotal)}</span>
                 </div>
+
+                {totalDiscount > 0 && (
+                  <div className="calc-row">
+                    <span className="calc-label">Discount:</span>
+                    <span className="calc-value">{formatCurrency(totalDiscount)}</span>
+                  </div>
+                )}
+
                 <div className="calc-row">
-                  <span className="calc-label">SGST:</span>
-                  <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
+                  <span className="calc-label">Taxable Amount:</span>
+                  <span className="calc-value">{formatCurrency(subtotal - totalDiscount)}</span>
                 </div>
-              </>
-            )}
 
-            {hasIgst && (
-              <div className="calc-row">
-                <span className="calc-label">IGST:</span>
-                <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
+                {hasCgstSgst && (
+                  <>
+                    <div className="calc-row">
+                      <span className="calc-label">CGST:</span>
+                      <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
+                    </div>
+                    <div className="calc-row">
+                      <span className="calc-label">SGST:</span>
+                      <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
+                    </div>
+                  </>
+                )}
+
+                {hasIgst && (
+                  <div className="calc-row">
+                    <span className="calc-label">IGST:</span>
+                    <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
+                  </div>
+                )}
+
+                {hasPlainTax && (
+                  <div className="calc-row">
+                    <span className="calc-label">Tax (GST):</span>
+                    <span className="calc-value">{formatCurrency(totalTax)}</span>
+                  </div>
+                )}
+
+                <div className="calc-row grand-total">
+                  <span className="calc-label">Grand Total:</span>
+                  <span className="calc-value">{formatCurrency(grandTotal)}</span>
+                </div>
               </div>
-            )}
-
-            {hasPlainTax && (
-              <div className="calc-row">
-                <span className="calc-label">Tax (GST):</span>
-                <span className="calc-value">{formatCurrency(totalTax)}</span>
-              </div>
-            )}
-
-            <div className="calc-row grand-total">
-              <span className="calc-label">Grand Total:</span>
-              <span className="calc-value">{formatCurrency(grandTotal)}</span>
             </div>
-          </div>
-        </div>
-
-        {/* ===== AMOUNT IN WORDS ===== */}
-        <div className="amount-in-words">
-          <p><strong>Amount in Words:</strong> {numberToWords(grandTotal)} Only</p>
-        </div>
-
-        {/* ===== BANK DETAILS (Column) ===== */}
-        <div className="bank-details">
-          <div className="bank-row">
-            <span className="bank-label">Bank Name:</span>
-            <span className="bank-value">{bankDetails.bankName}</span>
-          </div>
-          <div className="bank-row">
-            <span className="bank-label">Branch:</span>
-            <span className="bank-value">{bankDetails.branch}</span>
-          </div>
-          <div className="bank-row">
-            <span className="bank-label">A/c No.:</span>
-            <span className="bank-value">{bankDetails.accountNo}</span>
-          </div>
-          <div className="bank-row">
-            <span className="bank-label">IFSC Code:</span>
-            <span className="bank-value">{bankDetails.ifscCode}</span>
           </div>
         </div>
 

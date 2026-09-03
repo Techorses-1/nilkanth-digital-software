@@ -88,6 +88,9 @@ const determineTaxType = (gstin) => {
 // =============================================
 router.post("/create-sale", async (req, res) => {
   try {
+    console.log("🚀 ===== CREATE SALE START =====");
+    console.log("📦 REQUEST BODY:", JSON.stringify(req.body, null, 2));
+
     const {
       customerId,
       storeType,
@@ -101,7 +104,19 @@ router.post("/create-sale", async (req, res) => {
       isGstMode
     } = req.body;
 
+    console.log("🔍 EXTRACTED VALUES:");
+    console.log("  - customerId:", customerId);
+    console.log("  - customerGstin FROM REQUEST:", customerGstin);
+    console.log("  - customerState:", customerState);
+    console.log("  - storeType:", storeType);
+    console.log("  - paymentType:", paymentType);
+    console.log("  - isGstMode:", isGstMode);
+    console.log("  - taxSlab:", taxSlab);
+    console.log("  - notes:", notes);
+    console.log("  - items count:", items?.length || 0);
+
     if (!customerId) {
+      console.log("❌ ERROR: No customerId provided");
       return res.status(400).json({
         success: false,
         message: "Customer is required"
@@ -109,6 +124,7 @@ router.post("/create-sale", async (req, res) => {
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
+      console.log("❌ ERROR: No items provided");
       return res.status(400).json({
         success: false,
         message: "At least one product is required"
@@ -117,27 +133,35 @@ router.post("/create-sale", async (req, res) => {
 
     const decoded = getUserFromToken(req);
     if (!decoded) {
+      console.log("❌ ERROR: Unauthorized - no valid token");
       return res.status(401).json({
         success: false,
         message: "Unauthorized"
       });
     }
+    console.log("✅ User decoded:", decoded);
 
     const user = await getUserDetails(decoded.userId);
     if (!user) {
+      console.log("❌ ERROR: User not found in DB");
       return res.status(401).json({
         success: false,
         message: "User not found"
       });
     }
+    console.log("✅ User found:", user.name, user.userId);
 
     const customer = await Customer.findOne({ customerId });
     if (!customer) {
+      console.log("❌ ERROR: Customer not found:", customerId);
       return res.status(404).json({
         success: false,
         message: "Customer not found"
       });
     }
+    console.log("✅ Customer found:", customer.customerName);
+    console.log("  - Customer GST from DB (gstNumber):", customer.gstNumber);
+    console.log("  - Customer GST from DB (gstin):", customer.gstin);
 
     // ===== PROCESS ITEMS WITH UNIQUE NUMBERS =====
     const processedItems = [];
@@ -146,6 +170,7 @@ router.post("/create-sale", async (req, res) => {
     for (const item of items) {
       const product = await Product.findOne({ productId: item.productId });
       if (!product) {
+        console.log("❌ ERROR: Product not found:", item.productId);
         return res.status(404).json({
           success: false,
           message: `Product not found: ${item.productId}`
@@ -167,6 +192,7 @@ router.post("/create-sale", async (req, res) => {
           if (un.number && un.number.trim()) {
             // Check for duplicate across all products
             if (allUniqueNumbers.includes(un.number.trim())) {
+              console.log("❌ ERROR: Duplicate unique number:", un.number);
               return res.status(400).json({
                 success: false,
                 message: `Duplicate unique number found: ${un.number}`
@@ -189,7 +215,6 @@ router.post("/create-sale", async (req, res) => {
           uniqueNumbers.push({ number: '', isUsed: false });
         }
       } else if (currentUniqueCount > quantity) {
-        // Keep only first 'quantity' numbers
         uniqueNumbers.splice(quantity);
       }
 
@@ -209,10 +234,22 @@ router.post("/create-sale", async (req, res) => {
       });
     }
 
+    // ✅ GSTIN LOGIC - CRITICAL PART
+    console.log("🔄 ===== GSTIN PROCESSING =====");
+    console.log("  - customerGstin FROM REQUEST:", customerGstin);
+    console.log("  - customer.gstNumber FROM DB:", customer.gstNumber);
+    console.log("  - customer.gstin FROM DB:", customer.gstin);
+
     const gstin = customerGstin || customer.gstNumber || '';
+    console.log("  - FINAL GSTIN USED:", gstin);
+
     const taxType = determineTaxType(gstin);
+    console.log("  - TAX TYPE DETERMINED:", taxType);
+
     const invoiceNumber = await generateInvoiceNumber();
     const internalInvoiceNumber = await generateInternalInvoiceNumber();
+    console.log("  - invoiceNumber:", invoiceNumber);
+    console.log("  - internalInvoiceNumber:", internalInvoiceNumber);
 
     const newSale = new Sales({
       invoiceNumber,
@@ -221,7 +258,7 @@ router.post("/create-sale", async (req, res) => {
       customerName: customer.customerName,
       customerEmail: customer.email || '',
       customerPhone: customer.contactNumber || '',
-      customerGstin: gstin,
+      customerGstin: gstin,  // ← THIS IS WHERE GSTIN IS SAVED
       customerState: customerState || '',
       customerAddress: customer.address || '',
       storeType: storeType || 'Vadodara',
@@ -237,8 +274,20 @@ router.post("/create-sale", async (req, res) => {
       status: 'Completed'
     });
 
+    console.log("📝 SALE OBJECT BEFORE SAVE:");
+    console.log("  - customerGstin:", newSale.customerGstin);
+    console.log("  - taxType:", newSale.taxType);
+    console.log("  - isGstMode:", newSale.isGstMode);
+
     newSale.recalculateTotals();
     const savedSale = await newSale.save();
+
+    console.log("✅ SALE SAVED SUCCESSFULLY!");
+    console.log("  - Sale ID:", savedSale.saleId);
+    console.log("  - Invoice:", savedSale.invoiceNumber);
+    console.log("  - customerGstin SAVED:", savedSale.customerGstin);
+    console.log("  - taxType SAVED:", savedSale.taxType);
+    console.log("  - taxBreakdown:", JSON.stringify(savedSale.taxBreakdown, null, 2));
 
     res.status(201).json({
       success: true,
@@ -249,7 +298,7 @@ router.post("/create-sale", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error creating sale:", error);
+    console.error("❌ ERROR creating sale:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create sale",
@@ -415,32 +464,51 @@ router.get("/get-sale-by-invoice/:invoiceNumber", async (req, res) => {
 // =============================================
 router.put("/update-sale/:id", async (req, res) => {
   try {
+    console.log("🚀 ===== UPDATE SALE START =====");
+    console.log("📦 UPDATE REQUEST BODY:", JSON.stringify(req.body, null, 2));
+    console.log("📦 UPDATE PARAMS ID:", req.params.id);
+
     const { saleId, _id, createdAt, updatedAt, invoiceNumber, internalInvoiceNumber, ...updateData } = req.body;
+
+    console.log("🔍 EXTRACTED updateData:", JSON.stringify(updateData, null, 2));
+    console.log("🔍 customerGstin IN updateData:", updateData.customerGstin);
+    console.log("🔍 customerState IN updateData:", updateData.customerState);
+    console.log("🔍 items IN updateData:", updateData.items?.length || 0);
 
     const decoded = getUserFromToken(req);
     if (!decoded) {
+      console.log("❌ ERROR: Unauthorized - no valid token");
       return res.status(401).json({
         success: false,
         message: "Unauthorized"
       });
     }
+    console.log("✅ User decoded:", decoded);
 
     const existingSale = await Sales.findOne({ saleId: req.params.id, isDeleted: false });
     if (!existingSale) {
+      console.log("❌ ERROR: Sale not found:", req.params.id);
       return res.status(404).json({
         success: false,
         message: "Sale not found"
       });
     }
+    console.log("✅ Existing sale found:");
+    console.log("  - Sale ID:", existingSale.saleId);
+    console.log("  - Invoice:", existingSale.invoiceNumber);
+    console.log("  - customerGstin (EXISTING):", existingSale.customerGstin);
+    console.log("  - taxType (EXISTING):", existingSale.taxType);
 
     // ===== PROCESS ITEMS WITH UNIQUE NUMBERS =====
     if (updateData.items && Array.isArray(updateData.items)) {
+      console.log("🔄 Processing items...");
       const processedItems = [];
       const allUniqueNumbers = [];
 
       for (const item of updateData.items) {
         const product = await Product.findOne({ productId: item.productId });
         if (!product) {
+          console.log("❌ ERROR: Product not found:", item.productId);
           return res.status(404).json({
             success: false,
             message: `Product not found: ${item.productId}`
@@ -461,6 +529,7 @@ router.put("/update-sale/:id", async (req, res) => {
           for (const un of item.uniqueNumbers) {
             if (un.number && un.number.trim()) {
               if (allUniqueNumbers.includes(un.number.trim())) {
+                console.log("❌ ERROR: Duplicate unique number:", un.number);
                 return res.status(400).json({
                   success: false,
                   message: `Duplicate unique number found: ${un.number}`
@@ -503,18 +572,35 @@ router.put("/update-sale/:id", async (req, res) => {
       }
 
       updateData.items = processedItems;
+      console.log("✅ Items processed successfully");
     }
 
-    // Update GSTIN and tax type if changed
-    if (updateData.customerGstin !== undefined) {
-      const gstin = updateData.customerGstin || existingSale.customerGstin || '';
-      updateData.taxType = determineTaxType(gstin);
+    // ✅ ===== GSTIN PROCESSING - FIXED =====
+    console.log("🔄 ===== GSTIN PROCESSING FOR UPDATE =====");
+    console.log("  - updateData.customerGstin:", updateData.customerGstin);
+    console.log("  - existingSale.customerGstin:", existingSale.customerGstin);
+
+    // ✅ FIX: If frontend sends empty or undefined, keep existing GSTIN from database
+    if (!updateData.customerGstin || updateData.customerGstin.trim() === '') {
+      // Keep existing GSTIN from database
+      updateData.customerGstin = existingSale.customerGstin || '';
+      console.log("  - ✅ Keeping EXISTING GSTIN:", updateData.customerGstin);
+    } else {
+      // Use new GSTIN from request
+      console.log("  - ✅ Using NEW GSTIN from request:", updateData.customerGstin);
     }
+
+    // Determine tax type based on final GSTIN
+    updateData.taxType = determineTaxType(updateData.customerGstin || '');
+    console.log("  - TAX TYPE DETERMINED:", updateData.taxType);
+    console.log("  - FINAL GSTIN TO SAVE:", updateData.customerGstin);
 
     if (updateData.isGstMode === false) {
+      console.log("  - isGstMode is false, setting taxSlab to 0");
       updateData.taxSlab = 0;
     }
 
+    console.log("📝 Creating tempSale for recalculation...");
     const tempSale = new Sales({
       ...existingSale.toObject(),
       ...updateData,
@@ -522,6 +608,8 @@ router.put("/update-sale/:id", async (req, res) => {
       invoiceNumber: existingSale.invoiceNumber,
       internalInvoiceNumber: existingSale.internalInvoiceNumber
     });
+
+    console.log("  - tempSale.customerGstin BEFORE recalculate:", tempSale.customerGstin);
 
     tempSale.recalculateTotals();
 
@@ -535,6 +623,17 @@ router.put("/update-sale/:id", async (req, res) => {
       taxBreakdown: tempSale.taxBreakdown
     };
 
+    console.log("📝 FINAL UPDATE DATA BEFORE SAVE:");
+    console.log("  - customerGstin:", finalUpdateData.customerGstin);
+    console.log("  - customerState:", finalUpdateData.customerState);
+    console.log("  - taxType:", finalUpdateData.taxType);
+    console.log("  - taxSlab:", finalUpdateData.taxSlab);
+    console.log("  - isGstMode:", finalUpdateData.isGstMode);
+    console.log("  - subtotal:", finalUpdateData.subtotal);
+    console.log("  - totalTax:", finalUpdateData.totalTax);
+    console.log("  - grandTotal:", finalUpdateData.grandTotal);
+    console.log("  - taxBreakdown:", JSON.stringify(finalUpdateData.taxBreakdown, null, 2));
+
     const updatedSale = await Sales.findOneAndUpdate(
       { saleId: req.params.id },
       finalUpdateData,
@@ -542,11 +641,19 @@ router.put("/update-sale/:id", async (req, res) => {
     );
 
     if (!updatedSale) {
+      console.log("❌ ERROR: Sale not found after update");
       return res.status(404).json({
         success: false,
         message: "Sale not found"
       });
     }
+
+    console.log("✅ SALE UPDATED SUCCESSFULLY!");
+    console.log("  - Sale ID:", updatedSale.saleId);
+    console.log("  - Invoice:", updatedSale.invoiceNumber);
+    console.log("  - customerGstin SAVED:", updatedSale.customerGstin);
+    console.log("  - taxType SAVED:", updatedSale.taxType);
+    console.log("  - taxBreakdown:", JSON.stringify(updatedSale.taxBreakdown, null, 2));
 
     res.status(200).json({
       success: true,
@@ -555,7 +662,7 @@ router.put("/update-sale/:id", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error updating sale:", error);
+    console.error("❌ ERROR updating sale:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update sale",
@@ -563,7 +670,6 @@ router.put("/update-sale/:id", async (req, res) => {
     });
   }
 });
-
 // =============================================
 // DELETE /api/sales/delete-sale/:id - Soft delete sale
 // =============================================
