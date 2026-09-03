@@ -42,15 +42,6 @@ const productPurchaseSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    productUnitId: {
-        type: String,
-        ref: 'Unit'
-    },
-    productUnitName: {
-        type: String,
-        required: true,
-        trim: true
-    },
 
     // ===== PURCHASE HISTORY ARRAY =====
     purchaseHistory: [{

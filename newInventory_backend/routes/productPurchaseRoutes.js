@@ -26,7 +26,6 @@ const getUserDetails = async (userId) => {
 
 // =============================================
 // GET /api/product-purchase/get-all - Get all product purchases (with pagination)
-// Query params: page, limit, search, storeType
 // =============================================
 router.get("/get-all", async (req, res) => {
     try {
@@ -190,6 +189,9 @@ router.post("/add", async (req, res) => {
             });
         }
 
+        // ✅ FIX: Use default unit name since Product doesn't have unitId/unitName
+        const unitName = product.unitName || 'NOS';
+
         // Check if purchase document exists
         let purchase = await ProductPurchase.findOne({
             productId: productId,
@@ -217,9 +219,9 @@ router.post("/add", async (req, res) => {
                 productId: product.productId,
                 productName: product.productName,
                 productDescription: product.productDescription || '',
-                productHsnCode: product.hsnCode,
-                productUnitId: product.unitId,
-                productUnitName: product.unitName,
+                productHsnCode: product.hsnCode || '',
+                productUnitId: '',  // ✅ Set empty since Product doesn't have unitId
+                productUnitName: unitName,  // ✅ Use default unit
                 purchaseHistory: [{
                     vendorId: vendorId,
                     vendorName: vendor.vendorName || vendor.companyName || 'Unknown Vendor',

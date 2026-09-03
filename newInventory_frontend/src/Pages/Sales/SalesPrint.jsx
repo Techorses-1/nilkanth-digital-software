@@ -5,14 +5,14 @@ import authorized from "../../Assets/pdf/auth.png";
 
 import width from "../../Assets/pdf/width.png"
 
-import product1 from "../../Assets/pdf/p1.png";
-import product2 from "../../Assets/pdf/p2.png";
-import product3 from "../../Assets/pdf/p3.png";
-import product4 from "../../Assets/pdf/p4.png";
-import product5 from "../../Assets/pdf/p5.png";
-import product6 from "../../Assets/pdf/p6.png";
-import product7 from "../../Assets/pdf/p7.png";
-import product8 from "../../Assets/pdf/p8.png";
+import product1 from "../../Assets/pdf/n1.png";
+import product2 from "../../Assets/pdf/n2.png";
+import product3 from "../../Assets/pdf/n3.png";
+import product4 from "../../Assets/pdf/n4.png";
+import product5 from "../../Assets/pdf/n5.png";
+import product6 from "../../Assets/pdf/n6.png";
+import product7 from "../../Assets/pdf/n7.png";
+import product8 from "../../Assets/pdf/n8.png";
 import product9 from "../../Assets/pdf/p9.png";
 import product10 from "../../Assets/pdf/p10.png";
 import product11 from "../../Assets/pdf/p11.png";

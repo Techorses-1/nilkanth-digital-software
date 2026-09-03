@@ -9,7 +9,6 @@ import {
     FaPlus,
     FaSearch,
     FaTrash,
-    FaBoxes,
     FaBox,
     FaBuilding,
     FaShoppingCart,
@@ -82,11 +81,9 @@ const STORE_TYPES = [
 ];
 
 const Purchase = () => {
-    const [activeTab, setActiveTab] = useState("items");
     const [storeTab, setStoreTab] = useState("Vadodara");
 
     // ============= STATE =============
-    const [items, setItems] = useState([]);
     const [products, setProducts] = useState([]);
     const [vendors, setVendors] = useState([]);
     const [purchases, setPurchases] = useState([]);
@@ -135,24 +132,21 @@ const Purchase = () => {
         if (!isLoading) {
             fetchPurchases();
         }
-    }, [activeTab, storeTab, debouncedSearch, pagination.page]);
+    }, [storeTab, debouncedSearch, pagination.page]);
 
     const fetchAllData = async () => {
         setIsLoading(true);
         try {
             const headers = getAuthHeaders();
 
-            const [itemsRes, productsRes, vendorsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/items/get-items`, headers),
+            const [productsRes, vendorsRes] = await Promise.all([
                 axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
                 axios.get(`${import.meta.env.VITE_API_URL}/vendors/get-vendors`, headers),
             ]);
 
-            const itemsData = itemsRes.data?.data || itemsRes.data || [];
             const productsData = productsRes.data?.data || productsRes.data || [];
             const vendorsData = vendorsRes.data?.data || vendorsRes.data || [];
 
-            setItems(Array.isArray(itemsData) ? itemsData : []);
             setProducts(Array.isArray(productsData) ? productsData : []);
             setVendors(Array.isArray(vendorsData) ? vendorsData : []);
 
@@ -164,7 +158,6 @@ const Purchase = () => {
             } else {
                 toast.error("Failed to load data.");
             }
-            setItems([]);
             setProducts([]);
             setVendors([]);
         } finally {
@@ -177,9 +170,7 @@ const Purchase = () => {
             setIsLoading(true);
             const headers = getAuthHeaders();
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-purchase/get-all`
-                : `${import.meta.env.VITE_API_URL}/product-purchase/get-all`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-purchase/get-all`;
 
             const response = await axios.get(endpoint, {
                 ...headers,
@@ -257,15 +248,8 @@ const Purchase = () => {
             const newVendor = response.data.data || response.data;
             setVendors(prev => [...prev, newVendor]);
 
-            // ✅ Auto-select the newly created vendor
-            // Set the vendor as selected in the form
-            // We need to update the Formik values through the parent
-
             resetForm();
             setShowVendorModal(false);
-
-            // Pass the new vendor to be selected
-            // We'll handle this through a ref or callback
 
             return newVendor;
 
@@ -283,7 +267,7 @@ const Purchase = () => {
 
     // ============= VALIDATION SCHEMA =============
     const validationSchema = Yup.object({
-        productId: Yup.string().required("Please select a product/item"),
+        productId: Yup.string().required("Please select a product"),
         vendorId: Yup.string().required("Please select a vendor"),
         quantity: Yup.number()
             .required("Quantity is required")
@@ -294,20 +278,14 @@ const Purchase = () => {
             .typeError("Price must be a number")
     });
 
-    // ============= GET PRODUCTS FOR CURRENT TAB =============
-    const currentProducts = useMemo(() => {
-        const data = activeTab === "items" ? items : products;
-        return Array.isArray(data) ? data : [];
-    }, [activeTab, items, products]);
-
     // ============= DROPDOWN OPTIONS =============
     const productOptions = useMemo(() => {
-        const data = Array.isArray(currentProducts) ? currentProducts : [];
-        return data.map((item) => ({
-            value: activeTab === "items" ? item.itemId : item.productId,
-            label: activeTab === "items" ? item.itemName : item.productName
+        const data = Array.isArray(products) ? products : [];
+        return data.map((product) => ({
+            value: product.productId,
+            label: product.productName
         }));
-    }, [currentProducts, activeTab]);
+    }, [products]);
 
     const vendorOptions = useMemo(() => {
         const data = Array.isArray(vendors) ? vendors : [];
@@ -336,12 +314,10 @@ const Purchase = () => {
                 return;
             }
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-purchase/add`
-                : `${import.meta.env.VITE_API_URL}/product-purchase/add`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-purchase/add`;
 
             const payload = {
-                [activeTab === "items" ? "itemId" : "productId"]: values.productId,
+                productId: values.productId,
                 vendorId: values.vendorId,
                 quantity: Number(values.quantity),
                 purchasePrice: Number(values.purchasePrice) || 0,
@@ -354,7 +330,6 @@ const Purchase = () => {
 
             toast.success(response.data.message || "Purchase added successfully!");
 
-            // ✅ Reset form and clear select fields
             resetForm();
             setFieldValue("productId", "");
             setFieldValue("vendorId", "");
@@ -382,9 +357,7 @@ const Purchase = () => {
         try {
             const token = localStorage.getItem('token');
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-purchase/delete-entry/${purchaseId}/${entryId}`
-                : `${import.meta.env.VITE_API_URL}/product-purchase/delete-entry/${purchaseId}/${entryId}`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-purchase/delete-entry/${purchaseId}/${entryId}`;
 
             await axios.delete(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -415,9 +388,7 @@ const Purchase = () => {
                 return;
             }
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-purchase/export`
-                : `${import.meta.env.VITE_API_URL}/product-purchase/export`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-purchase/export`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -432,7 +403,7 @@ const Purchase = () => {
                 const allEntries = [];
 
                 data.forEach((purchase) => {
-                    const productName = activeTab === "items" ? purchase.itemName : purchase.productName;
+                    const productName = purchase.productName;
 
                     purchase.purchaseHistory?.forEach((entry) => {
                         if (!entry.isDeleted) {
@@ -460,11 +431,11 @@ const Purchase = () => {
                 XLSX.utils.book_append_sheet(
                     workbook,
                     worksheet,
-                    `${activeTab}_purchases`
+                    `product_purchases`
                 );
                 XLSX.writeFile(
                     workbook,
-                    `${activeTab}_purchases_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
+                    `product_purchases_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
                 );
                 toast.success(`Exported ${allEntries.length} records successfully!`);
             } else {
@@ -526,13 +497,7 @@ const Purchase = () => {
                         initialValues={vendorInitialValues}
                         validationSchema={vendorValidationSchema}
                         onSubmit={async (values, actions) => {
-                            const newVendor = await handleCreateVendor(values, actions);
-                            if (newVendor) {
-                                // ✅ Auto-select the new vendor in parent form
-                                // We'll handle this through setFieldValue
-                                // This is a bit tricky since we're in a separate component
-                                // We'll use a ref or callback approach
-                            }
+                            await handleCreateVendor(values, actions);
                         }}
                     >
                         {({ setFieldValue, values }) => (
@@ -604,7 +569,7 @@ const Purchase = () => {
         <div className="purchase-form-container">
             <div className="purchase-form-container-header">
                 <h2 className="purchase-form-title">
-                    <FaStore style={{ color: '#7366ff' }} /> {storeTab} Store - {activeTab === "items" ? "Item Purchase" : "Product Purchase"}
+                    <FaStore style={{ color: '#7366ff' }} /> {storeTab} Store - Product Purchase
                 </h2>
                 <button
                     type="button"
@@ -631,14 +596,14 @@ const Purchase = () => {
                         <div className="purchase-form-row">
                             <div className="purchase-form-field">
                                 <label className="purchase-form-label">
-                                    <FaBoxes /> {activeTab === "items" ? "Item" : "Product"} *
+                                    <FaBox /> Product *
                                 </label>
                                 <Select
                                     options={productOptions}
                                     styles={selectStyles}
                                     className="purchase-react-select"
                                     classNamePrefix="purchase-select"
-                                    placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                                    placeholder="Search Product..."
                                     isSearchable
                                     onChange={(option) => {
                                         setFieldValue("productId", option ? option.value : "");
@@ -730,7 +695,7 @@ const Purchase = () => {
                     <input
                         type="text"
                         className="purchase-search-input"
-                        placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                        placeholder="Search Product..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -768,7 +733,7 @@ const Purchase = () => {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>{activeTab === "items" ? "Item" : "Product"}</th>
+                                    <th>Product</th>
                                     <th>Total Quantity</th>
                                     <th>Avg. Price</th>
                                     <th>Action</th>
@@ -776,7 +741,7 @@ const Purchase = () => {
                             </thead>
                             <tbody>
                                 {purchases.map((purchase, idx) => {
-                                    const productName = activeTab === "items" ? purchase.itemName : purchase.productName;
+                                    const productName = purchase.productName;
                                     const totalQty = getTotalQuantity(purchase);
                                     const hasEntries = purchase.purchaseHistory?.some(e => !e.isDeleted);
 
@@ -850,7 +815,7 @@ const Purchase = () => {
     const renderModal = () => {
         if (!showModal || !selectedPurchase) return null;
 
-        const productName = activeTab === "items" ? selectedPurchase.itemName : selectedPurchase.productName;
+        const productName = selectedPurchase.productName;
 
         const activeEntries = selectedPurchase.purchaseHistory?.filter(
             entry => !entry.isDeleted
@@ -964,26 +929,6 @@ const Purchase = () => {
                                 }}
                             >
                                 <FaStore /> Padra
-                            </button>
-                        </div>
-                        <div className="purchase-tabs-container">
-                            <button
-                                className={`purchase-tab-btn ${activeTab === "items" ? "purchase-tab-active" : ""}`}
-                                onClick={() => {
-                                    setActiveTab("items");
-                                    setPagination(prev => ({ ...prev, page: 1 }));
-                                }}
-                            >
-                                <FaBoxes /> Item Purchases
-                            </button>
-                            <button
-                                className={`purchase-tab-btn ${activeTab === "products" ? "purchase-tab-active" : ""}`}
-                                onClick={() => {
-                                    setActiveTab("products");
-                                    setPagination(prev => ({ ...prev, page: 1 }));
-                                }}
-                            >
-                                <FaBox /> Product Purchases
                             </button>
                         </div>
                         <button

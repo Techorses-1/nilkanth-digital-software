@@ -9,7 +9,6 @@ import {
     FaPlus,
     FaMinus,
     FaSearch,
-    FaBoxes,
     FaBox,
     FaShoppingCart,
     FaUser,
@@ -77,11 +76,9 @@ const STORE_TYPES = [
 ];
 
 const Inventory = () => {
-    const [activeTab, setActiveTab] = useState("items");
     const [storeTab, setStoreTab] = useState("Vadodara");
 
     // ============= STATE =============
-    const [items, setItems] = useState([]);
     const [products, setProducts] = useState([]);
     const [inventoryData, setInventoryData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -125,22 +122,19 @@ const Inventory = () => {
         if (!isLoading) {
             fetchInventory();
         }
-    }, [activeTab, storeTab, debouncedSearch, pagination.page]);
+    }, [storeTab, debouncedSearch, pagination.page]);
 
     const fetchAllData = async () => {
         setIsLoading(true);
         try {
             const headers = getAuthHeaders();
 
-            const [itemsRes, productsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/items/get-items`, headers),
-                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
-            ]);
+            const productsRes = await axios.get(
+                `${import.meta.env.VITE_API_URL}/products-master/get-products`,
+                headers
+            );
 
-            const itemsData = itemsRes.data?.data || itemsRes.data || [];
             const productsData = productsRes.data?.data || productsRes.data || [];
-
-            setItems(Array.isArray(itemsData) ? itemsData : []);
             setProducts(Array.isArray(productsData) ? productsData : []);
 
             await fetchInventory();
@@ -151,7 +145,6 @@ const Inventory = () => {
             } else {
                 toast.error("Failed to load data.");
             }
-            setItems([]);
             setProducts([]);
         } finally {
             setIsLoading(false);
@@ -162,9 +155,7 @@ const Inventory = () => {
         try {
             setIsLoading(true);
             const headers = getAuthHeaders();
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-inventory/get-all`
-                : `${import.meta.env.VITE_API_URL}/product-inventory/get-all`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/get-all`;
 
             const response = await axios.get(endpoint, {
                 ...headers,
@@ -197,38 +188,32 @@ const Inventory = () => {
         }
     };
 
-    // ============= GET ALL ITEMS/PRODUCTS FOR DROPDOWN =============
-    const allItems = useMemo(() => {
-        const data = activeTab === "items" ? items : products;
-        return Array.isArray(data) ? data : [];
-    }, [activeTab, items, products]);
+    // ============= GET ALL PRODUCTS FOR DROPDOWN =============
+    const allProducts = useMemo(() => {
+        return Array.isArray(products) ? products : [];
+    }, [products]);
 
     // ============= DROPDOWN OPTIONS =============
     const productOptions = useMemo(() => {
-        const data = Array.isArray(allItems) ? allItems : [];
-        return data.map((item) => ({
-            value: activeTab === "items" ? item.itemId : item.productId,
-            label: activeTab === "items" ? item.itemName : item.productName
+        return allProducts.map((product) => ({
+            value: product.productId,
+            label: product.productName
         }));
-    }, [allItems, activeTab]);
+    }, [allProducts]);
 
     const vendorOptions = useMemo(() => {
-        const data = Array.isArray(allItems) ? allItems : [];
-        return data.map((item) => {
-            const inv = inventoryData.find(
-                i => (activeTab === "items" ? i.itemId : i.productId) ===
-                    (activeTab === "items" ? item.itemId : item.productId)
-            );
+        return allProducts.map((product) => {
+            const inv = inventoryData.find(i => i.productId === product.productId);
             return {
-                value: activeTab === "items" ? item.itemId : item.productId,
-                label: `${activeTab === "items" ? item.itemName : item.productName} ${inv ? `(${inv.totalQuantity || 0} available)` : ''}`
+                value: product.productId,
+                label: `${product.productName} ${inv ? `(${inv.totalQuantity || 0} available)` : ''}`
             };
         });
-    }, [allItems, inventoryData, activeTab]);
+    }, [allProducts, inventoryData]);
 
     // ============= VALIDATION SCHEMAS =============
     const addValidationSchema = Yup.object({
-        productId: Yup.string().required("Please select a product/item"),
+        productId: Yup.string().required("Please select a product"),
         quantity: Yup.number()
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
@@ -240,7 +225,7 @@ const Inventory = () => {
     });
 
     const removeValidationSchema = Yup.object({
-        productId: Yup.string().required("Please select a product/item"),
+        productId: Yup.string().required("Please select a product"),
         quantity: Yup.number()
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
@@ -259,7 +244,7 @@ const Inventory = () => {
             }
 
             const payload = {
-                [activeTab === "items" ? "itemId" : "productId"]: values.productId,
+                productId: values.productId,
                 quantity: Number(values.quantity),
                 purchasePrice: Number(values.purchasePrice) || 0,
                 date: values.date || new Date(),
@@ -267,9 +252,7 @@ const Inventory = () => {
                 storeType: storeTab
             };
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-inventory/add`
-                : `${import.meta.env.VITE_API_URL}/product-inventory/add`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/add`;
 
             const response = await axios.post(endpoint, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -297,9 +280,8 @@ const Inventory = () => {
                 return;
             }
 
-            // Find the inventory to check available quantity
             const inventory = inventoryData.find(
-                inv => (activeTab === "items" ? inv.itemId : inv.productId) === values.productId
+                inv => inv.productId === values.productId
             );
 
             if (!inventory) {
@@ -313,16 +295,14 @@ const Inventory = () => {
             }
 
             const payload = {
-                [activeTab === "items" ? "itemId" : "productId"]: values.productId,
+                productId: values.productId,
                 quantity: Number(values.quantity),
                 date: values.date || new Date(),
                 reason: values.reason || '',
                 storeType: storeTab
             };
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-inventory/remove`
-                : `${import.meta.env.VITE_API_URL}/product-inventory/remove`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/remove`;
 
             const response = await axios.post(endpoint, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -344,9 +324,7 @@ const Inventory = () => {
     const fetchHistory = async (id) => {
         try {
             const headers = getAuthHeaders();
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-inventory/get-history/${id}?storeType=${storeTab}`
-                : `${import.meta.env.VITE_API_URL}/product-inventory/get-history/${id}?storeType=${storeTab}`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/get-history/${id}?storeType=${storeTab}`;
 
             const response = await axios.get(endpoint, headers);
             return response.data;
@@ -361,7 +339,7 @@ const Inventory = () => {
         setSelectedInventory(inventory);
         setShowHistoryModal(true);
 
-        const id = activeTab === "items" ? inventory.itemId : inventory.productId;
+        const id = inventory.productId;
         const historyData = await fetchHistory(id);
         if (historyData && historyData.success) {
             setModalHistory(historyData.data?.history || []);
@@ -386,9 +364,7 @@ const Inventory = () => {
                 return;
             }
 
-            const endpoint = activeTab === "items"
-                ? `${import.meta.env.VITE_API_URL}/item-inventory/export`
-                : `${import.meta.env.VITE_API_URL}/product-inventory/export`;
+            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/export`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -407,8 +383,7 @@ const Inventory = () => {
                 }
 
                 const exportData = data.map((inv) => ({
-                    [activeTab === "items" ? "Item Name" : "Product Name"]:
-                        activeTab === "items" ? inv.itemName : inv.productName,
+                    "Product Name": inv.productName,
                     "Store": inv.storeType || storeTab,
                     "Total Quantity": inv.totalQuantity || 0,
                     "Average Price": inv.averagePurchasePrice || 0,
@@ -421,11 +396,11 @@ const Inventory = () => {
                 XLSX.utils.book_append_sheet(
                     workbook,
                     worksheet,
-                    `${activeTab}_inventory`
+                    `product_inventory`
                 );
                 XLSX.writeFile(
                     workbook,
-                    `${activeTab}_inventory_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
+                    `product_inventory_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
                 );
                 toast.success(`Exported ${data.length} records successfully!`);
             } else {
@@ -489,14 +464,14 @@ const Inventory = () => {
                                 <div className="inventory-form-row">
                                     <div className="inventory-form-field inventory-form-field-full">
                                         <label className="inventory-form-label">
-                                            <FaBoxes /> {activeTab === "items" ? "Item" : "Product"} *
+                                            <FaBox /> Product *
                                         </label>
                                         <Select
                                             options={productOptions}
                                             styles={selectStyles}
                                             className="inventory-react-select"
                                             classNamePrefix="inventory-select"
-                                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                                            placeholder="Search Product..."
                                             isSearchable
                                             onChange={(option) => {
                                                 setFieldValue("productId", option ? option.value : "");
@@ -607,14 +582,14 @@ const Inventory = () => {
                                 <div className="inventory-form-row">
                                     <div className="inventory-form-field inventory-form-field-full">
                                         <label className="inventory-form-label">
-                                            <FaBoxes /> {activeTab === "items" ? "Item" : "Product"} *
+                                            <FaBox /> Product *
                                         </label>
                                         <Select
                                             options={vendorOptions}
                                             styles={selectStyles}
                                             className="inventory-react-select"
                                             classNamePrefix="inventory-select"
-                                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                                            placeholder="Search Product..."
                                             isSearchable
                                             onChange={(option) => {
                                                 setFieldValue("productId", option ? option.value : "");
@@ -684,9 +659,7 @@ const Inventory = () => {
     const renderHistoryModal = () => {
         if (!showHistoryModal || !selectedInventory) return null;
 
-        const name = activeTab === "items"
-            ? selectedInventory.itemName
-            : selectedInventory.productName;
+        const name = selectedInventory.productName;
 
         return (
             <div className="inventory-modal-overlay" onClick={closeHistoryModal}>
@@ -778,7 +751,7 @@ const Inventory = () => {
                     <input
                         type="text"
                         className="inventory-search-input"
-                        placeholder={`Search ${activeTab === "items" ? "Item" : "Product"} Inventory...`}
+                        placeholder="Search Product Inventory..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -830,7 +803,7 @@ const Inventory = () => {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>{activeTab === "items" ? "Item" : "Product"}</th>
+                                    <th>Product</th>
                                     <th>Unit</th>
                                     <th>Total Quantity</th>
                                     <th>Avg. Price</th>
@@ -844,7 +817,7 @@ const Inventory = () => {
                                         <tr key={inv.inventoryId} className="inventory-table-row">
                                             <td>{serialNo}</td>
                                             <td className="inventory-product-name">
-                                                <strong>{activeTab === "items" ? inv.itemName : inv.productName}</strong>
+                                                <strong>{inv.productName}</strong>
                                             </td>
                                             <td>{inv.unitName || "N/A"}</td>
                                             <td>
@@ -929,26 +902,6 @@ const Inventory = () => {
                                 }}
                             >
                                 <FaStore /> Padra
-                            </button>
-                        </div>
-                        <div className="inventory-tabs-container">
-                            <button
-                                className={`inventory-tab-btn ${activeTab === "items" ? "inventory-tab-active" : ""}`}
-                                onClick={() => {
-                                    setActiveTab("items");
-                                    setPagination(prev => ({ ...prev, page: 1 }));
-                                }}
-                            >
-                                <FaBoxes /> Item Inventory
-                            </button>
-                            <button
-                                className={`inventory-tab-btn ${activeTab === "products" ? "inventory-tab-active" : ""}`}
-                                onClick={() => {
-                                    setActiveTab("products");
-                                    setPagination(prev => ({ ...prev, page: 1 }));
-                                }}
-                            >
-                                <FaBox /> Product Inventory
                             </button>
                         </div>
                     </div>
