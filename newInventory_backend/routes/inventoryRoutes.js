@@ -80,7 +80,7 @@ router.get("/get-inventory", async (req, res) => {
 });
 
 // ============================================
-// UPDATED ADD QUANTITY ROUTE - WITH PURCHASE DATE
+// UPDATED ADD QUANTITY ROUTE - WITHOUT UNITS
 // ============================================
 router.post("/add-quantity", async (req, res) => {
     try {
@@ -132,14 +132,14 @@ router.post("/add-quantity", async (req, res) => {
         let inventoryItem = await Inventory.findOne({ productId });
 
         if (!inventoryItem) {
-            // Create new inventory entry with product details
+            // ✅ Create new inventory entry WITHOUT units
             inventoryItem = new Inventory({
                 productId: product.productId,
                 productName: product.productName,
-                productDescription: product.productDescription,
-                minimumQty: product.minimumQty,
-                hsnCode: product.hsnCode,
-                units: product.units,
+                productDescription: product.productDescription || '',
+                minimumQty: product.minimumQty || 0,
+                hsnCode: product.hsnCode || '',
+                // ❌ NO units field
                 priceHistory: []
             });
             console.log("📦 Created new inventory entry");
@@ -149,22 +149,19 @@ router.post("/add-quantity", async (req, res) => {
         inventoryItem.priceHistory.push({
             price: parseFloat(price),
             quantityAdded: parseInt(quantity),
-            purchaseDate: new Date(purchaseDate), // User selected date
-            addedAt: new Date() // Auto timestamp for debugging
+            purchaseDate: new Date(purchaseDate),
+            addedAt: new Date()
         });
 
-        // Save (totalQuantity will be auto-updated by pre-save hook)
         await inventoryItem.save();
 
         console.log("✅ Quantity added successfully");
         console.log(`   Added: ${quantity} units @ ₹${price}`);
-        console.log(`   Purchase Date: ${new Date(purchaseDate).toLocaleDateString()}`);
         console.log(`   New total quantity: ${inventoryItem.totalQuantity}`);
-        console.log(`   Average price: ₹${inventoryItem.averagePrice}`);
 
         res.status(200).json({
             success: true,
-            message: `Successfully added ${quantity} ${product.units} to inventory`,
+            message: `Successfully added ${quantity} units to inventory`,
             data: {
                 inventoryId: inventoryItem.inventoryId,
                 productName: inventoryItem.productName,

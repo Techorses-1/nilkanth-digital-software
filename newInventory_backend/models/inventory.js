@@ -30,11 +30,7 @@ const inventorySchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  units: {
-    type: String,
-    required: true,
-    enum: ['NOS', 'METERS', 'KG', 'GRAM', 'LITRE', 'ML']
-  },
+  // ❌ REMOVED units field completely
   // PRICE HISTORY - for inward/purchases
   priceHistory: [{
     price: {
@@ -57,16 +53,16 @@ const inventorySchema = new mongoose.Schema({
     }
   }],
 
-  // OUTWARD HISTORY - UPDATED WITH PRICE (REQUIRED)
+  // OUTWARD HISTORY
   outwardHistory: [{
     quantity: {
       type: Number,
       required: true,
       min: 1
     },
-    price: {                    // NEW FIELD - ADDED
+    price: {
       type: Number,
-      required: true,           // REQUIRED as you said
+      required: true,
       min: 0.01
     },
     outwardDate: {
@@ -111,7 +107,7 @@ inventorySchema.virtual('averagePrice').get(function () {
   return totalCost / totalPurchasedQuantity;
 });
 
-// Virtual for average selling price (NEW)
+// Virtual for average selling price
 inventorySchema.virtual('averageSellingPrice').get(function () {
   if (!this.outwardHistory || this.outwardHistory.length === 0) return 0;
 
@@ -132,7 +128,7 @@ inventorySchema.virtual('totalOutward').get(function () {
   return this.outwardHistory.reduce((sum, entry) => sum + entry.quantity, 0);
 });
 
-// Virtual for total outward value (NEW)
+// Virtual for total outward value
 inventorySchema.virtual('totalOutwardValue').get(function () {
   if (!this.outwardHistory || this.outwardHistory.length === 0) return 0;
   return this.outwardHistory.reduce((sum, entry) => sum + (entry.price * entry.quantity), 0);
@@ -149,7 +145,6 @@ inventorySchema.pre('save', function (next) {
 // Create indexes
 inventorySchema.index({ productId: 1 });
 inventorySchema.index({ productName: 1 });
-inventorySchema.index({ units: 1 });
 inventorySchema.index({ hsnCode: 1 });
 
 const Inventory = mongoose.models.Inventory || mongoose.model('Inventory', inventorySchema);

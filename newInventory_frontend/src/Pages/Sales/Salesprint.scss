@@ -5,7 +5,8 @@ $primary-blue-light: #e9eefb;
 
 #sales-pdf {
   width: 210mm;
-  padding: 12mm 15mm;
+  // padding: 12mm 15mm;
+  padding: 6mm 15mm 12mm 15mm;
   margin: 0 auto;
   font-family: 'Arial', sans-serif;
   font-size: 12px;
@@ -21,6 +22,19 @@ $primary-blue-light: #e9eefb;
     min-height: 100%;
     position: relative;
     padding-bottom: 25px;
+  }
+
+  // ===== SHREE GANESHAY NAMAH (page 1 only, normal flow so it can
+  // never overlap the header — flex "gap" on .invoice-container
+  // handles the spacing automatically) =====
+  .ganesh-line {
+    margin: 0 0 2px 0;
+    text-align: center;
+    color: #c1121f;
+    font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+    font-family: 'Noto Sans Gujarati', 'Shruti', 'Arial', sans-serif;
   }
 
   // ===== HEADER =====
@@ -543,10 +557,15 @@ $primary-blue-light: #e9eefb;
   }
 
   // ===== PAGE 2: PRODUCT GALLERY (8 category cards, 3 / 3 / 2) =====
+  // NOTE: ganesh-line removed from this page (page 1 only) — padding-top
+  // brought back down to a small value since we're no longer
+  // compensating for that extra line of text.
   .product-gallery-page {
     page-break-before: always;
     break-before: page;
-    padding-top: 4mm;
+    position: relative;
+    padding-top: 4px;
+    padding-top: 10mm;
 
     .gallery-grid {
       display: grid;

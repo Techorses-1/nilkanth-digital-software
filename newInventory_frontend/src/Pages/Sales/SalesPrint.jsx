@@ -213,6 +213,9 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     <div id="sales-pdf">
       <div className="invoice-container">
 
+        {/* ===== SHREE GANESHAY NAMAH ===== */}
+        <p className="ganesh-line">|| શ્રી ગણેશાય નમઃ ||</p>
+
         {/* ===== HEADER ===== */}
         <div className="invoice-header">
           <div className="header-images header-images-left">
@@ -456,6 +459,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
 
       {/* ===== PAGE 2: PRODUCT GALLERY ===== */}
       <div className="product-gallery-page">
+
         <div className="gallery-banner">
           <h2>OUR PRODUCT RANGE</h2>
           <p>A glimpse of the products &amp; equipment we deal in</p>

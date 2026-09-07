@@ -25,7 +25,6 @@ const getUserDetails = async (userId) => {
 
 // =============================================
 // GET /api/product-inventory/get-all - Get all product inventory (with pagination)
-// Query params: page, limit, search, storeType
 // =============================================
 router.get("/get-all", async (req, res) => {
     try {
@@ -35,9 +34,8 @@ router.get("/get-all", async (req, res) => {
         const storeType = req.query.storeType || 'Vadodara';
         const skip = (page - 1) * limit;
 
-        // Build search filter
         let filter = { storeType: storeType };
-        
+
         if (search) {
             filter.$or = [
                 { productName: { $regex: search, $options: 'i' } },
@@ -46,10 +44,7 @@ router.get("/get-all", async (req, res) => {
             ];
         }
 
-        // Get total count for pagination
         const total = await ProductInventory.countDocuments(filter);
-
-        // Get paginated data
         const inventory = await ProductInventory.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -85,7 +80,7 @@ router.get("/get/:productId", async (req, res) => {
     try {
         const { storeType } = req.query;
         let filter = { productId: req.params.productId };
-        
+
         if (storeType) {
             filter.storeType = storeType;
         }
@@ -119,9 +114,8 @@ router.get("/export", async (req, res) => {
         const search = req.query.search || '';
         const storeType = req.query.storeType || 'Vadodara';
 
-        // Build search filter
         let filter = { storeType: storeType };
-        
+
         if (search) {
             filter.$or = [
                 { productName: { $regex: search, $options: 'i' } },
@@ -130,7 +124,6 @@ router.get("/export", async (req, res) => {
             ];
         }
 
-        // Get ALL data matching filter (no pagination)
         const inventory = await ProductInventory.find(filter)
             .sort({ createdAt: -1 })
             .lean();
@@ -200,8 +193,8 @@ router.post("/add", async (req, res) => {
             });
         }
 
-        // ✅ Find or create inventory with storeType
-        let inventory = await ProductInventory.findOne({ 
+        // ✅ Find or create inventory WITHOUT unitId and unitName
+        let inventory = await ProductInventory.findOne({
             productId: productId,
             storeType: storeType
         });
@@ -211,9 +204,9 @@ router.post("/add", async (req, res) => {
                 productId: product.productId,
                 productName: product.productName,
                 productDescription: product.productDescription || '',
-                hsnCode: product.hsnCode,
-                unitId: product.unitId,
-                unitName: product.unitName,
+                hsnCode: product.hsnCode || '',
+                // ❌ NO unitId
+                // ❌ NO unitName
                 storeType: storeType,
                 totalQuantity: 0,
                 addHistory: [],
@@ -288,11 +281,11 @@ router.post("/remove", async (req, res) => {
             });
         }
 
-        const inventory = await ProductInventory.findOne({ 
+        const inventory = await ProductInventory.findOne({
             productId: productId,
             storeType: storeType
         });
-        
+
         if (!inventory) {
             return res.status(404).json({
                 success: false,
@@ -374,11 +367,11 @@ router.delete("/delete-add/:entryId", async (req, res) => {
             });
         }
 
-        const inventory = await ProductInventory.findOne({ 
+        const inventory = await ProductInventory.findOne({
             productId: productId,
             storeType: storeType
         });
-        
+
         if (!inventory) {
             return res.status(404).json({
                 success: false,
@@ -441,11 +434,11 @@ router.delete("/delete-remove/:entryId", async (req, res) => {
             });
         }
 
-        const inventory = await ProductInventory.findOne({ 
+        const inventory = await ProductInventory.findOne({
             productId: productId,
             storeType: storeType
         });
-        
+
         if (!inventory) {
             return res.status(404).json({
                 success: false,
@@ -472,12 +465,12 @@ router.delete("/delete-remove/:entryId", async (req, res) => {
 });
 
 // =============================================
-// GET /api/product-inventory/get-history/:productId - Get full history of a product
+// GET /api/product-inventory/get-history/:productId - Get full history
 // =============================================
 router.get("/get-history/:productId", async (req, res) => {
     try {
         const { storeType } = req.query;
-        
+
         let filter = { productId: req.params.productId };
         if (storeType) {
             filter.storeType = storeType;
