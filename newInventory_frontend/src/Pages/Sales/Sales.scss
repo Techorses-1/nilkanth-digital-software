@@ -48,7 +48,7 @@
 // CONTENT WRAPPER
 // ============================================
 .sales-content-wrapper {
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -1429,7 +1429,7 @@
     display: flex;
     gap: 6px;
     align-items: center;
-    flex-wrap: wrap;
+    // flex-wrap: wrap;
 
     button {
         display: inline-flex;
