@@ -8,7 +8,7 @@ import axios from "axios";
 import "./Login.scss";
 // import logo from "../../../Assets/logo/bg_logo.png"; 
 // import logo from "../../../Assets/logo/th_logo.png"; 
-import logo from "../../../Assets/logo/vend_logo.png"
+import logo from "../../../Assets/logo/newlogo.png"
 
 // import logo from "../../../Assets/logo/th.png";  
 import "react-toastify/dist/ReactToastify.css";
