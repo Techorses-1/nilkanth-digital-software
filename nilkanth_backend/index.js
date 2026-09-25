@@ -38,6 +38,8 @@ const salesRoutes = require('./routes/salesRoutes');
 // ===== PURCHASE ROUTES (NEW) =====
 const itemPurchaseRoutes = require('./routes/itemPurchaseRoutes');
 const productPurchaseRoutes = require('./routes/productPurchaseRoutes');
+const quotationRoutes = require('./routes/quotationRoutes');
+
 
 // ============= ROUTE MIDDLEWARES =============
 // Old routes
@@ -49,13 +51,14 @@ app.use('/admin', adminRoutes);
 // New routes
 app.use('/units', unitRoutes);
 app.use('/items', itemRoutes);
-app.use('/products-master', productRoutes); // Using different path to avoid conflict with existing /products
+app.use('/products-master', productRoutes);
 app.use('/item-inventory', itemInventoryRoutes);
 app.use('/product-inventory', productInventoryRoutes);
 app.use('/sales', salesRoutes);
 
 app.use('/item-purchase', itemPurchaseRoutes);
 app.use('/product-purchase', productPurchaseRoutes);
+app.use('/quotation', quotationRoutes);
 
 
 

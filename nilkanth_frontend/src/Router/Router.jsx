@@ -42,14 +42,7 @@ const Router = () => {
               </ProtectedRoute>
             } />
 
-            {/* <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <PermissionRoute requiredPermission="dashboard">
-                  <Home />
-                </PermissionRoute>
-              </ProtectedRoute>
-            } /> */}
-
+            
             <Route path="/customer" element={
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="customer">

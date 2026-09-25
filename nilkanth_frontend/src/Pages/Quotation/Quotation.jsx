@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
 import { toast, ToastContainer } from "react-toastify";
 import Select from "react-select";
 import Navbar from "../../Components/Sidebar/Navbar";
@@ -11,7 +9,6 @@ import {
     FaPlus,
     FaSearch,
     FaEdit,
-    FaSave,
     FaTrash,
     FaFileExcel,
     FaEye,
@@ -19,8 +16,6 @@ import {
     FaChevronLeft,
     FaChevronRight,
     FaRupeeSign,
-    FaBuilding,
-    FaPercent,
     FaInfoCircle,
     FaFileInvoice,
     FaStore,
@@ -30,14 +25,7 @@ import {
     FaMapMarkerAlt,
     FaMinus,
     FaFilePdf,
-    FaToggleOn,
-    FaToggleOff,
     FaHashtag,
-    FaMoneyBillWave,
-    FaCheckCircle,
-    FaClock,
-    FaFileAlt,
-    FaFilter,
     FaFileArchive,
     FaExclamationTriangle
 } from "react-icons/fa";
@@ -45,8 +33,8 @@ import * as XLSX from "xlsx";
 import html2pdf from "html2pdf.js";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import SalesPrint from "./SalesPrint";
-import "./Sales.scss";
+import QuotationPrint from "./QuotationPrint";
+import "./Quotation.scss";
 import "react-toastify/dist/ReactToastify.css";
 
 // Get token from localStorage
@@ -90,63 +78,30 @@ const selectStyles = {
     })
 };
 
-// Tax Slab Options
-const TAX_OPTIONS = [
-    { value: 0, label: "0%" },
-    { value: 5, label: "5%" },
-    { value: 12, label: "12%" },
-    { value: 18, label: "18%" },
-    { value: 28, label: "28%" }
-];
-
 // Store Type Options
 const STORE_OPTIONS = [
     { value: "Vadodara", label: "Vadodara" },
     { value: "Padra", label: "Padra" }
 ];
 
-// Payment Type Options
-const PAYMENT_OPTIONS = [
-    { value: "Cash", label: "Cash" },
-    { value: "Bank", label: "Bank" },
-    { value: "UPI", label: "UPI" },
-    { value: "Cheque", label: "Cheque" }
-];
-
-// Payment Status Options
-const PAYMENT_STATUS_OPTIONS = [
-    { value: "Paid", label: "Paid" },
-    { value: "Pending", label: "Pending" }
-];
-
-// ✅ Filter Options
-const FILTER_OPTIONS = [
-    { value: "All", label: "All Invoices" },
-    { value: "Challan", label: "Challan Only" },
-    { value: "GST", label: "GST Only" },
-    { value: "Non-GST", label: "Non-GST Only" }
-];
-
-const Sales = () => {
+const Quotation = () => {
     // ============= STATE =============
     const [customers, setCustomers] = useState([]);
     const [products, setProducts] = useState([]);
-    const [sales, setSales] = useState([]);
+    const [quotations, setQuotations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    // ✅ Filter State
-    const [filterType, setFilterType] = useState("All");
 
-    // ✅ Delete Modal State
+    // ============= DELETE MODAL STATE =============
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [saleToDelete, setSaleToDelete] = useState(null);
+    const [quotationToDelete, setQuotationToDelete] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // ✅ PDF Bulk Export State
+    // ============= PDF BULK EXPORT STATE =============
     const [isExportingPDF, setIsExportingPDF] = useState(false);
     const [pdfProgress, setPdfProgress] = useState({ current: 0, total: 0, status: '' });
 
@@ -156,17 +111,10 @@ const Sales = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [lineItems, setLineItems] = useState([]);
     const [storeType, setStoreType] = useState("Vadodara");
-    const [taxSlab, setTaxSlab] = useState(18);
     const [notes, setNotes] = useState("");
-    const [saleDate, setSaleDate] = useState(new Date().toISOString().split("T")[0]);
+    const [quotationDate, setQuotationDate] = useState(new Date().toISOString().split("T")[0]);
     const [isEditMode, setIsEditMode] = useState(false);
-    const [editSaleId, setEditSaleId] = useState(null);
-
-    // ============= NEW FIELDS =============
-    const [paymentType, setPaymentType] = useState("Cash");
-    const [paymentStatus, setPaymentStatus] = useState("Paid");
-    const [isGstMode, setIsGstMode] = useState(true);
-    const [isChallan, setIsChallan] = useState(false);
+    const [editQuotationId, setEditQuotationId] = useState(null);
 
     // ============= CUSTOMER FORM FIELDS =============
     const [customerName, setCustomerName] = useState("");
@@ -178,10 +126,10 @@ const Sales = () => {
 
     // ============= MODAL STATES =============
     const [showViewModal, setShowViewModal] = useState(false);
-    const [selectedSale, setSelectedSale] = useState(null);
+    const [selectedQuotation, setSelectedQuotation] = useState(null);
 
     // ============= PDF/PRINT STATE =============
-    const [saleForPrint, setSaleForPrint] = useState(null);
+    const [quotationForPrint, setQuotationForPrint] = useState(null);
 
     // ============= PAGINATION STATE =============
     const [pagination, setPagination] = useState({
@@ -209,9 +157,9 @@ const Sales = () => {
 
     useEffect(() => {
         if (!isLoading) {
-            fetchSales();
+            fetchQuotations();
         }
-    }, [debouncedSearch, pagination.page, filterType]);
+    }, [debouncedSearch, pagination.page]);
 
     const fetchAllData = async () => {
         setIsLoading(true);
@@ -229,7 +177,7 @@ const Sales = () => {
             setCustomers(Array.isArray(customersData) ? customersData : []);
             setProducts(Array.isArray(productsData) ? productsData : []);
 
-            await fetchSales();
+            await fetchQuotations();
         } catch (error) {
             console.error("Error fetching data:", error);
             if (error.response?.status === 401) {
@@ -244,25 +192,24 @@ const Sales = () => {
         }
     };
 
-    const fetchSales = async () => {
+    const fetchQuotations = async () => {
         try {
             setIsLoading(true);
             const headers = getAuthHeaders();
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/sales/get-sales`,
+                `${import.meta.env.VITE_API_URL}/quotation/get-quotations`,
                 {
                     ...headers,
                     params: {
                         page: pagination.page,
                         limit: pagination.limit,
-                        search: debouncedSearch,
-                        filterType: filterType
+                        search: debouncedSearch
                     }
                 }
             );
 
             if (response.data.success) {
-                setSales(response.data.data || []);
+                setQuotations(response.data.data || []);
                 setPagination(response.data.pagination || {
                     page: 1,
                     limit: 20,
@@ -272,11 +219,11 @@ const Sales = () => {
                     hasPrev: false
                 });
             } else {
-                setSales([]);
+                setQuotations([]);
             }
         } catch (error) {
-            console.error("Error fetching sales:", error);
-            setSales([]);
+            console.error("Error fetching quotations:", error);
+            setQuotations([]);
         } finally {
             setIsLoading(false);
         }
@@ -395,7 +342,7 @@ const Sales = () => {
         setLineItems(prev => prev.filter((_, i) => i !== index));
     };
 
-    // ============= CALCULATIONS =============
+    // ============= CALCULATIONS (NO TAX) =============
     const calculateTotals = () => {
         let subtotal = 0;
         let totalDiscount = 0;
@@ -405,43 +352,33 @@ const Sales = () => {
             totalDiscount += item.discountAmount * item.quantity;
         });
 
-        const taxableAmount = subtotal - totalDiscount;
+        const grandTotal = subtotal - totalDiscount;
 
-        if (isChallan || !isGstMode) {
-            return {
-                subtotal,
-                totalDiscount,
-                totalTax: 0,
-                grandTotal: taxableAmount,
-                taxableAmount: taxableAmount
-            };
-        }
-
-        const taxRate = taxSlab / 100;
-        const totalTax = taxableAmount * taxRate;
-        const grandTotal = taxableAmount + totalTax;
-
-        return { subtotal, totalDiscount, totalTax, grandTotal, taxableAmount };
+        return {
+            subtotal,
+            totalDiscount,
+            grandTotal
+        };
     };
 
     const totals = calculateTotals();
 
     // ============= SINGLE PDF GENERATION =============
-    const generatePDF = async (sale, openWhatsApp = true) => {
+    const generatePDF = async (quotation, openWhatsApp = true) => {
         if (isGeneratingPDF) return;
         setIsGeneratingPDF(true);
 
         try {
-            setSaleForPrint(sale);
+            setQuotationForPrint(quotation);
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            const element = document.getElementById("sales-pdf");
+            const element = document.getElementById("quotation-pdf");
             if (!element) {
                 throw new Error("PDF element not found");
             }
 
             const opt = {
-                filename: `${sale.invoiceNumber}_${(sale.customerName || "customer").replace(/\s+/g, "_")}.pdf`,
+                filename: `${quotation.quotationNumber}_${(quotation.customerName || "customer").replace(/\s+/g, "_")}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -463,40 +400,14 @@ const Sales = () => {
             await html2pdf()
                 .set(opt)
                 .from(element)
-                .toPdf()
-                .get('pdf')
-                .then((pdf) => {
-                    const totalPages = pdf.internal.getNumberOfPages();
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const pageHeight = pdf.internal.pageSize.getHeight();
-                    const websiteUrl = "https://www.techorses.com";
-                    const label = "Developed by ";
-                    const linkText = "Techorses";
-
-                    // ✅ COMMENTED OUT - "Developed by Techorses" footer
-                    // for (let i = 1; i <= totalPages; i++) {
-                    //     pdf.setPage(i);
-                    //     pdf.setFontSize(8);
-                    //     const labelWidth = pdf.getTextWidth(label);
-                    //     const linkWidth = pdf.getTextWidth(linkText);
-                    //     const totalWidth = labelWidth + linkWidth;
-                    //     const rightEdge = pageWidth - 15;
-                    //     const startX = rightEdge - totalWidth;
-                    //     const y = pageHeight - 10;
-                    //     pdf.setTextColor(150);
-                    //     pdf.text(label, startX, y);
-                    //     pdf.setTextColor(0, 0, 255);
-                    //     pdf.textWithLink(linkText, startX + labelWidth, y, { url: websiteUrl });
-                    // }
-                })
                 .save();
 
             toast.success("PDF generated successfully!");
 
-            if (openWhatsApp && sale.customerPhone) {
-                const phone = sale.customerPhone.replace(/\D/g, "");
+            if (openWhatsApp && quotation.customerPhone) {
+                const phone = quotation.customerPhone.replace(/\D/g, "");
                 if (phone) {
-                    const message = `Hello ${sale.customerName || ""}, your invoice (No: ${sale.invoiceNumber}) has been generated.`;
+                    const message = `Hello ${quotation.customerName || ""}, your quotation (No: ${quotation.quotationNumber}) has been generated.`;
                     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
                 }
             }
@@ -506,16 +417,16 @@ const Sales = () => {
             toast.error("Failed to generate PDF");
         } finally {
             setIsGeneratingPDF(false);
-            setSaleForPrint(null);
+            setQuotationForPrint(null);
         }
     };
 
-    // ============= ✅ BULK PDF EXPORT (ZIP) =============
+    // ============= BULK PDF EXPORT (ZIP) =============
     const exportPDFsAsZip = async () => {
         if (isExportingPDF) return;
 
         setIsExportingPDF(true);
-        setPdfProgress({ current: 0, total: 0, status: 'Fetching invoices...' });
+        setPdfProgress({ current: 0, total: 0, status: 'Fetching quotations...' });
 
         try {
             const token = localStorage.getItem('token');
@@ -525,37 +436,34 @@ const Sales = () => {
                 return;
             }
 
-            // ✅ Fetch all filtered invoices (no pagination)
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/sales/get-all-filtered`,
+                `${import.meta.env.VITE_API_URL}/quotation/get-all-filtered`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` },
                     params: {
-                        search: debouncedSearch || '',
-                        filterType: filterType
+                        search: debouncedSearch || ''
                     }
                 }
             );
 
             if (!response.data.success || !response.data.data || response.data.data.length === 0) {
-                toast.warning("No invoices found to export");
+                toast.warning("No quotations found to export");
                 setIsExportingPDF(false);
                 setPdfProgress({ current: 0, total: 0, status: '' });
                 return;
             }
 
-            const allSales = response.data.data;
-            const total = allSales.length;
+            const allQuotations = response.data.data;
+            const total = allQuotations.length;
 
-            setPdfProgress({ current: 0, total, status: `Preparing ${total} invoices...` });
+            setPdfProgress({ current: 0, total, status: `Preparing ${total} quotations...` });
 
             const zip = new JSZip();
             let successCount = 0;
             let failCount = 0;
 
-            // ✅ Loop through each invoice
-            for (let i = 0; i < allSales.length; i++) {
-                const sale = allSales[i];
+            for (let i = 0; i < allQuotations.length; i++) {
+                const quotation = allQuotations[i];
 
                 setPdfProgress({
                     current: i + 1,
@@ -564,13 +472,12 @@ const Sales = () => {
                 });
 
                 try {
-                    // Set the sale to be rendered
-                    setSaleForPrint(sale);
+                    setQuotationForPrint(quotation);
                     await new Promise(resolve => setTimeout(resolve, 700));
 
-                    const element = document.getElementById("sales-pdf");
+                    const element = document.getElementById("quotation-pdf");
                     if (!element) {
-                        console.error(`PDF element not found for ${sale.invoiceNumber}`);
+                        console.error(`PDF element not found for ${quotation.quotationNumber}`);
                         failCount++;
                         continue;
                     }
@@ -594,30 +501,26 @@ const Sales = () => {
                         }
                     };
 
-                    // ✅ Generate PDF as blob
                     const pdfBlob = await html2pdf()
                         .set(opt)
                         .from(element)
                         .outputPdf('blob');
 
-                    // ✅ Add to ZIP
-                    const fileName = `${sale.invoiceNumber}_${(sale.customerName || "customer").replace(/\s+/g, "_")}.pdf`;
+                    const fileName = `${quotation.quotationNumber}_${(quotation.customerName || "customer").replace(/\s+/g, "_")}.pdf`;
                     zip.file(fileName, pdfBlob);
 
                     successCount++;
 
-                    // Small delay to let browser breathe
                     await new Promise(resolve => setTimeout(resolve, 300));
 
                 } catch (err) {
-                    console.error(`Error generating PDF for ${sale.invoiceNumber}:`, err);
+                    console.error(`Error generating PDF for ${quotation.quotationNumber}:`, err);
                     failCount++;
                 }
             }
 
-            setSaleForPrint(null);
+            setQuotationForPrint(null);
 
-            // ✅ Generate ZIP
             setPdfProgress({
                 current: total,
                 total,
@@ -630,10 +533,7 @@ const Sales = () => {
                 compressionOptions: { level: 3 }
             });
 
-            // ✅ Download ZIP
-            const zipFileName = filterType === 'Challan'
-                ? `challans_${new Date().toISOString().split("T")[0]}.zip`
-                : `invoices_${new Date().toISOString().split("T")[0]}.zip`;
+            const zipFileName = `quotations_${new Date().toISOString().split("T")[0]}.zip`;
 
             saveAs(zipBlob, zipFileName);
 
@@ -645,7 +545,6 @@ const Sales = () => {
 
             toast.success(`ZIP created! ${successCount} PDFs exported${failCount > 0 ? `, ${failCount} failed` : ''}`);
 
-            // Hide loader after 2 seconds
             setTimeout(() => {
                 setIsExportingPDF(false);
                 setPdfProgress({ current: 0, total: 0, status: '' });
@@ -662,10 +561,6 @@ const Sales = () => {
     // ============= VALIDATE CUSTOMER FIELDS =============
     const validateCustomerFields = () => {
         if (selectedCustomer) {
-            if (isGstMode && !isChallan && !selectedCustomer.gstNumber) {
-                toast.error("GSTIN is required in GST Mode. Please add GSTIN to customer or switch to Non-GST mode.");
-                return false;
-            }
             return true;
         }
 
@@ -677,17 +572,6 @@ const Sales = () => {
         if (!customerPhone.trim() || customerPhone.trim().length !== 10) {
             toast.error("Valid 10-digit Phone Number is required");
             return false;
-        }
-
-        if (isGstMode && !isChallan) {
-            if (!customerGstin.trim()) {
-                toast.error("GSTIN is required in GST Mode");
-                return false;
-            }
-            if (customerGstin.trim().length !== 15) {
-                toast.error("GSTIN must be 15 characters");
-                return false;
-            }
         }
 
         if (customerEmail && !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(customerEmail)) {
@@ -748,11 +632,7 @@ const Sales = () => {
                 customerId: finalCustomerId,
                 customerGstin: selectedCustomer ? selectedCustomer.gstNumber || '' : customerGstin,
                 storeType: storeType,
-                paymentType: paymentStatus === 'Pending' ? null : paymentType,
-                paymentStatus: paymentStatus,
-                isGstMode: isChallan ? false : isGstMode,
-                isChallan: isChallan,
-                saleDate: saleDate,
+                quotationDate: quotationDate,
                 items: lineItems.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity,
@@ -764,35 +644,34 @@ const Sales = () => {
                     capacity: item.capacity || '',
                     invoiceDescription: item.invoiceDescription || ''
                 })),
-                taxSlab: (isChallan || !isGstMode) ? 0 : taxSlab,
                 notes: notes
             };
 
             let response;
-            if (isEditMode && editSaleId) {
+            if (isEditMode && editQuotationId) {
                 response = await axios.put(
-                    `${import.meta.env.VITE_API_URL}/sales/update-sale/${editSaleId}`,
+                    `${import.meta.env.VITE_API_URL}/quotation/update-quotation/${editQuotationId}`,
                     payload,
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
-                toast.success(response.data.message || "Sale updated successfully!");
+                toast.success(response.data.message || "Quotation updated successfully!");
             } else {
                 response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/sales/create-sale`,
+                    `${import.meta.env.VITE_API_URL}/quotation/create-quotation`,
                     payload,
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
-                toast.success(response.data.message || "Sale created successfully!");
+                toast.success(response.data.message || "Quotation created successfully!");
             }
 
-            const newSale = response.data.data || response.data;
-            await generatePDF(newSale, true);
+            const newQuotation = response.data.data || response.data;
+            await generatePDF(newQuotation, true);
 
             resetForm();
-            await fetchSales();
+            await fetchQuotations();
         } catch (error) {
-            console.error("Error saving sale:", error);
-            toast.error(error.response?.data?.message || "Failed to save sale");
+            console.error("Error saving quotation:", error);
+            toast.error(error.response?.data?.message || "Failed to save quotation");
         } finally {
             setIsSubmitting(false);
         }
@@ -804,14 +683,9 @@ const Sales = () => {
         setSelectedProduct(null);
         setNotes("");
         setStoreType("Vadodara");
-        setTaxSlab(18);
-        setPaymentType("Cash");
-        setPaymentStatus("Paid");
-        setIsGstMode(true);
-        setIsChallan(false);
-        setSaleDate(new Date().toISOString().split("T")[0]);
+        setQuotationDate(new Date().toISOString().split("T")[0]);
         setIsEditMode(false);
-        setEditSaleId(null);
+        setEditQuotationId(null);
         setShowForm(false);
         setCustomerName("");
         setCustomerEmail("");
@@ -821,13 +695,13 @@ const Sales = () => {
         setIsCustomerFieldsReadOnly(false);
     };
 
-    // ============= EDIT SALE =============
-    const handleEditSale = (sale) => {
+    // ============= EDIT QUOTATION =============
+    const handleEditQuotation = (quotation) => {
         setIsEditMode(true);
-        setEditSaleId(sale.saleId);
+        setEditQuotationId(quotation.quotationId);
         setShowForm(true);
 
-        const customer = customers.find(c => c.customerId === sale.customerId);
+        const customer = customers.find(c => c.customerId === quotation.customerId);
         setSelectedCustomer(customer || null);
 
         if (customer) {
@@ -839,16 +713,11 @@ const Sales = () => {
             setIsCustomerFieldsReadOnly(true);
         }
 
-        setStoreType(sale.storeType || "Vadodara");
-        setTaxSlab(sale.taxSlab || 18);
-        setPaymentType(sale.paymentType || "Cash");
-        setPaymentStatus(sale.paymentStatus || "Paid");
-        setIsGstMode(sale.isGstMode !== undefined ? sale.isGstMode : true);
-        setIsChallan(sale.isChallan || false);
-        setNotes(sale.notes || "");
-        setSaleDate(sale.saleDate ? new Date(sale.saleDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
+        setStoreType(quotation.storeType || "Vadodara");
+        setNotes(quotation.notes || "");
+        setQuotationDate(quotation.quotationDate ? new Date(quotation.quotationDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
 
-        const items = sale.items.map(item => ({
+        const items = quotation.items.map(item => ({
             ...item,
             uniqueNumbers: item.uniqueNumbers || [],
             capacity: item.capacity || '',
@@ -857,30 +726,30 @@ const Sales = () => {
         setLineItems(items);
     };
 
-    // ============= ✅ OPEN DELETE MODAL =============
-    const openDeleteModal = (sale) => {
-        setSaleToDelete(sale);
+    // ============= OPEN DELETE MODAL =============
+    const openDeleteModal = (quotation) => {
+        setQuotationToDelete(quotation);
         setShowDeleteModal(true);
     };
 
-    // ============= ✅ CONFIRM DELETE =============
-    const confirmDeleteSale = async () => {
-        if (!saleToDelete) return;
+    // ============= CONFIRM DELETE =============
+    const confirmDeleteQuotation = async () => {
+        if (!quotationToDelete) return;
 
         setIsDeleting(true);
         try {
             const token = localStorage.getItem('token');
             await axios.delete(
-                `${import.meta.env.VITE_API_URL}/sales/delete-sale/${saleToDelete.saleId}`,
+                `${import.meta.env.VITE_API_URL}/quotation/delete-quotation/${quotationToDelete.quotationId}`,
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
-            toast.success("Sale deleted successfully!");
+            toast.success("Quotation deleted successfully!");
             setShowDeleteModal(false);
-            setSaleToDelete(null);
-            await fetchSales();
+            setQuotationToDelete(null);
+            await fetchQuotations();
         } catch (error) {
-            console.error("Error deleting sale:", error);
-            toast.error(error.response?.data?.message || "Failed to delete sale");
+            console.error("Error deleting quotation:", error);
+            toast.error(error.response?.data?.message || "Failed to delete quotation");
         } finally {
             setIsDeleting(false);
         }
@@ -894,12 +763,11 @@ const Sales = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/sales/export-sales`,
+                `${import.meta.env.VITE_API_URL}/quotation/export-quotations`,
                 {
                     headers: { 'Authorization': `Bearer ${token}` },
                     params: {
-                        search: debouncedSearch || '',
-                        filterType: filterType
+                        search: debouncedSearch || ''
                     }
                 }
             );
@@ -911,30 +779,24 @@ const Sales = () => {
                     return;
                 }
 
-                const exportData = data.map((sale) => ({
-                    "Invoice No": sale.invoiceNumber,
-                    "Internal No": sale.internalInvoiceNumber,
-                    "Challan": sale.isChallan ? "Yes" : "No",
-                    "Customer": sale.customerName,
-                    "Store": sale.storeType,
-                    "Payment Status": sale.paymentStatus || 'Paid',
-                    "Payment Type": sale.paymentType || '-',
-                    "GST Mode": sale.isGstMode ? "GST" : "Non-GST",
-                    "Date": sale.saleDate ? new Date(sale.saleDate).toLocaleDateString() : "N/A",
-                    "Items": sale.items?.length || 0,
-                    "Subtotal": sale.subtotal || 0,
-                    "Discount": sale.totalDiscount || 0,
-                    "Tax": sale.totalTax || 0,
-                    "Grand Total": sale.grandTotal || 0,
-                    "Unique Numbers": sale.items?.map(item =>
+                const exportData = data.map((quotation) => ({
+                    "Quotation No": quotation.quotationNumber,
+                    "Customer": quotation.customerName,
+                    "Store": quotation.storeType,
+                    "Date": quotation.quotationDate ? new Date(quotation.quotationDate).toLocaleDateString() : "N/A",
+                    "Items": quotation.items?.length || 0,
+                    "Subtotal": quotation.subtotal || 0,
+                    "Discount": quotation.totalDiscount || 0,
+                    "Grand Total": quotation.grandTotal || 0,
+                    "Unique Numbers": quotation.items?.map(item =>
                         item.uniqueNumbers?.filter(un => un.number).map(un => un.number).join(', ') || ''
                     ).filter(Boolean).join('; ') || ''
                 }));
 
                 const worksheet = XLSX.utils.json_to_sheet(exportData);
                 const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Sales");
-                XLSX.writeFile(workbook, `sales_${new Date().toISOString().split("T")[0]}.xlsx`);
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Quotations");
+                XLSX.writeFile(workbook, `quotations_${new Date().toISOString().split("T")[0]}.xlsx`);
                 toast.success(`Exported ${data.length} records successfully!`);
             }
         } catch (error) {
@@ -969,34 +831,34 @@ const Sales = () => {
         if (lineItems.length === 0) return null;
 
         return (
-            <div className="sales-unique-section">
-                <h3 className="sales-section-title">
+            <div className="quotation-unique-section">
+                <h3 className="quotation-section-title">
                     <FaHashtag style={{ color: '#7366ff' }} /> Unique Numbers for Products (Optional)
                 </h3>
-                <div className="sales-unique-grid">
+                <div className="quotation-unique-grid">
                     {lineItems.map((item, productIndex) => {
                         const displayNumbers = item.uniqueNumbers || [];
 
                         return (
-                            <div key={productIndex} className="sales-unique-product">
-                                <div className="sales-unique-product-header">
-                                    <span className="sales-unique-product-name">
+                            <div key={productIndex} className="quotation-unique-product">
+                                <div className="quotation-unique-product-header">
+                                    <span className="quotation-unique-product-name">
                                         {item.productName} (Qty: {item.quantity})
                                     </span>
                                 </div>
-                                <div className="sales-unique-numbers-row">
+                                <div className="quotation-unique-numbers-row">
                                     {displayNumbers.map((un, numberIndex) => (
-                                        <div key={numberIndex} className="sales-unique-number-item">
+                                        <div key={numberIndex} className="quotation-unique-number-item">
                                             <input
                                                 type="text"
-                                                className="sales-unique-input"
+                                                className="quotation-unique-input"
                                                 placeholder={`Unit ${numberIndex + 1}`}
                                                 value={un.number || ''}
                                                 onChange={(e) => handleUniqueNumberChange(productIndex, numberIndex, e.target.value)}
                                             />
                                             <button
                                                 type="button"
-                                                className="sales-unique-remove-btn"
+                                                className="quotation-unique-remove-btn"
                                                 onClick={() => handleRemoveUniqueNumber(productIndex, numberIndex)}
                                                 title="Remove this number"
                                             >
@@ -1015,112 +877,54 @@ const Sales = () => {
 
     // ============= RENDER VIEW MODAL =============
     const renderViewModal = () => {
-        if (!selectedSale) return null;
-
-        const getTaxDisplay = () => {
-            if (!selectedSale.isGstMode || selectedSale.isChallan) {
-                return null;
-            }
-
-            const taxBreakdown = selectedSale.taxBreakdown || {};
-            const taxType = selectedSale.taxType || 'IGST';
-
-            if (taxType === 'IGST') {
-                return (
-                    <div className="sales-view-total">
-                        <span>IGST:</span>
-                        <span>₹{(taxBreakdown.igst || selectedSale.totalTax || 0).toFixed(2)}</span>
-                    </div>
-                );
-            } else if (taxType === 'CGST_SGST') {
-                return (
-                    <>
-                        <div className="sales-view-total">
-                            <span>CGST:</span>
-                            <span>₹{(taxBreakdown.cgst || 0).toFixed(2)}</span>
-                        </div>
-                        <div className="sales-view-total">
-                            <span>SGST:</span>
-                            <span>₹{(taxBreakdown.sgst || 0).toFixed(2)}</span>
-                        </div>
-                    </>
-                );
-            } else {
-                return (
-                    <div className="sales-view-total">
-                        <span>Tax ({selectedSale.taxSlab || 0}%):</span>
-                        <span>₹{(selectedSale.totalTax || 0).toFixed(2)}</span>
-                    </div>
-                );
-            }
-        };
+        if (!selectedQuotation) return null;
 
         return (
-            <div className="sales-modal-overlay" onClick={() => setShowViewModal(false)}>
-                <div className="sales-modal-content" onClick={(e) => e.stopPropagation()}>
-                    <div className="sales-modal-header">
-                        <h3 className="sales-modal-title">
-                            <FaFileInvoice /> Sale Details - {selectedSale.invoiceNumber}
+            <div className="quotation-modal-overlay" onClick={() => setShowViewModal(false)}>
+                <div className="quotation-modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="quotation-modal-header">
+                        <h3 className="quotation-modal-title">
+                            <FaFileInvoice /> Quotation Details - {selectedQuotation.quotationNumber}
                         </h3>
-                        <button className="sales-modal-close" onClick={() => setShowViewModal(false)}>
+                        <button className="quotation-modal-close" onClick={() => setShowViewModal(false)}>
                             <FaTimes />
                         </button>
                     </div>
 
-                    <div className="sales-modal-body">
-                        <div className="sales-view-grid">
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Invoice:</span>
-                                <span className="sales-view-value">{selectedSale.invoiceNumber}</span>
+                    <div className="quotation-modal-body">
+                        <div className="quotation-view-grid">
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">Quotation No:</span>
+                                <span className="quotation-view-value">{selectedQuotation.quotationNumber}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Internal No:</span>
-                                <span className="sales-view-value">{selectedSale.internalInvoiceNumber}</span>
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">Customer:</span>
+                                <span className="quotation-view-value">{selectedQuotation.customerName}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Challan:</span>
-                                <span className="sales-view-value">{selectedSale.isChallan ? "Yes" : "No"}</span>
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">Store:</span>
+                                <span className="quotation-view-value">{selectedQuotation.storeType}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Customer:</span>
-                                <span className="sales-view-value">{selectedSale.customerName}</span>
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">Date:</span>
+                                <span className="quotation-view-value">{formatDate(selectedQuotation.quotationDate)}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Store:</span>
-                                <span className="sales-view-value">{selectedSale.storeType}</span>
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">Phone:</span>
+                                <span className="quotation-view-value">{selectedQuotation.customerPhone || 'N/A'}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Payment Status:</span>
-                                <span className="sales-view-value">{selectedSale.paymentStatus || 'Paid'}</span>
+                            <div className="quotation-view-item">
+                                <span className="quotation-view-label">GSTIN:</span>
+                                <span className="quotation-view-value">{selectedQuotation.customerGstin || 'N/A'}</span>
                             </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Payment Type:</span>
-                                <span className="sales-view-value">{selectedSale.paymentType || '-'}</span>
-                            </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">GST Mode:</span>
-                                <span className="sales-view-value">{selectedSale.isGstMode ? "GST" : "Non-GST"}</span>
-                            </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Date:</span>
-                                <span className="sales-view-value">{formatDate(selectedSale.saleDate)}</span>
-                            </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Tax Type:</span>
-                                <span className="sales-view-value">{selectedSale.taxType}</span>
-                            </div>
-                            <div className="sales-view-item">
-                                <span className="sales-view-label">Tax Slab:</span>
-                                <span className="sales-view-value">{selectedSale.taxSlab}%</span>
-                            </div>
-                            <div className="sales-view-item sales-view-item-full">
-                                <span className="sales-view-label">Notes:</span>
-                                <span className="sales-view-value">{selectedSale.notes || 'No notes'}</span>
+                            <div className="quotation-view-item quotation-view-item-full">
+                                <span className="quotation-view-label">Notes:</span>
+                                <span className="quotation-view-value">{selectedQuotation.notes || 'No notes'}</span>
                             </div>
                         </div>
 
-                        <div className="sales-view-table-wrap">
-                            <table className="sales-view-table">
+                        <div className="quotation-view-table-wrap">
+                            <table className="quotation-view-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -1136,7 +940,7 @@ const Sales = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {selectedSale.items?.map((item, idx) => (
+                                    {selectedQuotation.items?.map((item, idx) => (
                                         <tr key={idx}>
                                             <td>{idx + 1}</td>
                                             <td>{item.productName}</td>
@@ -1149,7 +953,7 @@ const Sales = () => {
                                             <td>{item.hsnCode || '-'}</td>
                                             <td>
                                                 {item.uniqueNumbers?.filter(un => un.number).map((un, i) => (
-                                                    <span key={i} className="sales-unique-tag">
+                                                    <span key={i} className="quotation-unique-tag">
                                                         {un.number}
                                                     </span>
                                                 )) || '-'}
@@ -1160,32 +964,31 @@ const Sales = () => {
                             </table>
                         </div>
 
-                        <div className="sales-view-summary">
-                            <div className="sales-view-total">
+                        <div className="quotation-view-summary">
+                            <div className="quotation-view-total">
                                 <span>Subtotal:</span>
-                                <span>₹{selectedSale.subtotal?.toFixed(2) || 0}</span>
+                                <span>₹{selectedQuotation.subtotal?.toFixed(2) || 0}</span>
                             </div>
-                            <div className="sales-view-total">
+                            <div className="quotation-view-total">
                                 <span>Discount:</span>
-                                <span>₹{selectedSale.totalDiscount?.toFixed(2) || 0}</span>
+                                <span>₹{selectedQuotation.totalDiscount?.toFixed(2) || 0}</span>
                             </div>
-                            {selectedSale.isGstMode && !selectedSale.isChallan && getTaxDisplay()}
-                            <div className="sales-view-total sales-view-grand">
+                            <div className="quotation-view-total quotation-view-grand">
                                 <span>Grand Total:</span>
-                                <span>₹{selectedSale.grandTotal?.toFixed(2) || 0}</span>
+                                <span>₹{selectedQuotation.grandTotal?.toFixed(2) || 0}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="sales-modal-footer">
+                    <div className="quotation-modal-footer">
                         <button
-                            className="sales-pdf-btn"
-                            onClick={() => generatePDF(selectedSale, false)}
+                            className="quotation-pdf-btn"
+                            onClick={() => generatePDF(selectedQuotation, false)}
                             disabled={isGeneratingPDF}
                         >
                             <FaFilePdf /> {isGeneratingPDF ? "Generating..." : "PDF"}
                         </button>
-                        <button className="sales-modal-close-btn" onClick={() => setShowViewModal(false)}>
+                        <button className="quotation-modal-close-btn" onClick={() => setShowViewModal(false)}>
                             Close
                         </button>
                     </div>
@@ -1196,85 +999,35 @@ const Sales = () => {
 
     // ============= RENDER FORM =============
     const renderForm = () => {
-        const isGstDisabled = isChallan;
-
         return (
-            <div className="sales-form-container">
-                <div className="sales-form-header">
-                    <h2 className="sales-form-title">
+            <div className="quotation-form-container">
+                <div className="quotation-form-header">
+                    <h2 className="quotation-form-title">
                         <FaFileInvoice style={{ color: '#7366ff' }} />
-                        {isEditMode ? "Edit Sale" : "Create New Sale"}
+                        {isEditMode ? "Edit Quotation" : "Create New Quotation"}
                     </h2>
-                    <button className="sales-form-close" onClick={resetForm}>
+                    <button className="quotation-form-close" onClick={resetForm}>
                         <FaTimes />
                     </button>
                 </div>
 
-                {/* Challan Toggle + GST Toggle */}
-                <div className="sales-toggle-section">
-                    <div className="sales-toggle-row">
-                        <div className="sales-toggle-container">
-                            <span className="sales-toggle-label">
-                                <FaFileAlt /> Challan
-                            </span>
-                            <button
-                                className={`sales-toggle-btn sales-challan-toggle ${isChallan ? 'active' : ''}`}
-                                onClick={() => {
-                                    const newChallan = !isChallan;
-                                    setIsChallan(newChallan);
-                                    if (newChallan) {
-                                        setIsGstMode(false);
-                                        setTaxSlab(0);
-                                    }
-                                }}
-                                type="button"
-                            >
-                                {isChallan ? <FaToggleOn /> : <FaToggleOff />}
-                                <span>{isChallan ? "Challan ON" : "Challan OFF"}</span>
-                            </button>
-                        </div>
-
-                        <div className="sales-toggle-container">
-                            <span className="sales-toggle-label">GST Mode</span>
-                            <button
-                                className={`sales-toggle-btn ${isGstMode && !isChallan ? 'active' : ''} ${isGstDisabled ? 'sales-toggle-disabled' : ''}`}
-                                onClick={() => {
-                                    if (isGstDisabled) return;
-                                    const newGst = !isGstMode;
-                                    setIsGstMode(newGst);
-                                    if (!newGst) {
-                                        setTaxSlab(0);
-                                    } else {
-                                        setTaxSlab(18);
-                                    }
-                                }}
-                                type="button"
-                                disabled={isGstDisabled}
-                            >
-                                {isGstMode && !isChallan ? <FaToggleOn /> : <FaToggleOff />}
-                                <span>{isGstMode && !isChallan ? "GST" : "Non-GST"}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Customer Selection + Date */}
-                <div className="sales-section">
-                    <div className="sales-form-row">
-                        <div className="sales-form-field" style={{ flex: 7 }}>
-                            <label className="sales-form-label">
+                <div className="quotation-section">
+                    <div className="quotation-form-row">
+                        <div className="quotation-form-field" style={{ flex: 7 }}>
+                            <label className="quotation-form-label">
                                 <FaUser /> Select Customer
                             </label>
-                            <div className="sales-customer-row-inline">
-                                <div className="sales-customer-select" style={{ flex: 1 }}>
+                            <div className="quotation-customer-row-inline">
+                                <div className="quotation-customer-select" style={{ flex: 1 }}>
                                     <Select
                                         options={customers.map(c => ({
                                             value: c.customerId,
                                             label: `${c.customerName} ${c.contactNumber ? `(${c.contactNumber})` : ''}${c.gstNumber ? ` - GST: ${c.gstNumber}` : ''}`
                                         }))}
                                         styles={selectStyles}
-                                        className="sales-react-select"
-                                        classNamePrefix="sales-select"
+                                        className="quotation-react-select"
+                                        classNamePrefix="quotation-select"
                                         placeholder="Search Customer..."
                                         isSearchable
                                         isClearable
@@ -1288,42 +1041,42 @@ const Sales = () => {
                             </div>
                         </div>
 
-                        <div className="sales-form-field" style={{ flex: 3 }}>
-                            <label className="sales-form-label">
-                                <FaCalendarAlt /> Sale Date *
+                        <div className="quotation-form-field" style={{ flex: 3 }}>
+                            <label className="quotation-form-label">
+                                <FaCalendarAlt /> Quotation Date *
                             </label>
                             <input
                                 type="date"
-                                className="sales-input-field"
-                                value={saleDate}
-                                onChange={(e) => setSaleDate(e.target.value)}
+                                className="quotation-input-field"
+                                value={quotationDate}
+                                onChange={(e) => setQuotationDate(e.target.value)}
                             />
                         </div>
                     </div>
 
                     {/* Customer Details Fields */}
-                    <div className="sales-customer-details">
-                        <div className="sales-form-row">
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
+                    <div className="quotation-customer-details">
+                        <div className="quotation-form-row">
+                            <div className="quotation-form-field">
+                                <label className="quotation-form-label">
                                     <FaUser /> Customer Name {!selectedCustomer && '*'}
                                 </label>
                                 <input
                                     type="text"
-                                    className="sales-input-field"
+                                    className="quotation-input-field"
                                     value={customerName}
                                     onChange={(e) => setCustomerName(e.target.value)}
                                     readOnly={isCustomerFieldsReadOnly}
                                     placeholder={isCustomerFieldsReadOnly ? "" : "Enter customer name"}
                                 />
                             </div>
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
+                            <div className="quotation-form-field">
+                                <label className="quotation-form-label">
                                     <FaEnvelope /> Email
                                 </label>
                                 <input
                                     type="email"
-                                    className="sales-input-field"
+                                    className="quotation-input-field"
                                     value={customerEmail}
                                     onChange={(e) => setCustomerEmail(e.target.value)}
                                     readOnly={isCustomerFieldsReadOnly}
@@ -1332,14 +1085,14 @@ const Sales = () => {
                             </div>
                         </div>
 
-                        <div className="sales-form-row">
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
+                        <div className="quotation-form-row">
+                            <div className="quotation-form-field">
+                                <label className="quotation-form-label">
                                     <FaPhone /> Phone Number {!selectedCustomer && '*'}
                                 </label>
                                 <input
                                     type="text"
-                                    className="sales-input-field"
+                                    className="quotation-input-field"
                                     value={customerPhone}
                                     onChange={(e) => setCustomerPhone(e.target.value)}
                                     readOnly={isCustomerFieldsReadOnly}
@@ -1347,38 +1100,30 @@ const Sales = () => {
                                     maxLength="10"
                                 />
                             </div>
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
-                                    <FaInfoCircle /> GSTIN {(isGstMode && !isChallan) && '*'}
+                            <div className="quotation-form-field">
+                                <label className="quotation-form-label">
+                                    <FaInfoCircle /> GSTIN
                                 </label>
                                 <input
                                     type="text"
-                                    className="sales-input-field"
+                                    className="quotation-input-field"
                                     value={customerGstin}
                                     onChange={(e) => setCustomerGstin(e.target.value.toUpperCase())}
                                     readOnly={isCustomerFieldsReadOnly}
                                     placeholder={isCustomerFieldsReadOnly ? "" : "15 characters"}
                                     maxLength="15"
                                 />
-                                {isGstMode && !isChallan && !selectedCustomer && (
-                                    <div className="sales-field-hint">Required in GST Mode</div>
-                                )}
-                                {isGstMode && !isChallan && selectedCustomer && !selectedCustomer.gstNumber && (
-                                    <div className="sales-field-hint sales-field-hint-warning">
-                                        ⚠️ Customer has no GSTIN
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-                        <div className="sales-form-row">
-                            <div className="sales-form-field sales-form-field-full">
-                                <label className="sales-form-label">
+                        <div className="quotation-form-row">
+                            <div className="quotation-form-field quotation-form-field-full">
+                                <label className="quotation-form-label">
                                     <FaMapMarkerAlt /> Address
                                 </label>
                                 <input
                                     type="text"
-                                    className="sales-input-field"
+                                    className="quotation-input-field"
                                     value={customerAddress}
                                     onChange={(e) => setCustomerAddress(e.target.value)}
                                     readOnly={isCustomerFieldsReadOnly}
@@ -1388,7 +1133,7 @@ const Sales = () => {
                         </div>
 
                         {selectedCustomer && (
-                            <div className="sales-customer-selected-badge">
+                            <div className="quotation-customer-selected-badge">
                                 <span>✅ Customer selected: {selectedCustomer.customerName}</span>
                             </div>
                         )}
@@ -1396,10 +1141,10 @@ const Sales = () => {
                 </div>
 
                 {/* Product Selection */}
-                <div className="sales-section">
-                    <div className="sales-product-row">
-                        <div className="sales-product-select" style={{ flex: 1 }}>
-                            <label className="sales-form-label">
+                <div className="quotation-section">
+                    <div className="quotation-product-row">
+                        <div className="quotation-product-select" style={{ flex: 1 }}>
+                            <label className="quotation-form-label">
                                 <FaBox /> Select Product
                             </label>
                             <Select
@@ -1408,8 +1153,8 @@ const Sales = () => {
                                     label: `${p.productName}`
                                 }))}
                                 styles={selectStyles}
-                                className="sales-react-select"
-                                classNamePrefix="sales-select"
+                                className="quotation-react-select"
+                                classNamePrefix="quotation-select"
                                 placeholder="Search and select product..."
                                 isSearchable
                                 value={selectedProduct ? {
@@ -1424,9 +1169,9 @@ const Sales = () => {
 
                 {/* Line Items Table */}
                 {lineItems.length > 0 && (
-                    <div className="sales-section">
-                        <div className="sales-items-table-wrap">
-                            <table className="sales-items-table">
+                    <div className="quotation-section">
+                        <div className="quotation-items-table-wrap">
+                            <table className="quotation-items-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -1445,11 +1190,11 @@ const Sales = () => {
                                     {lineItems.map((item, idx) => (
                                         <tr key={idx}>
                                             <td>{idx + 1}</td>
-                                            <td className="sales-item-name">{item.productName}</td>
+                                            <td className="quotation-item-name">{item.productName}</td>
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="sales-item-input sales-invoice-desc-input"
+                                                    className="quotation-item-input quotation-invoice-desc-input"
                                                     value={item.invoiceDescription || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'invoiceDescription', e.target.value)}
                                                     placeholder="Desc"
@@ -1458,7 +1203,7 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="sales-item-input sales-unit-input"
+                                                    className="quotation-item-input quotation-unit-input"
                                                     value={item.unitName || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'unitName', e.target.value)}
                                                     placeholder="Unit"
@@ -1467,7 +1212,7 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="sales-item-input sales-capacity-input"
+                                                    className="quotation-item-input quotation-capacity-input"
                                                     value={item.capacity || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'capacity', e.target.value)}
                                                     placeholder="Capacity"
@@ -1476,7 +1221,7 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="text"
-                                                    className="sales-item-input sales-hsn-input"
+                                                    className="quotation-item-input quotation-hsn-input"
                                                     value={item.hsnCode || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'hsnCode', e.target.value)}
                                                     placeholder="HSN"
@@ -1485,7 +1230,7 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    className="sales-item-input"
+                                                    className="quotation-item-input"
                                                     value={item.quantity}
                                                     min="0.01"
                                                     step="0.01"
@@ -1495,19 +1240,19 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    className="sales-item-input"
+                                                    className="quotation-item-input"
                                                     value={item.unitPrice}
                                                     min="0"
                                                     step="1"
                                                     onChange={(e) => handleUpdateLineItem(idx, 'unitPrice', e.target.value)}
                                                 />
                                             </td>
-                                            <td className="sales-item-final">
+                                            <td className="quotation-item-final">
                                                 ₹{item.finalPrice.toFixed(2)}
                                             </td>
                                             <td>
                                                 <button
-                                                    className="sales-item-remove"
+                                                    className="quotation-item-remove"
                                                     onClick={() => handleRemoveLineItem(idx)}
                                                 >
                                                     <FaTrash />
@@ -1524,81 +1269,32 @@ const Sales = () => {
                 {/* Unique Numbers Section */}
                 {lineItems.length > 0 && renderUniqueNumbers()}
 
-                {/* Store, Tax, Payment */}
-                <div className="sales-section">
-                    <div className="sales-form-row">
-                        <div className="sales-form-field">
-                            <label className="sales-form-label">
+                {/* Store + Notes */}
+                <div className="quotation-section">
+                    <div className="quotation-form-row">
+                        <div className="quotation-form-field">
+                            <label className="quotation-form-label">
                                 <FaStore /> Store *
                             </label>
                             <Select
                                 options={STORE_OPTIONS}
                                 styles={selectStyles}
-                                className="sales-react-select"
-                                classNamePrefix="sales-select"
+                                className="quotation-react-select"
+                                classNamePrefix="quotation-select"
                                 placeholder="Select Store"
                                 value={STORE_OPTIONS.find(opt => opt.value === storeType)}
                                 onChange={(option) => setStoreType(option?.value || "Vadodara")}
                             />
                         </div>
-
-                        {isGstMode && !isChallan && (
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
-                                    <FaPercent /> Tax Slab *
-                                </label>
-                                <Select
-                                    options={TAX_OPTIONS}
-                                    styles={selectStyles}
-                                    className="sales-react-select"
-                                    classNamePrefix="sales-select"
-                                    placeholder="Select Tax"
-                                    value={TAX_OPTIONS.find(opt => opt.value === taxSlab)}
-                                    onChange={(option) => setTaxSlab(option?.value || 18)}
-                                />
-                            </div>
-                        )}
-
-                        <div className="sales-form-field">
-                            <label className="sales-form-label">
-                                <FaMoneyBillWave /> Payment Status *
-                            </label>
-                            <Select
-                                options={PAYMENT_STATUS_OPTIONS}
-                                styles={selectStyles}
-                                className="sales-react-select"
-                                classNamePrefix="sales-select"
-                                placeholder="Select Status"
-                                value={PAYMENT_STATUS_OPTIONS.find(opt => opt.value === paymentStatus)}
-                                onChange={(option) => setPaymentStatus(option?.value || "Paid")}
-                            />
-                        </div>
-
-                        {paymentStatus === 'Paid' && (
-                            <div className="sales-form-field">
-                                <label className="sales-form-label">
-                                    <FaRupeeSign /> Payment Type *
-                                </label>
-                                <Select
-                                    options={PAYMENT_OPTIONS}
-                                    styles={selectStyles}
-                                    className="sales-react-select"
-                                    classNamePrefix="sales-select"
-                                    placeholder="Select Payment"
-                                    value={PAYMENT_OPTIONS.find(opt => opt.value === paymentType)}
-                                    onChange={(option) => setPaymentType(option?.value || "Cash")}
-                                />
-                            </div>
-                        )}
                     </div>
 
-                    <div className="sales-form-row">
-                        <div className="sales-form-field sales-form-field-full">
-                            <label className="sales-form-label">
+                    <div className="quotation-form-row">
+                        <div className="quotation-form-field quotation-form-field-full">
+                            <label className="quotation-form-label">
                                 <FaInfoCircle /> Notes (Optional)
                             </label>
                             <textarea
-                                className="sales-textarea-field"
+                                className="quotation-textarea-field"
                                 rows="2"
                                 placeholder="Add notes..."
                                 value={notes}
@@ -1610,39 +1306,29 @@ const Sales = () => {
 
                 {/* Summary */}
                 {lineItems.length > 0 && (
-                    <div className="sales-summary-column">
-                        <div className="sales-summary-title">Summary</div>
-                        <div className="sales-summary-items">
-                            <div className="sales-summary-row">
+                    <div className="quotation-summary-column">
+                        <div className="quotation-summary-title">Summary</div>
+                        <div className="quotation-summary-items">
+                            <div className="quotation-summary-row">
                                 <span>Subtotal</span>
                                 <span>₹{totals.subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="sales-summary-row sales-summary-discount">
+                            <div className="quotation-summary-row quotation-summary-discount">
                                 <span>Discount</span>
                                 <span>-₹{totals.totalDiscount.toFixed(2)}</span>
                             </div>
-                            <div className="sales-summary-row">
-                                <span>Taxable Amount</span>
-                                <span>₹{totals.taxableAmount.toFixed(2)}</span>
-                            </div>
-                            {isGstMode && !isChallan && (
-                                <div className="sales-summary-row">
-                                    <span>Tax ({taxSlab}%)</span>
-                                    <span>₹{totals.totalTax.toFixed(2)}</span>
-                                </div>
-                            )}
-                            <div className="sales-summary-row sales-summary-grand">
+                            <div className="quotation-summary-row quotation-summary-grand">
                                 <span>Grand Total</span>
                                 <span>₹{totals.grandTotal.toFixed(2)}</span>
                             </div>
                         </div>
 
                         <button
-                            className="sales-submit-btn"
+                            className="quotation-submit-btn"
                             onClick={handleSubmit}
                             disabled={isSubmitting || lineItems.length === 0}
                         >
-                            {isSubmitting ? "Saving..." : isEditMode ? "Update Invoice" : "Create Invoice"}
+                            {isSubmitting ? "Saving..." : isEditMode ? "Update Quotation" : "Create Quotation"}
                         </button>
                     </div>
                 )}
@@ -1650,49 +1336,49 @@ const Sales = () => {
         );
     };
 
-    // ============= ✅ RENDER DELETE MODAL =============
+    // ============= RENDER DELETE MODAL =============
     const renderDeleteModal = () => {
-        if (!showDeleteModal || !saleToDelete) return null;
+        if (!showDeleteModal || !quotationToDelete) return null;
 
         return (
-            <div className="sales-modal-overlay" onClick={() => !isDeleting && setShowDeleteModal(false)}>
-                <div className="sales-delete-modal" onClick={(e) => e.stopPropagation()}>
-                    <div className="sales-delete-modal-icon">
+            <div className="quotation-modal-overlay" onClick={() => !isDeleting && setShowDeleteModal(false)}>
+                <div className="quotation-delete-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="quotation-delete-modal-icon">
                         <FaExclamationTriangle />
                     </div>
 
-                    <h3 className="sales-delete-modal-title">Confirm Delete</h3>
+                    <h3 className="quotation-delete-modal-title">Confirm Delete</h3>
 
-                    <p className="sales-delete-modal-text">
-                        Are you sure you want to delete this invoice? This action cannot be undone.
+                    <p className="quotation-delete-modal-text">
+                        Are you sure you want to delete this quotation? This action cannot be undone.
                     </p>
 
-                    <div className="sales-delete-modal-info">
-                        <div className="sales-delete-modal-row">
-                            <span className="sales-delete-modal-label">Invoice No:</span>
-                            <span className="sales-delete-modal-value">{saleToDelete.invoiceNumber}</span>
+                    <div className="quotation-delete-modal-info">
+                        <div className="quotation-delete-modal-row">
+                            <span className="quotation-delete-modal-label">Quotation No:</span>
+                            <span className="quotation-delete-modal-value">{quotationToDelete.quotationNumber}</span>
                         </div>
-                        <div className="sales-delete-modal-row">
-                            <span className="sales-delete-modal-label">Customer:</span>
-                            <span className="sales-delete-modal-value">{saleToDelete.customerName}</span>
+                        <div className="quotation-delete-modal-row">
+                            <span className="quotation-delete-modal-label">Customer:</span>
+                            <span className="quotation-delete-modal-value">{quotationToDelete.customerName}</span>
                         </div>
-                        <div className="sales-delete-modal-row">
-                            <span className="sales-delete-modal-label">Amount:</span>
-                            <span className="sales-delete-modal-value">₹{saleToDelete.grandTotal?.toFixed(2) || 0}</span>
+                        <div className="quotation-delete-modal-row">
+                            <span className="quotation-delete-modal-label">Amount:</span>
+                            <span className="quotation-delete-modal-value">₹{quotationToDelete.grandTotal?.toFixed(2) || 0}</span>
                         </div>
                     </div>
 
-                    <div className="sales-delete-modal-buttons">
+                    <div className="quotation-delete-modal-buttons">
                         <button
-                            className="sales-delete-modal-cancel"
+                            className="quotation-delete-modal-cancel"
                             onClick={() => setShowDeleteModal(false)}
                             disabled={isDeleting}
                         >
                             Cancel
                         </button>
                         <button
-                            className="sales-delete-modal-confirm"
-                            onClick={confirmDeleteSale}
+                            className="quotation-delete-modal-confirm"
+                            onClick={confirmDeleteQuotation}
                             disabled={isDeleting}
                         >
                             {isDeleting ? "Deleting..." : "Confirm Delete"}
@@ -1703,7 +1389,7 @@ const Sales = () => {
         );
     };
 
-    // ============= ✅ RENDER PDF PROGRESS LOADER =============
+    // ============= RENDER PDF PROGRESS LOADER =============
     const renderPDFProgress = () => {
         if (!isExportingPDF) return null;
 
@@ -1712,31 +1398,31 @@ const Sales = () => {
             : 0;
 
         return (
-            <div className="sales-pdf-progress-overlay">
-                <div className="sales-pdf-progress-modal">
-                    <div className="sales-pdf-progress-icon">
+            <div className="quotation-pdf-progress-overlay">
+                <div className="quotation-pdf-progress-modal">
+                    <div className="quotation-pdf-progress-icon">
                         <FaFileArchive />
                     </div>
 
-                    <h3 className="sales-pdf-progress-title">Exporting PDFs</h3>
+                    <h3 className="quotation-pdf-progress-title">Exporting Quotations</h3>
 
-                    <p className="sales-pdf-progress-status">{pdfProgress.status}</p>
+                    <p className="quotation-pdf-progress-status">{pdfProgress.status}</p>
 
                     {pdfProgress.total > 0 && (
                         <>
-                            <div className="sales-pdf-progress-bar-container">
+                            <div className="quotation-pdf-progress-bar-container">
                                 <div
-                                    className="sales-pdf-progress-bar"
+                                    className="quotation-pdf-progress-bar"
                                     style={{ width: `${percentage}%` }}
                                 ></div>
                             </div>
-                            <div className="sales-pdf-progress-percentage">{percentage}%</div>
+                            <div className="quotation-pdf-progress-percentage">{percentage}%</div>
                         </>
                     )}
 
-                    <div className="sales-pdf-progress-spinner"></div>
+                    <div className="quotation-pdf-progress-spinner"></div>
 
-                    <p className="sales-pdf-progress-hint">
+                    <p className="quotation-pdf-progress-hint">
                         Please don't close this window while PDFs are being generated
                     </p>
                 </div>
@@ -1746,42 +1432,22 @@ const Sales = () => {
 
     // ============= RENDER TABLE =============
     const renderTable = () => (
-        <div className="sales-table-container">
-            <div className="sales-table-header">
-                <div className="sales-search-filter-group">
-                    <div className="sales-search-container">
-                        <FaSearch className="sales-search-icon" />
-                        <input
-                            type="text"
-                            className="sales-search-input"
-                            placeholder="Search by Invoice, Customer..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    {/* ✅ Filter Dropdown */}
-                    <div className="sales-filter-container">
-                        <FaFilter className="sales-filter-icon" />
-                        <Select
-                            options={FILTER_OPTIONS}
-                            styles={selectStyles}
-                            className="sales-filter-select"
-                            classNamePrefix="sales-filter"
-                            placeholder="Filter"
-                            isSearchable={false}
-                            value={FILTER_OPTIONS.find(opt => opt.value === filterType)}
-                            onChange={(option) => {
-                                setFilterType(option?.value || "All");
-                                setPagination(prev => ({ ...prev, page: 1 }));
-                            }}
-                        />
-                    </div>
+        <div className="quotation-table-container">
+            <div className="quotation-table-header">
+                <div className="quotation-search-container">
+                    <FaSearch className="quotation-search-icon" />
+                    <input
+                        type="text"
+                        className="quotation-search-input"
+                        placeholder="Search by Quotation No, Customer..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
 
-                <div className="sales-action-buttons">
+                <div className="quotation-action-buttons">
                     <button
-                        className="sales-create-btn"
+                        className="quotation-create-btn"
                         onClick={() => {
                             if (showForm) {
                                 resetForm();
@@ -1795,25 +1461,25 @@ const Sales = () => {
                         {showForm ? "Close" : "Create"}
                     </button>
                     <button
-                        className="sales-pdf-export-btn"
+                        className="quotation-pdf-export-btn"
                         onClick={exportPDFsAsZip}
-                        disabled={isExportingPDF || isLoading || sales.length === 0}
-                        title="Export all filtered invoices as PDF (ZIP)"
+                        disabled={isExportingPDF || isLoading || quotations.length === 0}
+                        title="Export all quotations as PDF (ZIP)"
                     >
                         {isExportingPDF ? (
-                            <span className="sales-loading-spinner-small"></span>
+                            <span className="quotation-loading-spinner-small"></span>
                         ) : (
                             <FaFilePdf />
                         )}
                         {isExportingPDF ? "Exporting..." : "Export PDF"}
                     </button>
                     <button
-                        className="sales-export-btn"
+                        className="quotation-export-btn"
                         onClick={exportToExcel}
                         disabled={isExporting || isLoading}
                     >
                         {isExporting ? (
-                            <span className="sales-loading-spinner-small"></span>
+                            <span className="quotation-loading-spinner-small"></span>
                         ) : (
                             <FaFileExcel />
                         )}
@@ -1825,28 +1491,25 @@ const Sales = () => {
             {showForm && renderForm()}
 
             {isLoading ? (
-                <div className="sales-loading-container">
-                    <div className="sales-loading-spinner"></div>
-                    <p>Loading sales...</p>
+                <div className="quotation-loading-container">
+                    <div className="quotation-loading-spinner"></div>
+                    <p>Loading quotations...</p>
                 </div>
-            ) : sales.length === 0 ? (
-                <div className="sales-empty-state">
+            ) : quotations.length === 0 ? (
+                <div className="quotation-empty-state">
                     <FaFileInvoice size={50} color="#ccc" />
-                    <p>No sales found</p>
+                    <p>No quotations found</p>
                 </div>
             ) : (
                 <>
-                    <div className="sales-table-responsive">
-                        <table className="sales-table">
+                    <div className="quotation-table-responsive">
+                        <table className="quotation-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Invoice</th>
-                                    <th>Internal No</th>
+                                    <th>Quotation No</th>
                                     <th>Customer</th>
                                     <th>Store</th>
-                                    <th>Payment Status</th>
-                                    <th>Payment Type</th>
                                     <th>Items</th>
                                     <th>Total</th>
                                     <th>Date</th>
@@ -1854,39 +1517,29 @@ const Sales = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sales.map((sale, idx) => {
+                                {quotations.map((quotation, idx) => {
                                     const serialNo = (pagination.page - 1) * pagination.limit + idx + 1;
                                     return (
-                                        <tr key={sale.saleId} className="sales-table-row">
+                                        <tr key={quotation.quotationId} className="quotation-table-row">
                                             <td>{serialNo}</td>
-                                            <td className="sales-invoice-number">
-                                                <strong>{sale.invoiceNumber}</strong>
+                                            <td className="quotation-number">
+                                                <strong>{quotation.quotationNumber}</strong>
                                             </td>
-                                            <td className="sales-internal-number">
-                                                {sale.internalInvoiceNumber}
-                                            </td>
-                                            <td>{sale.customerName}</td>
-                                            <td>{sale.storeType}</td>
+                                            <td>{quotation.customerName}</td>
+                                            <td>{quotation.storeType}</td>
+                                            <td>{quotation.items?.length || 0}</td>
                                             <td>
-                                                <span className={`sales-status-badge ${sale.paymentStatus === 'Paid' ? 'sales-status-paid' : 'sales-status-pending'}`}>
-                                                    {sale.paymentStatus === 'Paid' ? <FaCheckCircle /> : <FaClock />}
-                                                    {' '}{sale.paymentStatus || 'Paid'}
+                                                <span className="quotation-total-badge">
+                                                    ₹{quotation.grandTotal?.toFixed(2) || 0}
                                                 </span>
                                             </td>
-                                            <td>{sale.paymentType || '-'}</td>
-                                            <td>{sale.items?.length || 0}</td>
+                                            <td>{quotation.quotationDate ? new Date(quotation.quotationDate).toLocaleDateString() : "N/A"}</td>
                                             <td>
-                                                <span className="sales-total-badge">
-                                                    ₹{sale.grandTotal?.toFixed(2) || 0}
-                                                </span>
-                                            </td>
-                                            <td>{sale.saleDate ? new Date(sale.saleDate).toLocaleDateString() : "N/A"}</td>
-                                            <td>
-                                                <div className="sales-action-btns">
+                                                <div className="quotation-action-btns">
                                                     <button
-                                                        className="sales-view-btn"
+                                                        className="quotation-view-btn"
                                                         onClick={() => {
-                                                            setSelectedSale(sale);
+                                                            setSelectedQuotation(quotation);
                                                             setShowViewModal(true);
                                                         }}
                                                         title="View"
@@ -1894,22 +1547,22 @@ const Sales = () => {
                                                         <FaEye />
                                                     </button>
                                                     <button
-                                                        className="sales-edit-btn"
-                                                        onClick={() => handleEditSale(sale)}
+                                                        className="quotation-edit-btn"
+                                                        onClick={() => handleEditQuotation(quotation)}
                                                         title="Edit"
                                                     >
                                                         <FaEdit />
                                                     </button>
                                                     <button
-                                                        className="sales-delete-btn"
-                                                        onClick={() => openDeleteModal(sale)}
+                                                        className="quotation-delete-btn"
+                                                        onClick={() => openDeleteModal(quotation)}
                                                         title="Delete"
                                                     >
                                                         <FaTrash />
                                                     </button>
                                                     <button
-                                                        className="sales-pdf-row-btn"
-                                                        onClick={() => generatePDF(sale, false)}
+                                                        className="quotation-pdf-row-btn"
+                                                        onClick={() => generatePDF(quotation, false)}
                                                         disabled={isGeneratingPDF}
                                                         title="Download PDF"
                                                     >
@@ -1925,25 +1578,25 @@ const Sales = () => {
                     </div>
 
                     {pagination.totalPages > 1 && (
-                        <div className="sales-pagination">
-                            <div className="sales-pagination-info">
+                        <div className="quotation-pagination">
+                            <div className="quotation-pagination-info">
                                 Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
                                 {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
                                 {pagination.total} entries
                             </div>
-                            <div className="sales-pagination-buttons">
+                            <div className="quotation-pagination-buttons">
                                 <button
-                                    className="sales-page-btn"
+                                    className="quotation-page-btn"
                                     onClick={prevPage}
                                     disabled={!pagination.hasPrev || isLoading}
                                 >
                                     <FaChevronLeft /> Prev
                                 </button>
-                                <span className="sales-page-info">
+                                <span className="quotation-page-info">
                                     Page {pagination.page} of {pagination.totalPages}
                                 </span>
                                 <button
-                                    className="sales-page-btn"
+                                    className="quotation-page-btn"
                                     onClick={nextPage}
                                     disabled={!pagination.hasNext || isLoading}
                                 >
@@ -1961,12 +1614,12 @@ const Sales = () => {
     return (
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
-            <div className="sales-module-wrapper">
-                <div className="sales-page-header">
-                    <h2 className="sales-page-title">Sales Management</h2>
+            <div className="quotation-module-wrapper">
+                <div className="quotation-page-header">
+                    <h2 className="quotation-page-title">Quotation Management</h2>
                 </div>
 
-                <div className="sales-content-wrapper">
+                <div className="quotation-content-wrapper">
                     {renderTable()}
                 </div>
 
@@ -1975,11 +1628,11 @@ const Sales = () => {
                 {renderPDFProgress()}
 
                 <div style={{ position: "absolute", left: "-9999px", top: 0, visibility: "hidden" }}>
-                    {saleForPrint && <SalesPrint invoice={saleForPrint} />}
+                    {quotationForPrint && <QuotationPrint quotation={quotationForPrint} />}
                 </div>
             </div>
         </Navbar>
     );
 };
 
-export default Sales;
+export default Quotation;

@@ -1,5 +1,6 @@
 // ============================================
 // SALES MODULE - Component Specific Classes
+// (Consolidated + Premium Update)
 // ============================================
 
 .sales-module-wrapper {
@@ -48,7 +49,7 @@
 // CONTENT WRAPPER
 // ============================================
 .sales-content-wrapper {
-    max-width: 1200px;
+    max-width: 1350px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -57,15 +58,16 @@
 }
 
 // ============================================
-// FORM CONTAINER
+// FORM CONTAINER (premium gradient — merged from form.scss)
 // ============================================
 .sales-form-container {
-    background: white;
+    background: linear-gradient(145deg, #f9f9ff, #ececff);
     border-radius: 12px;
     padding: 25px 30px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     animation: salesFormSlideDown 0.3s ease-out;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
     @keyframes salesFormSlideDown {
         from {
@@ -138,6 +140,118 @@
         color: #3f3f91;
         margin-top: 0;
         margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+// ============================================
+// PREMIUM TOGGLE SECTION (GST + Challan)
+// ============================================
+.sales-toggle-section {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    border: 1px solid #e5e5f0;
+    backdrop-filter: blur(4px);
+}
+
+.sales-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.sales-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+
+    .sales-toggle-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        svg {
+            color: #7366ff;
+            font-size: 14px;
+        }
+    }
+}
+
+.sales-toggle-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 20px 9px 14px;
+    border: 1px solid #e2e2ec;
+    border-radius: 30px;
+    background: #eeeef4;
+    color: #888;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+    svg {
+        font-size: 22px;
+        transition: transform 0.35s ease, color 0.3s ease;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12));
+    }
+
+    &:hover:not(.active):not(.sales-toggle-disabled) {
+        background: #e0e0ec;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    // GST active state — purple
+    &.active {
+        background: linear-gradient(135deg, #7366ff 0%, #948cff 70%);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 6px 18px rgba(115, 102, 255, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+
+        svg {
+            color: #fff;
+            transform: rotate(360deg) scale(1.05);
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(115, 102, 255, 0.45);
+        }
+    }
+
+    // Challan active state — amber (overrides purple when both classes present)
+    &.sales-challan-toggle.active {
+        background: linear-gradient(135deg, #ff9800 0%, #ffb74d 70%);
+        box-shadow: 0 6px 18px rgba(255, 152, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+
+        &:hover {
+            box-shadow: 0 8px 22px rgba(255, 152, 0, 0.45);
+        }
+    }
+
+    &.sales-toggle-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+            transform: none;
+            box-shadow: none;
+        }
     }
 }
 
@@ -154,51 +268,64 @@
     flex: 1;
 }
 
-.sales-new-customer-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    height: 40px;
-    white-space: nowrap;
-    min-width: 40px;
+// ============================================
+// CUSTOMER DETAILS SECTION
+// ============================================
+.sales-customer-details {
+    margin-top: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
 
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    .sales-form-row {
+        margin-bottom: 12px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 
-    svg {
-        font-size: 14px;
+    .sales-input-field {
+        background-color: white;
+
+        &[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            opacity: 0.8;
+            border-color: #ddd;
+
+            &:focus {
+                border-color: #ddd;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .sales-field-hint {
+        font-size: 11px;
+        color: #888;
+        margin-top: 3px;
+        font-style: italic;
+
+        &.sales-field-hint-warning {
+            color: #dc3545;
+            font-weight: 500;
+        }
     }
 }
 
-.sales-customer-info {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
+.sales-customer-selected-badge {
     margin-top: 10px;
-    padding: 12px 16px;
-    background: #f8f9fa;
+    padding: 8px 14px;
+    background: #d4edda;
     border-radius: 6px;
-    font-size: 14px;
-    color: #555;
+    border-left: 4px solid #28a745;
 
     span {
-        display: flex;
-        gap: 4px;
-
-        strong {
-            color: #333;
-        }
+        color: #155724;
+        font-size: 13px;
+        font-weight: 500;
     }
 }
 
@@ -213,27 +340,6 @@
     .sales-product-select {
         flex: 1;
     }
-
-    .sales-add-product-btn {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #7366ff, #948cff);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        height: 40px;
-        white-space: nowrap;
-
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(115, 102, 255, 0.4);
-        }
-    }
 }
 
 // ============================================
@@ -242,12 +348,14 @@
 .sales-items-table-wrap {
     overflow-x: auto;
     margin-top: 10px;
+    border-radius: 8px;
 }
 
 .sales-items-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    background: #fff;
 
     th,
     td {
@@ -277,38 +385,61 @@
         border-radius: 4px;
         font-size: 13px;
         text-align: center;
-        transition: border 0.3s;
+        transition: border 0.2s, box-shadow 0.2s;
 
         &:focus {
             border-color: #7366ff;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
         }
+    }
 
-        &.sales-item-discount {
-            width: 50px;
-        }
+    // ✅ Invoice Desc — wider, left aligned (long text)
+    .sales-invoice-desc-input {
+        width: 190px !important;
+        min-width: 160px !important;
+        text-align: left;
+    }
+
+    // ✅ Capacity — slightly wider than default
+    .sales-capacity-input {
+        width: 85px !important;
+        min-width: 70px !important;
+        text-align: center;
+    }
+
+    .sales-unit-input {
+        width: 70px !important;
+        min-width: 60px !important;
+    }
+
+    .sales-hsn-input {
+        width: 80px !important;
+        min-width: 65px !important;
     }
 
     .sales-item-final {
         font-weight: 600;
         color: #2d2f87;
+        white-space: nowrap;
     }
 
     .sales-item-remove {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 4px 8px;
-        background: #dc3545;
+        padding: 6px 9px;
+        background: linear-gradient(135deg, #dc3545, #e74c3c);
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 5px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+        transition: all 0.25s ease;
 
         &:hover {
-            background: #c82333;
-            transform: scale(1.05);
+            transform: scale(1.08);
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4);
         }
 
         svg {
@@ -349,7 +480,8 @@
             }
         }
 
-        .sales-input-field {
+        .sales-input-field,
+        .sales-textarea-field {
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid #ddd;
@@ -357,6 +489,7 @@
             transition: all 0.3s;
             width: 100%;
             background-color: white;
+            font-family: inherit;
 
             &:focus {
                 border-color: #7366ff;
@@ -366,21 +499,7 @@
         }
 
         .sales-textarea-field {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            transition: all 0.3s;
-            width: 100%;
-            background-color: white;
             resize: vertical;
-            font-family: inherit;
-
-            &:focus {
-                border-color: #7366ff;
-                outline: none;
-                box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
-            }
         }
 
         .sales-error {
@@ -435,10 +554,113 @@
 }
 
 // ============================================
+// UNIQUE NUMBERS SECTION
+// ============================================
+.sales-unique-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+
+    .sales-unique-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .sales-unique-product {
+        background: white;
+        border-radius: 8px;
+        padding: 12px 16px;
+        border: 1px solid #e8e8e8;
+
+        .sales-unique-product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+
+            .sales-unique-product-name {
+                font-weight: 600;
+                color: #333;
+                font-size: 14px;
+            }
+        }
+
+        .sales-unique-numbers-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .sales-unique-number-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            .sales-unique-input {
+                width: 120px;
+                padding: 6px 10px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 13px;
+                font-family: monospace;
+                transition: all 0.3s;
+
+                &:focus {
+                    border-color: #7366ff;
+                    outline: none;
+                    box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.1);
+                }
+
+                &::placeholder {
+                    color: #bbb;
+                    font-size: 12px;
+                }
+            }
+
+            .sales-unique-remove-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                background: #f5f5f5;
+                border: none;
+                border-radius: 4px;
+                color: #999;
+                cursor: pointer;
+                transition: all 0.3s;
+
+                &:hover {
+                    background: #ffebee;
+                    color: #dc3545;
+                }
+            }
+        }
+    }
+}
+
+.sales-unique-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
+    color: #3f3f91;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: monospace;
+    margin: 2px 3px;
+    white-space: nowrap;
+}
+
+// ============================================
 // SUMMARY - COLUMN VIEW
 // ============================================
 .sales-summary-column {
-    background: #f8f9fa;
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 8px;
     padding: 20px;
     margin-top: 15px;
@@ -474,10 +696,8 @@
                 font-weight: 600;
             }
 
-            &.sales-summary-discount {
-                span:last-child {
-                    color: #dc3545;
-                }
+            &.sales-summary-discount span:last-child {
+                color: #dc3545;
             }
 
             &.sales-summary-grand {
@@ -485,11 +705,7 @@
                 border-top: 2px solid #ddd;
                 font-size: 18px;
 
-                span:first-child {
-                    color: #2d2f87;
-                    font-weight: 700;
-                }
-
+                span:first-child,
                 span:last-child {
                     color: #2d2f87;
                     font-weight: 700;
@@ -505,7 +721,7 @@
 .sales-submit-btn {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #7366ff, #948cff);
+    background: linear-gradient(to right, #7366ff, #948cff);
     color: white;
     font-size: 16px;
     font-weight: 600;
@@ -515,6 +731,7 @@
     transition: all 0.3s ease;
 
     &:hover:not(:disabled) {
+        background: linear-gradient(to right, #5f53cc, #7366ff);
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(115, 102, 255, 0.4);
     }
@@ -586,7 +803,7 @@
 }
 
 // ============================================
-// ACTION BUTTONS
+// ACTION BUTTONS (Create / Export)
 // ============================================
 .sales-create-btn {
     display: flex;
@@ -606,10 +823,6 @@
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 14px rgba(115, 102, 255, 0.4);
-    }
-
-    &.active {
-        background: linear-gradient(135deg, #dc3545, #e74c3c);
     }
 }
 
@@ -647,6 +860,7 @@
     display: flex;
     gap: 6px;
     align-items: center;
+    // flex-wrap: wrap;
 
     button {
         display: inline-flex;
@@ -656,12 +870,18 @@
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
         font-size: 13px;
         color: white;
 
-        &:hover {
-            transform: scale(1.05);
+        &:hover:not(:disabled) {
+            transform: scale(1.06);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
     }
 
@@ -669,7 +889,7 @@
         background: linear-gradient(135deg, #667eea, #764ba2);
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 
-        &:hover {
+        &:hover:not(:disabled) {
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
     }
@@ -678,7 +898,7 @@
         background: linear-gradient(135deg, #ff9800, #ffb74d);
         box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 
-        &:hover {
+        &:hover:not(:disabled) {
             box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
         }
     }
@@ -687,8 +907,17 @@
         background: linear-gradient(135deg, #dc3545, #e74c3c);
         box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 
-        &:hover {
+        &:hover:not(:disabled) {
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+    }
+
+    .sales-pdf-row-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+
+        &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
         }
     }
 }
@@ -735,6 +964,14 @@
         color: #2d2f87;
     }
 
+    .sales-internal-number {
+        font-weight: 500;
+        color: #6c757d;
+        font-size: 13px;
+        font-family: monospace;
+        letter-spacing: 0.5px;
+    }
+
     .sales-total-badge {
         display: inline-block;
         padding: 4px 14px;
@@ -744,6 +981,64 @@
         font-size: 14px;
         font-weight: 600;
     }
+}
+
+// ✅ Challan Yes/No badge (used in table)
+.sales-challan-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    background: linear-gradient(135deg, #ff9800, #ffb74d);
+    color: white;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.sales-no-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    background: #eee;
+    color: #888;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+// ✅ Payment status badge (Paid / Pending)
+.sales-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    svg {
+        font-size: 11px;
+    }
+
+    &.sales-status-paid {
+        background: linear-gradient(135deg, #28a745, #34ce57);
+        color: white;
+    }
+
+    &.sales-status-pending {
+        background: linear-gradient(135deg, #ffc107, #ffca2c);
+        color: #664d03;
+    }
+}
+
+.sales-payment-badge {
+    display: inline-block;
+    padding: 2px 12px;
+    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
+    color: #3f3f91;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 // ============================================
@@ -811,7 +1106,7 @@
 }
 
 // ============================================
-// LOADING SPINNER
+// LOADING / EMPTY STATE
 // ============================================
 .sales-loading-spinner-small {
     display: inline-block;
@@ -824,9 +1119,6 @@
     margin-right: 6px;
 }
 
-// ============================================
-// EMPTY STATE & LOADING
-// ============================================
 .sales-empty-state {
     display: flex;
     flex-direction: column;
@@ -881,7 +1173,7 @@
 }
 
 // ============================================
-// MODAL OVERLAY & CONTENT
+// MODAL
 // ============================================
 .sales-modal-overlay {
     position: fixed;
@@ -929,9 +1221,6 @@
     }
 }
 
-// ============================================
-// MODAL HEADER
-// ============================================
 .sales-modal-header {
     display: flex;
     justify-content: space-between;
@@ -969,9 +1258,6 @@
     }
 }
 
-// ============================================
-// MODAL BODY & FOOTER
-// ============================================
 .sales-modal-body {
     padding: 20px 24px;
     overflow-y: auto;
@@ -983,7 +1269,14 @@
     border-top: 1px solid #eee;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     flex-shrink: 0;
+    flex-wrap: wrap;
+
+    .sales-pdf-btn {
+        padding: 8px 20px;
+        font-size: 14px;
+    }
 
     .sales-modal-close-btn {
         padding: 8px 24px;
@@ -998,6 +1291,31 @@
         &:hover {
             background: #5a6268;
         }
+    }
+}
+
+.sales-pdf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 }
 
@@ -1017,6 +1335,10 @@
         display: flex;
         justify-content: space-between;
 
+        &.sales-view-item-full {
+            grid-column: 1 / -1;
+        }
+
         .sales-view-label {
             font-weight: 600;
             color: #555;
@@ -1026,6 +1348,7 @@
         .sales-view-value {
             color: #333;
             font-size: 13px;
+            text-align: right;
         }
     }
 }
@@ -1131,24 +1454,30 @@
         }
     }
 
-    .sales-customer-row-inline {
+    .sales-toggle-row {
         flex-direction: column;
         align-items: stretch;
 
-        .sales-new-customer-btn {
+        .sales-toggle-container {
             width: 100%;
-            justify-content: center;
+            justify-content: space-between;
         }
+    }
+
+    .sales-toggle-btn {
+        padding: 10px 16px;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .sales-customer-row-inline {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .sales-product-row {
         flex-direction: column;
         align-items: stretch;
-
-        .sales-add-product-btn {
-            width: 100%;
-            justify-content: center;
-        }
     }
 
     .sales-form-row {
@@ -1167,11 +1496,31 @@
         .sales-item-input {
             width: 40px;
             font-size: 12px;
-
-            &.sales-item-discount {
-                width: 35px;
-            }
         }
+
+        .sales-invoice-desc-input {
+            width: 120px !important;
+            min-width: 100px !important;
+        }
+
+        .sales-capacity-input {
+            width: 65px !important;
+            min-width: 55px !important;
+        }
+
+        .sales-unit-input {
+            width: 55px !important;
+            min-width: 50px !important;
+        }
+
+        .sales-hsn-input {
+            width: 60px !important;
+            min-width: 50px !important;
+        }
+    }
+
+    .sales-customer-details {
+        padding: 12px;
     }
 
     .sales-table-container {
@@ -1244,11 +1593,17 @@
 
     .sales-action-btns {
         flex-wrap: wrap;
+        gap: 4px;
 
         button {
             padding: 4px 8px;
             font-size: 11px;
         }
+    }
+
+    .sales-pdf-row-btn {
+        font-size: 11px;
+        padding: 4px 8px;
     }
 
     .sales-summary-column {
@@ -1259,6 +1614,32 @@
 
             &.sales-summary-grand {
                 font-size: 15px;
+            }
+        }
+    }
+
+    .sales-unique-section {
+        padding: 12px;
+
+        .sales-unique-product {
+            padding: 10px 12px;
+
+            .sales-unique-numbers-row {
+                gap: 6px;
+            }
+
+            .sales-unique-number-item {
+                .sales-unique-input {
+                    width: 90px;
+                    font-size: 12px;
+                    padding: 4px 8px;
+                }
+
+                .sales-unique-remove-btn {
+                    width: 24px;
+                    height: 24px;
+                    font-size: 10px;
+                }
             }
         }
     }
@@ -1284,10 +1665,33 @@
         padding: 15px;
     }
 
-    .sales-modal-header {
-        .sales-modal-title {
-            font-size: 16px;
+    .sales-modal-header .sales-modal-title {
+        font-size: 16px;
+    }
+
+    .sales-modal-footer {
+        flex-direction: column;
+
+        .sales-pdf-btn,
+        .sales-modal-close-btn {
+            width: 100%;
+            justify-content: center;
         }
+    }
+
+    .sales-invoice-desc-input {
+        width: 95px !important;
+        min-width: 85px !important;
+    }
+
+    .sales-unit-input {
+        width: 50px !important;
+        min-width: 45px !important;
+    }
+
+    .sales-hsn-input {
+        width: 60px !important;
+        min-width: 50px !important;
     }
 
     .sales-table-container {
@@ -1315,6 +1719,16 @@
             font-size: 11px;
             padding: 6px 10px;
         }
+    }
+
+    .sales-action-btns button {
+        padding: 3px 6px;
+        font-size: 10px;
+    }
+
+    .sales-pdf-row-btn {
+        font-size: 10px;
+        padding: 3px 6px;
     }
 
     .sales-pagination {
@@ -1346,11 +1760,21 @@
         }
     }
 
-    .sales-customer-info {
-        font-size: 12px;
-        padding: 8px 12px;
-        flex-direction: column;
-        gap: 5px;
+    .sales-customer-details {
+        padding: 10px;
+
+        .sales-form-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+
+    .sales-customer-selected-badge {
+        padding: 6px 12px;
+
+        span {
+            font-size: 12px;
+        }
     }
 
     .sales-summary-column {
@@ -1369,26 +1793,112 @@
         font-size: 14px;
         padding: 10px;
     }
+
+    .sales-toggle-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sales-unique-section .sales-unique-product .sales-unique-number-item .sales-unique-input {
+        width: 70px;
+        font-size: 11px;
+    }
 }
 
 
-// ===== PDF BUTTON STYLES =====
-.sales-pdf-btn {
-    display: inline-flex;
+// ============================================
+// SEARCH + FILTER GROUP
+// ============================================
+.sales-search-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.sales-filter-container {
+    position: relative;
+    display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    min-width: 170px;
+
+    .sales-filter-icon {
+        color: #7366ff;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .sales-filter-select {
+        flex: 1;
+        min-width: 140px;
+
+        .sales-filter__control {
+            min-height: 40px;
+            border-radius: 30px;
+            border-color: #e2e2ec;
+            background: #f5f7fa;
+            box-shadow: none;
+
+            &:hover {
+                border-color: #7366ff;
+            }
+
+            &--is-focused {
+                border-color: #7366ff;
+                box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
+            }
+        }
+
+        .sales-filter__value-container {
+            padding-left: 14px;
+        }
+
+        .sales-filter__option {
+            padding: 8px 14px;
+            cursor: pointer;
+
+            &--is-focused {
+                background: #f0f0ff;
+            }
+
+            &--is-selected {
+                background: #7366ff;
+                color: white;
+            }
+        }
+
+        .sales-filter__menu {
+            z-index: 999;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    }
+}
+
+// ============================================
+// EXPORT PDF (ZIP) BUTTON
+// ============================================
+.sales-pdf-export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
     color: white;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
     border: none;
-    border-radius: 6px;
-    font-weight: 500;
+    border-radius: 30px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
 
     &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        box-shadow: 0 6px 14px rgba(231, 76, 60, 0.4);
     }
 
     &:disabled {
@@ -1398,828 +1908,239 @@
     }
 }
 
-// ===== PDF BUTTON IN TABLE ROW =====
-.sales-pdf-row-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 10px;
-    background: linear-gradient(135deg, #dc3545, #e74c3c);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 13px;
+// ============================================
+// DELETE CONFIRMATION MODAL
+// ============================================
+.sales-delete-modal {
+    background: white;
+    border-radius: 14px;
+    max-width: 420px;
+    width: 100%;
+    padding: 30px 28px 26px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+    animation: salesModalSlideUp 0.3s ease-out;
 
-    &:hover:not(:disabled) {
-        transform: scale(1.05);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-}
-
-// ===== ACTION BUTTONS IN TABLE =====
-.sales-action-btns {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-
-    button {
-        display: inline-flex;
+    .sales-delete-modal-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 13px;
-        color: white;
-
-        &:hover:not(:disabled) {
-            transform: scale(1.05);
-        }
-
-        &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fff1f0, #ffe3e0);
+        color: #dc3545;
+        font-size: 26px;
     }
 
-    .sales-view-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-
-        &:hover:not(:disabled) {
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-    }
-
-    .sales-edit-btn {
-        background: linear-gradient(135deg, #ff9800, #ffb74d);
-        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-
-        &:hover:not(:disabled) {
-            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
-        }
-    }
-
-    .sales-delete-btn {
-        background: linear-gradient(135deg, #dc3545, #e74c3c);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-
-        &:hover:not(:disabled) {
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-        }
-    }
-
-    .sales-pdf-row-btn {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
-
-        &:hover:not(:disabled) {
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
-        }
-    }
-}
-
-// ===== MODAL FOOTER WITH PDF BUTTON =====
-.sales-modal-footer {
-    padding: 12px 24px;
-    border-top: 1px solid #eee;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-
-    .sales-pdf-btn {
-        padding: 8px 20px;
-        font-size: 14px;
-    }
-
-    .sales-modal-close-btn {
-        padding: 8px 24px;
-        background: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.3s;
-
-        &:hover {
-            background: #5a6268;
-        }
-    }
-}
-
-// ===== RESPONSIVE ACTION BUTTONS =====
-@media (max-width: 768px) {
-    .sales-action-btns {
-        flex-wrap: wrap;
-        gap: 4px;
-
-        button {
-            padding: 4px 8px;
-            font-size: 11px;
-        }
-    }
-
-    .sales-pdf-row-btn {
-        font-size: 11px;
-        padding: 4px 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    .sales-action-btns {
-        button {
-            padding: 3px 6px;
-            font-size: 10px;
-        }
-    }
-
-    .sales-pdf-row-btn {
-        font-size: 10px;
-        padding: 3px 6px;
-    }
-
-    .sales-modal-footer {
-        flex-direction: column;
-
-        .sales-pdf-btn,
-        .sales-modal-close-btn {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-}
-
-
-// ===== GST TOGGLE =====
-.sales-toggle-section {
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .sales-toggle-container {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-
-        .sales-toggle-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .sales-toggle-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #e8e8e8;
-            color: #888;
-
-            svg {
-                font-size: 24px;
-                transition: all 0.3s ease;
-            }
-
-            &.active {
-                background: linear-gradient(135deg, #7366ff, #948cff);
-                color: white;
-                box-shadow: 0 4px 15px rgba(115, 102, 255, 0.3);
-
-                &:hover {
-                    box-shadow: 0 6px 20px rgba(115, 102, 255, 0.4);
-                    transform: translateY(-1px);
-                }
-            }
-
-            &:not(.active) {
-                &:hover {
-                    background: #d5d5d5;
-                }
-            }
-        }
-    }
-}
-
-// ===== INTERNAL NUMBER =====
-.sales-internal-number {
-    font-weight: 500;
-    color: #6c757d;
-    font-size: 13px;
-    font-family: monospace;
-    letter-spacing: 0.5px;
-}
-
-// ===== PAYMENT TYPE =====
-.sales-payment-badge {
-    display: inline-block;
-    padding: 2px 12px;
-    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
-    color: #3f3f91;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-// ===== RESPONSIVE TOGGLE =====
-@media (max-width: 768px) {
-    .sales-toggle-section {
-        .sales-toggle-container {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-
-            .sales-toggle-btn {
-                width: 100%;
-                justify-content: center;
-                padding: 10px;
-            }
-        }
-    }
-}
-
-
-// ===== UNIQUE NUMBERS SECTION =====
-.sales-unique-section {
-    margin-top: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .sales-section-title {
-        font-size: 16px;
-        font-weight: 600;
+    .sales-delete-modal-title {
+        font-size: 19px;
+        font-weight: 700;
         color: #2d2f87;
-        margin: 0 0 15px 0;
+        margin: 0 0 8px;
+    }
+
+    .sales-delete-modal-text {
+        font-size: 13.5px;
+        color: #777;
+        margin: 0 0 18px;
+        line-height: 1.5;
+    }
+
+    .sales-delete-modal-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 22px;
+        text-align: left;
+    }
+
+    .sales-delete-modal-row {
         display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .sales-unique-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .sales-unique-product {
-        background: white;
-        border-radius: 8px;
-        padding: 12px 16px;
-        border: 1px solid #e8e8e8;
-
-        .sales-unique-product-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-
-            .sales-unique-product-name {
-                font-weight: 600;
-                color: #333;
-                font-size: 14px;
-            }
-        }
-
-        .sales-unique-numbers-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .sales-unique-number-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-
-            .sales-unique-input {
-                width: 120px;
-                padding: 6px 10px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 13px;
-                font-family: monospace;
-                transition: all 0.3s;
-
-                &:focus {
-                    border-color: #7366ff;
-                    outline: none;
-                    box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.1);
-                }
-
-                &::placeholder {
-                    color: #bbb;
-                    font-size: 12px;
-                }
-            }
-
-            .sales-unique-remove-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 28px;
-                height: 28px;
-                background: #f5f5f5;
-                border: none;
-                border-radius: 4px;
-                color: #999;
-                cursor: pointer;
-                transition: all 0.3s;
-
-                &:hover {
-                    background: #ffebee;
-                    color: #dc3545;
-                }
-            }
-        }
-    }
-}
-
-// ===== UNIQUE TAGS IN VIEW MODAL =====
-.sales-unique-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
-    color: #3f3f91;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    font-family: monospace;
-    margin: 2px 3px;
-    white-space: nowrap;
-}
-
-// ===== RESPONSIVE UNIQUE NUMBERS =====
-@media (max-width: 768px) {
-    .sales-unique-section {
-        padding: 12px;
-
-        .sales-unique-product {
-            padding: 10px 12px;
-
-            .sales-unique-numbers-row {
-                gap: 6px;
-            }
-
-            .sales-unique-number-item {
-                .sales-unique-input {
-                    width: 90px;
-                    font-size: 12px;
-                    padding: 4px 8px;
-                }
-
-                .sales-unique-remove-btn {
-                    width: 24px;
-                    height: 24px;
-                    font-size: 10px;
-                }
-            }
-        }
-    }
-}
-
-@media (max-width: 480px) {
-    .sales-unique-section {
-        .sales-unique-product {
-            .sales-unique-number-item {
-                .sales-unique-input {
-                    width: 70px;
-                    font-size: 11px;
-                }
-            }
-        }
-    }
-}
-
-// ============================================
-// INVOICE TYPE DROPDOWN
-// ============================================
-.sales-invoice-type-container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .sales-toggle-label {
-        font-weight: 600;
-        color: #555;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        white-space: nowrap;
-
-        svg {
-            color: #7366ff;
-            font-size: 16px;
-        }
-    }
-
-    .sales-react-select {
-        flex: 1;
-        min-width: 150px;
-        max-width: 250px;
-    }
-}
-
-// ============================================
-// CUSTOMER DETAILS SECTION
-// ============================================
-.sales-customer-details {
-    margin-top: 12px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .sales-form-row {
-        margin-bottom: 12px;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-
-        .sales-form-field {
-            .sales-input-field {
-                background-color: white;
-
-                &[readonly] {
-                    background-color: #f0f0f0;
-                    cursor: not-allowed;
-                    opacity: 0.8;
-                    border-color: #ddd;
-
-                    &:focus {
-                        border-color: #ddd;
-                        box-shadow: none;
-                    }
-                }
-            }
-
-            .sales-field-hint {
-                font-size: 11px;
-                color: #888;
-                margin-top: 3px;
-                font-style: italic;
-
-                &.sales-field-hint-warning {
-                    color: #dc3545;
-                    font-weight: 500;
-                }
-            }
-        }
-    }
-}
-
-.sales-customer-selected-badge {
-    margin-top: 10px;
-    padding: 8px 14px;
-    background: #d4edda;
-    border-radius: 6px;
-    border-left: 4px solid #28a745;
-
-    span {
-        color: #155724;
+        justify-content: space-between;
+        padding: 4px 0;
         font-size: 13px;
-        font-weight: 500;
-    }
-}
 
-// ============================================
-// UNIT & HSN INPUT FIELDS IN TABLE
-// ============================================
-.sales-unit-input {
-    width: 70px !important;
-    min-width: 60px !important;
-}
+        .sales-delete-modal-label {
+            color: #666;
+            font-weight: 500;
+        }
 
-.sales-hsn-input {
-    width: 80px !important;
-    min-width: 65px !important;
-}
-
-// ============================================
-// RESPONSIVE FOR INVOICE TYPE
-// ============================================
-@media (max-width: 768px) {
-    .sales-toggle-section {
-        .sales-toggle-container {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-
-            .sales-toggle-btn {
-                width: 100%;
-                justify-content: center;
-                padding: 10px;
-            }
+        .sales-delete-modal-value {
+            color: #2d2f87;
+            font-weight: 700;
         }
     }
 
-    .sales-invoice-type-container {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-
-        .sales-react-select {
-            max-width: 100%;
-            min-width: auto;
-        }
-    }
-
-    .sales-customer-details {
-        padding: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .sales-unit-input {
-        width: 50px !important;
-        min-width: 45px !important;
-    }
-
-    .sales-hsn-input {
-        width: 60px !important;
-        min-width: 50px !important;
-    }
-}
-
-// ============================================
-// RESPONSIVE FOR CUSTOMER DETAILS
-// ============================================
-@media (max-width: 480px) {
-    .sales-customer-details {
-        padding: 10px;
-
-        .sales-form-row {
-            flex-direction: column;
-            gap: 10px;
-        }
-    }
-
-    .sales-customer-selected-badge {
-        padding: 6px 12px;
-
-        span {
-            font-size: 12px;
-        }
-    }
-}
-
-// ============================================
-// GST TOGGLE + INVOICE TYPE - SAME ROW
-// ============================================
-.sales-toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-
-    .sales-toggle-container {
+    .sales-delete-modal-buttons {
         display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-shrink: 0;
+        gap: 12px;
 
-        .sales-toggle-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-        }
-
-        .sales-toggle-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 20px;
+        button {
+            flex: 1;
+            padding: 11px;
             border: none;
-            border-radius: 30px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background: #e8e8e8;
-            color: #888;
+            transition: all 0.25s ease;
 
-            svg {
-                font-size: 24px;
-                transition: all 0.3s ease;
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none;
             }
+        }
 
-            &.active {
-                background: linear-gradient(135deg, #7366ff, #948cff);
-                color: white;
-                box-shadow: 0 4px 15px rgba(115, 102, 255, 0.3);
+        .sales-delete-modal-cancel {
+            background: #eee;
+            color: #555;
 
-                &:hover {
-                    box-shadow: 0 6px 20px rgba(115, 102, 255, 0.4);
-                    transform: translateY(-1px);
-                }
+            &:hover:not(:disabled) {
+                background: #e0e0e0;
             }
+        }
 
-            &:not(.active) {
-                &:hover {
-                    background: #d5d5d5;
-                }
+        .sales-delete-modal-confirm {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.35);
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(220, 53, 69, 0.45);
             }
         }
     }
+}
 
-    .sales-invoice-type-container {
+// ============================================
+// PDF BULK EXPORT PROGRESS LOADER
+// ============================================
+.sales-pdf-progress-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.sales-pdf-progress-modal {
+    background: white;
+    border-radius: 14px;
+    max-width: 380px;
+    width: 100%;
+    padding: 32px 28px 26px;
+    text-align: center;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
+    animation: salesModalSlideUp 0.3s ease-out;
+
+    .sales-pdf-progress-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 14px;
         display: flex;
         align-items: center;
-        gap: 15px;
-        flex: 1;
-        max-width: 400px;
-        min-width: 200px;
-
-        .sales-toggle-label {
-            font-weight: 600;
-            color: #555;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-
-            svg {
-                color: #7366ff;
-                font-size: 16px;
-            }
-        }
-
-        .sales-react-select {
-            flex: 1;
-            min-width: 120px;
-        }
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #eee6ff, #d4d0ff);
+        color: #7366ff;
+        font-size: 26px;
     }
-}
 
-// ============================================
-// CUSTOMER DETAILS SECTION
-// ============================================
-.sales-customer-details {
-    margin-top: 12px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .sales-form-row {
-        margin-bottom: 12px;
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-
-        .sales-form-field {
-            .sales-input-field {
-                background-color: white;
-
-                &[readonly] {
-                    background-color: #f0f0f0;
-                    cursor: not-allowed;
-                    opacity: 0.8;
-                    border-color: #ddd;
-
-                    &:focus {
-                        border-color: #ddd;
-                        box-shadow: none;
-                    }
-                }
-            }
-
-            .sales-field-hint {
-                font-size: 11px;
-                color: #888;
-                margin-top: 3px;
-                font-style: italic;
-
-                &.sales-field-hint-warning {
-                    color: #dc3545;
-                    font-weight: 500;
-                }
-            }
-        }
+    .sales-pdf-progress-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2d2f87;
+        margin: 0 0 8px;
     }
-}
 
-.sales-customer-selected-badge {
-    margin-top: 10px;
-    padding: 8px 14px;
-    background: #d4edda;
-    border-radius: 6px;
-    border-left: 4px solid #28a745;
-
-    span {
-        color: #155724;
+    .sales-pdf-progress-status {
         font-size: 13px;
-        font-weight: 500;
+        color: #666;
+        margin: 0 0 16px;
+        min-height: 18px;
+    }
+
+    .sales-pdf-progress-bar-container {
+        width: 100%;
+        height: 8px;
+        background: #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .sales-pdf-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #7366ff, #948cff);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .sales-pdf-progress-percentage {
+        font-size: 13px;
+        font-weight: 700;
+        color: #7366ff;
+        margin-bottom: 18px;
+    }
+
+    .sales-pdf-progress-spinner {
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #7366ff;
+        border-radius: 50%;
+        animation: sales-spin 1s linear infinite;
+        margin: 0 auto 16px;
+    }
+
+    .sales-pdf-progress-hint {
+        font-size: 11.5px;
+        color: #999;
+        font-style: italic;
+        margin: 0;
     }
 }
 
 // ============================================
-// UNIT & HSN INPUT FIELDS
-// ============================================
-.sales-unit-input {
-    width: 70px !important;
-    min-width: 60px !important;
-}
-
-.sales-hsn-input {
-    width: 80px !important;
-    min-width: 65px !important;
-}
-
-// ============================================
-// RESPONSIVE
+// RESPONSIVE — new elements
 // ============================================
 @media (max-width: 768px) {
-    .sales-toggle-row {
+    .sales-search-filter-group {
         flex-direction: column;
         align-items: stretch;
+        width: 100%;
+    }
 
-        .sales-toggle-container {
-            width: 100%;
-            justify-content: space-between;
-        }
+    .sales-filter-container {
+        width: 100%;
 
-        .sales-invoice-type-container {
-            max-width: 100%;
-            min-width: auto;
+        .sales-filter-select {
             width: 100%;
         }
     }
 
-    .sales-customer-details {
-        padding: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .sales-unit-input {
-        width: 50px !important;
-        min-width: 45px !important;
+    .sales-pdf-export-btn {
+        width: 100%;
+        justify-content: center;
     }
 
-    .sales-hsn-input {
-        width: 60px !important;
-        min-width: 50px !important;
+    .sales-delete-modal,
+    .sales-pdf-progress-modal {
+        max-width: 92%;
+        padding: 24px 20px;
     }
 
-    .sales-customer-details {
-        padding: 10px;
-
-        .sales-form-row {
-            flex-direction: column;
-            gap: 10px;
-        }
-    }
-
-    .sales-customer-selected-badge {
-        padding: 6px 12px;
-
-        span {
-            font-size: 12px;
-        }
-    }
-
-    .sales-toggle-row {
-        .sales-toggle-container {
-            flex-wrap: wrap;
-            gap: 10px;
-
-            .sales-toggle-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
+    .sales-delete-modal-buttons {
+        flex-direction: column;
     }
 }

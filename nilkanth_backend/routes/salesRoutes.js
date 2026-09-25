@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Sales = require("../models/sales");
-const GlobalCounter = require("../models/globalCounter");
+const DeletedInvoice = require("../models/deletedInvoice");
 const Product = require("../models/product");
 const Customer = require("../models/customer");
 const jwt = require("jsonwebtoken");
@@ -25,49 +25,108 @@ const getUserDetails = async (userId) => {
   return user;
 };
 
-// ===== HELPER: Generate invoice number =====
-const generateInvoiceNumber = async () => {
-  const counterId = "sales";
-  let counter = await GlobalCounter.findOne({ id: counterId });
+// ===== HELPER: Build filter based on search + filterType =====
+const buildFilter = (search, filterType) => {
+  let filter = {};
 
-  if (!counter) {
-    counter = new GlobalCounter({ id: counterId, count: 1 });
-    await counter.save();
-  } else {
-    counter.count += 1;
-    await counter.save();
+  // ✅ Apply filterType
+  if (filterType === 'Challan') {
+    filter.isChallan = true;
+  } else if (filterType === 'GST') {
+    filter.isChallan = false;
+    filter.isGstMode = true;
+  } else if (filterType === 'Non-GST') {
+    filter.isChallan = false;
+    filter.isGstMode = false;
+  }
+  // 'All' or undefined → no additional filter
+
+  // ✅ Apply search
+  if (search) {
+    filter.$or = [
+      { invoiceNumber: { $regex: search, $options: 'i' } },
+      { internalInvoiceNumber: { $regex: search, $options: 'i' } },
+      { customerName: { $regex: search, $options: 'i' } },
+      { customerEmail: { $regex: search, $options: 'i' } },
+      { customerPhone: { $regex: search, $options: 'i' } },
+      { paymentType: { $regex: search, $options: 'i' } },
+      { paymentStatus: { $regex: search, $options: 'i' } },
+      { 'items.uniqueNumbers.number': { $regex: search, $options: 'i' } }
+    ];
   }
 
+  return filter;
+};
+
+// ===== HELPER: Generate Invoice Number (No gaps, reuse latest deleted) =====
+const generateInvoiceNumber = async (isChallan = false) => {
   const year = new Date().getFullYear();
-  return `INV${year}${String(counter.count).padStart(4, '0')}`;
+  const prefix = isChallan ? 'CHALLAN' : 'INV';
+  const fullPrefix = `${prefix}${year}`;
+
+  const activeSales = await Sales.find({
+    invoiceNumber: { $regex: `^${fullPrefix}` }
+  }).select('invoiceNumber').lean();
+
+  const deletedInvoices = await DeletedInvoice.find({
+    invoiceNumber: { $regex: `^${fullPrefix}` }
+  }).select('invoiceNumber').lean();
+
+  const allNumbers = [
+    ...activeSales.map(s => parseInt(s.invoiceNumber.replace(fullPrefix, '')) || 0),
+    ...deletedInvoices.map(s => parseInt(s.invoiceNumber.replace(fullPrefix, '')) || 0)
+  ].filter(n => n > 0);
+
+  let nextNumber;
+
+  if (allNumbers.length === 0) {
+    nextNumber = 1;
+  } else {
+    const activeNumbers = activeSales
+      .map(s => parseInt(s.invoiceNumber.replace(fullPrefix, '')) || 0)
+      .filter(n => n > 0);
+
+    const maxAllNumber = Math.max(...allNumbers);
+    const maxActiveNumber = activeNumbers.length > 0 ? Math.max(...activeNumbers) : 0;
+
+    if (maxAllNumber > maxActiveNumber) {
+      nextNumber = maxAllNumber;
+    } else {
+      nextNumber = maxActiveNumber + 1;
+    }
+  }
+
+  return `${fullPrefix}${String(nextNumber).padStart(4, '0')}`;
 };
 
 // ===== HELPER: Generate internal invoice number (Alphanumeric, 6 chars) =====
 const generateInternalInvoiceNumber = async () => {
-  const counterId = "internalNumber";
-  let counter = await GlobalCounter.findOne({ id: counterId });
+  const allInternalNumbers = await Sales.find({
+    internalInvoiceNumber: { $regex: `^[A-Z]{2}` }
+  }).select('internalInvoiceNumber').lean();
 
-  if (!counter) {
-    counter = new GlobalCounter({ id: counterId, count: 1000 });
-    await counter.save();
-  } else {
-    counter.count += 1;
-    await counter.save();
+  const deletedInternalNumbers = await DeletedInvoice.find({
+    internalInvoiceNumber: { $regex: `^[A-Z]{2}` }
+  }).select('internalInvoiceNumber').lean();
+
+  let counter = 1000;
+  const allExisting = [
+    ...allInternalNumbers.map(s => s.internalInvoiceNumber),
+    ...deletedInternalNumbers.map(s => s.internalInvoiceNumber)
+  ];
+
+  while (true) {
+    counter += 1;
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const letter1 = letters[Math.floor((counter / 10000) % 26)];
+    const letter2 = letters[counter % 26];
+    const numberPart = String(counter % 10000).padStart(4, '0');
+    const result = `${letter1}${letter2}${numberPart}`;
+
+    if (!allExisting.includes(result)) {
+      return result;
+    }
   }
-
-  const num = counter.count;
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const letter1 = letters[Math.floor((num / 10000) % 26)];
-  const letter2 = letters[num % 26];
-  const numberPart = String(num % 10000).padStart(4, '0');
-  const result = `${letter1}${letter2}${numberPart}`;
-
-  const existing = await Sales.findOne({ internalInvoiceNumber: result });
-  if (existing) {
-    return generateInternalInvoiceNumber();
-  }
-
-  return result;
 };
 
 // ===== HELPER: Determine tax type based on GSTIN =====
@@ -75,7 +134,6 @@ const determineTaxType = (gstin) => {
   if (!gstin || gstin.trim().length === 0) {
     return 'IGST';
   }
-
   if (gstin.trim().startsWith('24')) {
     return 'CGST_SGST';
   } else {
@@ -89,7 +147,6 @@ const determineTaxType = (gstin) => {
 router.post("/create-sale", async (req, res) => {
   try {
     console.log("🚀 ===== CREATE SALE START =====");
-    console.log("📦 REQUEST BODY:", JSON.stringify(req.body, null, 2));
 
     const {
       customerId,
@@ -101,26 +158,12 @@ router.post("/create-sale", async (req, res) => {
       customerGstin,
       customerState,
       paymentType,
+      paymentStatus,
       isGstMode,
-      invoiceType,
-      repairingDescription
+      isChallan
     } = req.body;
 
-    console.log("🔍 EXTRACTED VALUES:");
-    console.log("  - customerId:", customerId);
-    console.log("  - customerGstin FROM REQUEST:", customerGstin);
-    console.log("  - customerState:", customerState);
-    console.log("  - storeType:", storeType);
-    console.log("  - paymentType:", paymentType);
-    console.log("  - isGstMode:", isGstMode);
-    console.log("  - taxSlab:", taxSlab);
-    console.log("  - invoiceType:", invoiceType);
-    console.log("  - repairingDescription:", repairingDescription);
-    console.log("  - notes:", notes);
-    console.log("  - items count:", items?.length || 0);
-
     if (!customerId) {
-      console.log("❌ ERROR: No customerId provided");
       return res.status(400).json({
         success: false,
         message: "Customer is required"
@@ -128,7 +171,6 @@ router.post("/create-sale", async (req, res) => {
     }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      console.log("❌ ERROR: No items provided");
       return res.status(400).json({
         success: false,
         message: "At least one product is required"
@@ -137,42 +179,34 @@ router.post("/create-sale", async (req, res) => {
 
     const decoded = getUserFromToken(req);
     if (!decoded) {
-      console.log("❌ ERROR: Unauthorized - no valid token");
       return res.status(401).json({
         success: false,
         message: "Unauthorized"
       });
     }
-    console.log("✅ User decoded:", decoded);
 
     const user = await getUserDetails(decoded.userId);
     if (!user) {
-      console.log("❌ ERROR: User not found in DB");
       return res.status(401).json({
         success: false,
         message: "User not found"
       });
     }
-    console.log("✅ User found:", user.name, user.userId);
 
     const customer = await Customer.findOne({ customerId });
     if (!customer) {
-      console.log("❌ ERROR: Customer not found:", customerId);
       return res.status(404).json({
         success: false,
         message: "Customer not found"
       });
     }
-    console.log("✅ Customer found:", customer.customerName);
 
     // ===== PROCESS ITEMS =====
     const processedItems = [];
-    const allUniqueNumbers = [];
 
     for (const item of items) {
       const product = await Product.findOne({ productId: item.productId });
       if (!product) {
-        console.log("❌ ERROR: Product not found:", item.productId);
         return res.status(404).json({
           success: false,
           message: `Product not found: ${item.productId}`
@@ -187,24 +221,13 @@ router.post("/create-sale", async (req, res) => {
       const discountAmount = unitPrice - discountedUnitPrice;
       const finalPrice = discountedUnitPrice * quantity;
 
-      // ✅ Process unique numbers
       const uniqueNumbers = [];
       if (item.uniqueNumbers && Array.isArray(item.uniqueNumbers)) {
         for (const un of item.uniqueNumbers) {
-          if (un.number && un.number.trim()) {
-            if (allUniqueNumbers.includes(un.number.trim())) {
-              console.log("❌ ERROR: Duplicate unique number:", un.number);
-              return res.status(400).json({
-                success: false,
-                message: `Duplicate unique number found: ${un.number}`
-              });
-            }
-            allUniqueNumbers.push(un.number.trim());
-            uniqueNumbers.push({
-              number: un.number.trim(),
-              isUsed: un.isUsed || false
-            });
-          }
+          uniqueNumbers.push({
+            number: un.number ? un.number.trim() : '',
+            isUsed: un.isUsed || false
+          });
         }
       }
 
@@ -218,17 +241,16 @@ router.post("/create-sale", async (req, res) => {
         uniqueNumbers.splice(quantity);
       }
 
-      // ✅ Use HSN from frontend, fallback to product
       const hsnCode = item.hsnCode || product.hsnCode || '';
-      const unitName = item.unitName || product.unitName || 'NOS';
+      const unitName = item.unitName || 'NOS';
       const capacity = item.capacity || '';
-
-      console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}, Capacity: ${capacity}`);
+      const invoiceDescription = item.invoiceDescription || '';
 
       processedItems.push({
         productId: product.productId,
         productName: product.productName,
         productDescription: product.productDescription || '',
+        invoiceDescription: invoiceDescription,
         hsnCode: hsnCode,
         unitName: unitName,
         capacity: capacity,
@@ -242,17 +264,17 @@ router.post("/create-sale", async (req, res) => {
       });
     }
 
-    // ✅ GSTIN LOGIC
     const gstin = customerGstin || customer.gstNumber || '';
     const taxType = determineTaxType(gstin);
-    const invoiceNumber = await generateInvoiceNumber();
+    const invoiceNumber = await generateInvoiceNumber(isChallan || false);
     const internalInvoiceNumber = await generateInternalInvoiceNumber();
+
+    const finalPaymentType = paymentStatus === 'Pending' ? null : (paymentType || 'Cash');
 
     const newSale = new Sales({
       invoiceNumber,
       internalInvoiceNumber,
-      invoiceType: invoiceType || 'Sales',
-      repairingDescription: repairingDescription || '',
+      isChallan: isChallan || false,
       customerId: customer.customerId,
       customerName: customer.customerName,
       customerEmail: customer.email || '',
@@ -261,11 +283,12 @@ router.post("/create-sale", async (req, res) => {
       customerState: customerState || '',
       customerAddress: customer.address || '',
       storeType: storeType || 'Vadodara',
-      paymentType: paymentType || 'Cash',
-      isGstMode: isGstMode !== undefined ? isGstMode : true,
+      paymentStatus: paymentStatus || 'Paid',
+      paymentType: finalPaymentType,
+      isGstMode: isChallan ? false : (isGstMode !== undefined ? isGstMode : true),
       saleDate: saleDate || new Date(),
       items: processedItems,
-      taxSlab: isGstMode ? (Number(taxSlab) || 18) : 0,
+      taxSlab: (isChallan || !isGstMode) ? 0 : (Number(taxSlab) || 18),
       taxType: taxType,
       notes: notes || '',
       createdBy: user.name,
@@ -273,19 +296,10 @@ router.post("/create-sale", async (req, res) => {
       status: 'Completed'
     });
 
-    console.log("📝 SALE OBJECT BEFORE SAVE:");
-    console.log("  - customerGstin:", newSale.customerGstin);
-    console.log("  - taxType:", newSale.taxType);
-    console.log("  - isGstMode:", newSale.isGstMode);
-    console.log("  - invoiceType:", newSale.invoiceType);
-    console.log("  - repairingDescription:", newSale.repairingDescription);
-
     newSale.recalculateTotals();
     const savedSale = await newSale.save();
 
-    console.log("✅ SALE SAVED SUCCESSFULLY!");
-    console.log("  - Sale ID:", savedSale.saleId);
-    console.log("  - Invoice:", savedSale.invoiceNumber);
+    console.log("✅ SALE SAVED:", savedSale.invoiceNumber);
 
     res.status(201).json({
       success: true,
@@ -311,51 +325,30 @@ router.post("/create-sale", async (req, res) => {
 // =============================================
 router.put("/update-sale/:id", async (req, res) => {
   try {
-    console.log("🚀 ===== UPDATE SALE START =====");
-    console.log("📦 UPDATE REQUEST BODY:", JSON.stringify(req.body, null, 2));
-    console.log("📦 UPDATE PARAMS ID:", req.params.id);
-
     const { saleId, _id, createdAt, updatedAt, invoiceNumber, internalInvoiceNumber, ...updateData } = req.body;
-
-    console.log("🔍 EXTRACTED updateData:", JSON.stringify(updateData, null, 2));
-    console.log("🔍 customerGstin IN updateData:", updateData.customerGstin);
-    console.log("🔍 invoiceType IN updateData:", updateData.invoiceType);
-    console.log("🔍 repairingDescription IN updateData:", updateData.repairingDescription);
 
     const decoded = getUserFromToken(req);
     if (!decoded) {
-      console.log("❌ ERROR: Unauthorized - no valid token");
       return res.status(401).json({
         success: false,
         message: "Unauthorized"
       });
     }
-    console.log("✅ User decoded:", decoded);
 
-    const existingSale = await Sales.findOne({ saleId: req.params.id, isDeleted: false });
+    const existingSale = await Sales.findOne({ saleId: req.params.id });
     if (!existingSale) {
-      console.log("❌ ERROR: Sale not found:", req.params.id);
       return res.status(404).json({
         success: false,
         message: "Sale not found"
       });
     }
-    console.log("✅ Existing sale found:");
-    console.log("  - Sale ID:", existingSale.saleId);
-    console.log("  - Invoice:", existingSale.invoiceNumber);
-    console.log("  - invoiceType (EXISTING):", existingSale.invoiceType);
-    console.log("  - repairingDescription (EXISTING):", existingSale.repairingDescription);
 
-    // ===== PROCESS ITEMS =====
     if (updateData.items && Array.isArray(updateData.items)) {
-      console.log("🔄 Processing items...");
       const processedItems = [];
-      const allUniqueNumbers = [];
 
       for (const item of updateData.items) {
         const product = await Product.findOne({ productId: item.productId });
         if (!product) {
-          console.log("❌ ERROR: Product not found:", item.productId);
           return res.status(404).json({
             success: false,
             message: `Product not found: ${item.productId}`
@@ -370,24 +363,13 @@ router.put("/update-sale/:id", async (req, res) => {
         const discountAmount = unitPrice - discountedUnitPrice;
         const finalPrice = discountedUnitPrice * quantity;
 
-        // ✅ Process unique numbers
         const uniqueNumbers = [];
         if (item.uniqueNumbers && Array.isArray(item.uniqueNumbers)) {
           for (const un of item.uniqueNumbers) {
-            if (un.number && un.number.trim()) {
-              if (allUniqueNumbers.includes(un.number.trim())) {
-                console.log("❌ ERROR: Duplicate unique number:", un.number);
-                return res.status(400).json({
-                  success: false,
-                  message: `Duplicate unique number found: ${un.number}`
-                });
-              }
-              allUniqueNumbers.push(un.number.trim());
-              uniqueNumbers.push({
-                number: un.number.trim(),
-                isUsed: un.isUsed || false
-              });
-            }
+            uniqueNumbers.push({
+              number: un.number ? un.number.trim() : '',
+              isUsed: un.isUsed || false
+            });
           }
         }
 
@@ -401,17 +383,16 @@ router.put("/update-sale/:id", async (req, res) => {
           uniqueNumbers.splice(quantity);
         }
 
-        // ✅ Use HSN from frontend, fallback to product
         const hsnCode = item.hsnCode || product.hsnCode || '';
-        const unitName = item.unitName || product.unitName || 'NOS';
+        const unitName = item.unitName || 'NOS';
         const capacity = item.capacity || '';
-
-        console.log(`  - Product: ${product.productName}, HSN: ${hsnCode}, Unit: ${unitName}, Capacity: ${capacity}`);
+        const invoiceDescription = item.invoiceDescription || '';
 
         processedItems.push({
           productId: product.productId,
           productName: product.productName,
           productDescription: product.productDescription || '',
+          invoiceDescription: invoiceDescription,
           hsnCode: hsnCode,
           unitName: unitName,
           capacity: capacity,
@@ -426,30 +407,21 @@ router.put("/update-sale/:id", async (req, res) => {
       }
 
       updateData.items = processedItems;
-      console.log("✅ Items processed successfully");
     }
 
-    // ✅ GSTIN PROCESSING
     if (!updateData.customerGstin || updateData.customerGstin.trim() === '') {
       updateData.customerGstin = existingSale.customerGstin || '';
-      console.log("  - ✅ Keeping EXISTING GSTIN:", updateData.customerGstin);
-    } else {
-      console.log("  - ✅ Using NEW GSTIN from request:", updateData.customerGstin);
     }
-
     updateData.taxType = determineTaxType(updateData.customerGstin || '');
 
-    // ✅ Invoice Type - keep existing if not provided
-    if (!updateData.invoiceType) {
-      updateData.invoiceType = existingSale.invoiceType || 'Sales';
+    if (updateData.paymentStatus === 'Pending') {
+      updateData.paymentType = null;
     }
 
-    // ✅ Repairing Description - keep existing if not provided
-    if (updateData.repairingDescription === undefined) {
-      updateData.repairingDescription = existingSale.repairingDescription || '';
-    }
-
-    if (updateData.isGstMode === false) {
+    if (updateData.isChallan) {
+      updateData.isGstMode = false;
+      updateData.taxSlab = 0;
+    } else if (updateData.isGstMode === false) {
       updateData.taxSlab = 0;
     }
 
@@ -473,29 +445,11 @@ router.put("/update-sale/:id", async (req, res) => {
       taxBreakdown: tempSale.taxBreakdown
     };
 
-    console.log("📝 FINAL UPDATE DATA BEFORE SAVE:");
-    console.log("  - invoiceType:", finalUpdateData.invoiceType);
-    console.log("  - repairingDescription:", finalUpdateData.repairingDescription);
-
     const updatedSale = await Sales.findOneAndUpdate(
       { saleId: req.params.id },
       finalUpdateData,
       { new: true, runValidators: true }
     );
-
-    if (!updatedSale) {
-      console.log("❌ ERROR: Sale not found after update");
-      return res.status(404).json({
-        success: false,
-        message: "Sale not found"
-      });
-    }
-
-    console.log("✅ SALE UPDATED SUCCESSFULLY!");
-    console.log("  - Sale ID:", updatedSale.saleId);
-    console.log("  - Invoice:", updatedSale.invoiceNumber);
-    console.log("  - invoiceType SAVED:", updatedSale.invoiceType);
-    console.log("  - repairingDescription SAVED:", updatedSale.repairingDescription);
 
     res.status(200).json({
       success: true,
@@ -515,29 +469,17 @@ router.put("/update-sale/:id", async (req, res) => {
 
 
 // =============================================
-// GET /api/sales/get-sales - Get all sales (with pagination)
+// GET /api/sales/get-sales - Get all sales (with pagination + filter + search)
 // =============================================
 router.get("/get-sales", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;  // ✅ Default 20
     const search = req.query.search || '';
+    const filterType = req.query.filterType || 'All';
     const skip = (page - 1) * limit;
 
-    let filter = { isDeleted: false };
-
-    if (search) {
-      filter.$or = [
-        { invoiceNumber: { $regex: search, $options: 'i' } },
-        { internalInvoiceNumber: { $regex: search, $options: 'i' } },
-        { customerName: { $regex: search, $options: 'i' } },
-        { customerEmail: { $regex: search, $options: 'i' } },
-        { customerPhone: { $regex: search, $options: 'i' } },
-        { paymentType: { $regex: search, $options: 'i' } },
-        { invoiceType: { $regex: search, $options: 'i' } },
-        { 'items.uniqueNumbers.number': { $regex: search, $options: 'i' } }
-      ];
-    }
+    const filter = buildFilter(search, filterType);
 
     const total = await Sales.countDocuments(filter);
     const sales = await Sales.find(filter)
@@ -569,23 +511,14 @@ router.get("/get-sales", async (req, res) => {
 });
 
 // =============================================
-// GET /api/sales/export-sales - Export all sales (NO pagination)
+// GET /api/sales/export-sales - Export all sales (with filter + search)
 // =============================================
 router.get("/export-sales", async (req, res) => {
   try {
     const search = req.query.search || '';
+    const filterType = req.query.filterType || 'All';
 
-    let filter = { isDeleted: false };
-
-    if (search) {
-      filter.$or = [
-        { invoiceNumber: { $regex: search, $options: 'i' } },
-        { internalInvoiceNumber: { $regex: search, $options: 'i' } },
-        { customerName: { $regex: search, $options: 'i' } },
-        { paymentType: { $regex: search, $options: 'i' } },
-        { invoiceType: { $regex: search, $options: 'i' } }
-      ];
-    }
+    const filter = buildFilter(search, filterType);
 
     const sales = await Sales.find(filter)
       .sort({ saleDate: -1 })
@@ -607,14 +540,40 @@ router.get("/export-sales", async (req, res) => {
 });
 
 // =============================================
+// GET /api/sales/get-all-filtered - Get ALL filtered sales (for PDF export)
+// =============================================
+router.get("/get-all-filtered", async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const filterType = req.query.filterType || 'All';
+
+    const filter = buildFilter(search, filterType);
+
+    const sales = await Sales.find(filter)
+      .sort({ saleDate: -1, createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      data: sales,
+      total: sales.length
+    });
+  } catch (error) {
+    console.error("Error fetching all filtered sales:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch filtered sales",
+      error: error.message
+    });
+  }
+});
+
+// =============================================
 // GET /api/sales/get-sale/:id - Get sale by ID
 // =============================================
 router.get("/get-sale/:id", async (req, res) => {
   try {
-    const sale = await Sales.findOne({
-      saleId: req.params.id,
-      isDeleted: false
-    }).lean();
+    const sale = await Sales.findOne({ saleId: req.params.id }).lean();
 
     if (!sale) {
       return res.status(404).json({
@@ -638,13 +597,12 @@ router.get("/get-sale/:id", async (req, res) => {
 });
 
 // =============================================
-// GET /api/sales/get-sale-by-invoice/:invoiceNumber - Get sale by invoice number
+// GET /api/sales/get-sale-by-invoice/:invoiceNumber
 // =============================================
 router.get("/get-sale-by-invoice/:invoiceNumber", async (req, res) => {
   try {
     const sale = await Sales.findOne({
-      invoiceNumber: req.params.invoiceNumber,
-      isDeleted: false
+      invoiceNumber: req.params.invoiceNumber
     }).lean();
 
     if (!sale) {
@@ -670,7 +628,7 @@ router.get("/get-sale-by-invoice/:invoiceNumber", async (req, res) => {
 
 
 // =============================================
-// DELETE /api/sales/delete-sale/:id - Soft delete sale
+// DELETE /api/sales/delete-sale/:id - HARD DELETE + Move to DeletedInvoices
 // =============================================
 router.delete("/delete-sale/:id", async (req, res) => {
   try {
@@ -690,7 +648,7 @@ router.delete("/delete-sale/:id", async (req, res) => {
       });
     }
 
-    const sale = await Sales.findOne({ saleId: req.params.id, isDeleted: false });
+    const sale = await Sales.findOne({ saleId: req.params.id });
     if (!sale) {
       return res.status(404).json({
         success: false,
@@ -698,10 +656,44 @@ router.delete("/delete-sale/:id", async (req, res) => {
       });
     }
 
-    sale.isDeleted = true;
-    sale.deletedBy = user.name;
-    sale.deletedAt = new Date();
-    await sale.save();
+    const deletedInvoice = new DeletedInvoice({
+      originalSaleId: sale.saleId,
+      invoiceNumber: sale.invoiceNumber,
+      internalInvoiceNumber: sale.internalInvoiceNumber,
+      isChallan: sale.isChallan || false,
+      customerId: sale.customerId,
+      customerName: sale.customerName,
+      customerEmail: sale.customerEmail,
+      customerPhone: sale.customerPhone,
+      customerGstin: sale.customerGstin,
+      customerState: sale.customerState,
+      customerAddress: sale.customerAddress,
+      storeType: sale.storeType,
+      paymentStatus: sale.paymentStatus,
+      paymentType: sale.paymentType,
+      isGstMode: sale.isGstMode,
+      saleDate: sale.saleDate,
+      items: sale.items,
+      taxSlab: sale.taxSlab,
+      taxType: sale.taxType,
+      subtotal: sale.subtotal,
+      totalDiscount: sale.totalDiscount,
+      totalTax: sale.totalTax,
+      grandTotal: sale.grandTotal,
+      taxBreakdown: sale.taxBreakdown,
+      notes: sale.notes,
+      createdBy: sale.createdBy,
+      createdById: sale.createdById,
+      status: sale.status,
+      deletedBy: user.name,
+      deletedById: user.userId,
+      deletedAt: new Date(),
+      deletedReason: req.body?.deletedReason || ''
+    });
+
+    await deletedInvoice.save();
+
+    await Sales.findOneAndDelete({ saleId: req.params.id });
 
     res.status(200).json({
       success: true,
@@ -719,7 +711,7 @@ router.delete("/delete-sale/:id", async (req, res) => {
 });
 
 // =============================================
-// GET /api/sales/get-customer-sales/:customerId - Get sales by customer
+// GET /api/sales/get-customer-sales/:customerId
 // =============================================
 router.get("/get-customer-sales/:customerId", async (req, res) => {
   try {
@@ -728,8 +720,7 @@ router.get("/get-customer-sales/:customerId", async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = {
-      customerId: req.params.customerId,
-      isDeleted: false
+      customerId: req.params.customerId
     };
 
     const total = await Sales.countDocuments(filter);

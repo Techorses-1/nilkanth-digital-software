@@ -1,30 +1,16 @@
 const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 
-const salesSchema = new mongoose.Schema({
-    saleId: {
+const quotationSchema = new mongoose.Schema({
+    quotationId: {
         type: String,
         unique: true,
         default: () => uuidv4(),
     },
-    invoiceNumber: {
+    quotationNumber: {
         type: String,
         unique: true,
         required: true,
-    },
-
-    // ===== INTERNAL INVOICE NUMBER (Unique Alphanumeric) =====
-    internalInvoiceNumber: {
-        type: String,
-        unique: true,
-        required: true,
-    },
-
-    // ===== CHALLAN MODE =====
-    isChallan: {
-        type: Boolean,
-        default: false,
-        required: true
     },
 
     // ===== CUSTOMER INFO =====
@@ -68,31 +54,8 @@ const salesSchema = new mongoose.Schema({
         required: true
     },
 
-    // ===== PAYMENT STATUS =====
-    paymentStatus: {
-        type: String,
-        enum: ['Paid', 'Pending'],
-        default: 'Paid',
-        required: true
-    },
-
-    // ===== PAYMENT TYPE (Only when Paid) =====
-    paymentType: {
-        type: String,
-        enum: ['Cash', 'Bank', 'UPI', 'Cheque', null],
-        default: 'Cash',
-        required: false
-    },
-
-    // ===== GST MODE =====
-    isGstMode: {
-        type: Boolean,
-        default: true,
-        required: true
-    },
-
-    // ===== SALE DATE =====
-    saleDate: {
+    // ===== QUOTATION DATE =====
+    quotationDate: {
         type: Date,
         default: Date.now,
         required: true
@@ -110,12 +73,10 @@ const salesSchema = new mongoose.Schema({
             required: true,
             trim: true
         },
-        // ✅ Master product description (from Product model)
         productDescription: {
             type: String,
             trim: true
         },
-        // ✅ NEW: Per-invoice description (user enters)
         invoiceDescription: {
             type: String,
             trim: true,
@@ -168,7 +129,6 @@ const salesSchema = new mongoose.Schema({
             required: true,
             min: 0
         },
-        // ===== UNIQUE NUMBERS FOR EACH UNIT =====
         uniqueNumbers: [{
             number: {
                 type: String,
@@ -182,21 +142,7 @@ const salesSchema = new mongoose.Schema({
         }]
     }],
 
-    // ===== TAX INFO =====
-    taxSlab: {
-        type: Number,
-        required: true,
-        enum: [0, 5, 12, 18, 28],
-        default: 18
-    },
-    taxType: {
-        type: String,
-        enum: ['GST', 'IGST', 'CGST_SGST'],
-        required: true,
-        default: 'GST'
-    },
-
-    // ===== CALCULATIONS =====
+    // ===== CALCULATIONS (NO TAX) =====
     subtotal: {
         type: Number,
         required: true,
@@ -209,25 +155,11 @@ const salesSchema = new mongoose.Schema({
         min: 0,
         default: 0
     },
-    totalTax: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0
-    },
     grandTotal: {
         type: Number,
         required: true,
         min: 0,
         default: 0
-    },
-
-    // ===== TAX BREAKDOWN =====
-    taxBreakdown: {
-        cgst: { type: Number, default: 0 },
-        sgst: { type: Number, default: 0 },
-        igst: { type: Number, default: 0 },
-        gst: { type: Number, default: 0 }
     },
 
     // ===== NOTES =====
@@ -260,27 +192,25 @@ const salesSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-salesSchema.index({ invoiceNumber: 1 });
-salesSchema.index({ internalInvoiceNumber: 1 });
-salesSchema.index({ customerId: 1 });
-salesSchema.index({ customerName: 1 });
-salesSchema.index({ saleDate: -1 });
-salesSchema.index({ storeType: 1 });
-salesSchema.index({ isChallan: 1 });
-salesSchema.index({ 'items.uniqueNumbers.number': 1 });
+quotationSchema.index({ quotationNumber: 1 });
+quotationSchema.index({ customerId: 1 });
+quotationSchema.index({ customerName: 1 });
+quotationSchema.index({ quotationDate: -1 });
+quotationSchema.index({ storeType: 1 });
+quotationSchema.index({ 'items.uniqueNumbers.number': 1 });
 
 // ===== VIRTUALS =====
-salesSchema.virtual('totalItems').get(function () {
+quotationSchema.virtual('totalItems').get(function () {
     return this.items ? this.items.length : 0;
 });
 
-salesSchema.virtual('totalQuantity').get(function () {
+quotationSchema.virtual('totalQuantity').get(function () {
     if (!this.items) return 0;
     return this.items.reduce((sum, item) => sum + item.quantity, 0);
 });
 
-// ===== METHOD: Recalculate all totals =====
-salesSchema.methods.recalculateTotals = function () {
+// ===== METHOD: Recalculate totals (NO TAX) =====
+quotationSchema.methods.recalculateTotals = function () {
     let subtotal = 0;
     let totalDiscount = 0;
 
@@ -296,44 +226,13 @@ salesSchema.methods.recalculateTotals = function () {
 
     this.subtotal = subtotal;
     this.totalDiscount = totalDiscount;
+    this.grandTotal = subtotal - totalDiscount;  // NO TAX
 
-    // ✅ If Challan mode OR Non-GST mode, NO tax calculation
-    if (this.isChallan || !this.isGstMode) {
-        this.totalTax = 0;
-        this.taxBreakdown = { cgst: 0, sgst: 0, igst: 0, gst: 0 };
-        this.grandTotal = this.subtotal - this.totalDiscount;
-        return this;
-    }
-
-    // ✅ GST Mode - Calculate tax
-    const taxableAmount = this.subtotal - this.totalDiscount;
-    const taxRate = this.taxSlab / 100;
-
-    if (this.taxType === 'IGST' || this.taxType === 'GST') {
-        this.totalTax = taxableAmount * taxRate;
-        this.taxBreakdown = {
-            igst: this.taxType === 'IGST' ? this.totalTax : 0,
-            gst: this.taxType === 'GST' ? this.totalTax : 0,
-            cgst: 0,
-            sgst: 0
-        };
-    } else if (this.taxType === 'CGST_SGST') {
-        const halfTax = (taxableAmount * taxRate) / 2;
-        this.totalTax = taxableAmount * taxRate;
-        this.taxBreakdown = {
-            cgst: halfTax,
-            sgst: halfTax,
-            igst: 0,
-            gst: 0
-        };
-    }
-
-    this.grandTotal = this.subtotal - this.totalDiscount + this.totalTax;
     return this;
 };
 
-salesSchema.set('toJSON', { virtuals: true });
-salesSchema.set('toObject', { virtuals: true });
+quotationSchema.set('toJSON', { virtuals: true });
+quotationSchema.set('toObject', { virtuals: true });
 
-const Sales = mongoose.models.Sales || mongoose.model('Sales', salesSchema);
-module.exports = Sales;
+const Quotation = mongoose.models.Quotation || mongoose.model('Quotation', quotationSchema);
+module.exports = Quotation;
