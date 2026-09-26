@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -10,6 +10,7 @@ import {
     FaMinus,
     FaSearch,
     FaBox,
+    FaBoxes,
     FaShoppingCart,
     FaUser,
     FaCalendarAlt,
@@ -69,16 +70,12 @@ const selectStyles = {
     })
 };
 
-// Store Type Options
-const STORE_TYPES = [
-    { value: "Vadodara", label: "Vadodara" },
-    { value: "Padra", label: "Padra" }
-];
-
 const Inventory = () => {
+    const [activeTab, setActiveTab] = useState("items");
     const [storeTab, setStoreTab] = useState("Vadodara");
 
-    // ============= STATE =============
+    // ============= COMMON STATE =============
+    const [items, setItems] = useState([]);
     const [products, setProducts] = useState([]);
     const [inventoryData, setInventoryData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +87,7 @@ const Inventory = () => {
     // ============= PAGINATION STATE =============
     const [pagination, setPagination] = useState({
         page: 1,
-        limit: 10,
+        limit: 20,
         total: 0,
         totalPages: 0,
         hasNext: false,
@@ -122,19 +119,22 @@ const Inventory = () => {
         if (!isLoading) {
             fetchInventory();
         }
-    }, [storeTab, debouncedSearch, pagination.page]);
+    }, [activeTab, storeTab, debouncedSearch, pagination.page]);
 
     const fetchAllData = async () => {
         setIsLoading(true);
         try {
             const headers = getAuthHeaders();
 
-            const productsRes = await axios.get(
-                `${import.meta.env.VITE_API_URL}/products-master/get-products`,
-                headers
-            );
+            const [itemsRes, productsRes] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/items/get-items`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
+            ]);
 
+            const itemsData = itemsRes.data?.data || itemsRes.data || [];
             const productsData = productsRes.data?.data || productsRes.data || [];
+
+            setItems(Array.isArray(itemsData) ? itemsData : []);
             setProducts(Array.isArray(productsData) ? productsData : []);
 
             await fetchInventory();
@@ -145,6 +145,7 @@ const Inventory = () => {
             } else {
                 toast.error("Failed to load data.");
             }
+            setItems([]);
             setProducts([]);
         } finally {
             setIsLoading(false);
@@ -155,7 +156,10 @@ const Inventory = () => {
         try {
             setIsLoading(true);
             const headers = getAuthHeaders();
-            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/get-all`;
+
+            const endpoint = activeTab === "items"
+                ? `${import.meta.env.VITE_API_URL}/item-inventory/get-all`
+                : `${import.meta.env.VITE_API_URL}/product-inventory/get-all`;
 
             const response = await axios.get(endpoint, {
                 ...headers,
@@ -171,7 +175,7 @@ const Inventory = () => {
                 setInventoryData(response.data.data || []);
                 setPagination(response.data.pagination || {
                     page: 1,
-                    limit: 10,
+                    limit: 20,
                     total: 0,
                     totalPages: 0,
                     hasNext: false,
@@ -188,32 +192,36 @@ const Inventory = () => {
         }
     };
 
-    // ============= GET ALL PRODUCTS FOR DROPDOWN =============
-    const allProducts = useMemo(() => {
-        return Array.isArray(products) ? products : [];
-    }, [products]);
+    // ============= GET ALL ITEMS/PRODUCTS FOR DROPDOWN =============
+    const allData = useMemo(() => {
+        const data = activeTab === "items" ? items : products;
+        return Array.isArray(data) ? data : [];
+    }, [activeTab, items, products]);
 
     // ============= DROPDOWN OPTIONS =============
     const productOptions = useMemo(() => {
-        return allProducts.map((product) => ({
-            value: product.productId,
-            label: product.productName
+        return allData.map((item) => ({
+            value: activeTab === "items" ? item.itemId : item.productId,
+            label: activeTab === "items" ? item.itemName : item.productName
         }));
-    }, [allProducts]);
+    }, [allData, activeTab]);
 
     const vendorOptions = useMemo(() => {
-        return allProducts.map((product) => {
-            const inv = inventoryData.find(i => i.productId === product.productId);
+        return allData.map((item) => {
+            const id = activeTab === "items" ? item.itemId : item.productId;
+            const inv = inventoryData.find(i =>
+                (activeTab === "items" ? i.itemId : i.productId) === id
+            );
             return {
-                value: product.productId,
-                label: `${product.productName} ${inv ? `(${inv.totalQuantity || 0} available)` : ''}`
+                value: id,
+                label: `${activeTab === "items" ? item.itemName : item.productName} ${inv ? `(${inv.totalQuantity || 0} available)` : ''}`
             };
         });
-    }, [allProducts, inventoryData]);
+    }, [allData, inventoryData, activeTab]);
 
     // ============= VALIDATION SCHEMAS =============
     const addValidationSchema = Yup.object({
-        productId: Yup.string().required("Please select a product"),
+        productId: Yup.string().required(`Please select a ${activeTab === "items" ? "item" : "product"}`),
         quantity: Yup.number()
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
@@ -225,7 +233,7 @@ const Inventory = () => {
     });
 
     const removeValidationSchema = Yup.object({
-        productId: Yup.string().required("Please select a product"),
+        productId: Yup.string().required(`Please select a ${activeTab === "items" ? "item" : "product"}`),
         quantity: Yup.number()
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
@@ -244,7 +252,7 @@ const Inventory = () => {
             }
 
             const payload = {
-                productId: values.productId,
+                [activeTab === "items" ? "itemId" : "productId"]: values.productId,
                 quantity: Number(values.quantity),
                 purchasePrice: Number(values.purchasePrice) || 0,
                 date: values.date || new Date(),
@@ -252,7 +260,9 @@ const Inventory = () => {
                 storeType: storeTab
             };
 
-            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/add`;
+            const endpoint = activeTab === "items"
+                ? `${import.meta.env.VITE_API_URL}/item-inventory/add`
+                : `${import.meta.env.VITE_API_URL}/product-inventory/add`;
 
             const response = await axios.post(endpoint, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -281,7 +291,7 @@ const Inventory = () => {
             }
 
             const inventory = inventoryData.find(
-                inv => inv.productId === values.productId
+                inv => (activeTab === "items" ? inv.itemId : inv.productId) === values.productId
             );
 
             if (!inventory) {
@@ -295,14 +305,16 @@ const Inventory = () => {
             }
 
             const payload = {
-                productId: values.productId,
+                [activeTab === "items" ? "itemId" : "productId"]: values.productId,
                 quantity: Number(values.quantity),
                 date: values.date || new Date(),
                 reason: values.reason || '',
                 storeType: storeTab
             };
 
-            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/remove`;
+            const endpoint = activeTab === "items"
+                ? `${import.meta.env.VITE_API_URL}/item-inventory/remove`
+                : `${import.meta.env.VITE_API_URL}/product-inventory/remove`;
 
             const response = await axios.post(endpoint, payload, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -324,7 +336,9 @@ const Inventory = () => {
     const fetchHistory = async (id) => {
         try {
             const headers = getAuthHeaders();
-            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/get-history/${id}?storeType=${storeTab}`;
+            const endpoint = activeTab === "items"
+                ? `${import.meta.env.VITE_API_URL}/item-inventory/get-history/${id}?storeType=${storeTab}`
+                : `${import.meta.env.VITE_API_URL}/product-inventory/get-history/${id}?storeType=${storeTab}`;
 
             const response = await axios.get(endpoint, headers);
             return response.data;
@@ -339,7 +353,7 @@ const Inventory = () => {
         setSelectedInventory(inventory);
         setShowHistoryModal(true);
 
-        const id = inventory.productId;
+        const id = activeTab === "items" ? inventory.itemId : inventory.productId;
         const historyData = await fetchHistory(id);
         if (historyData && historyData.success) {
             setModalHistory(historyData.data?.history || []);
@@ -364,7 +378,9 @@ const Inventory = () => {
                 return;
             }
 
-            const endpoint = `${import.meta.env.VITE_API_URL}/product-inventory/export`;
+            const endpoint = activeTab === "items"
+                ? `${import.meta.env.VITE_API_URL}/item-inventory/export`
+                : `${import.meta.env.VITE_API_URL}/product-inventory/export`;
 
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` },
@@ -383,11 +399,11 @@ const Inventory = () => {
                 }
 
                 const exportData = data.map((inv) => ({
-                    "Product Name": inv.productName,
+                    [activeTab === "items" ? "Item Name" : "Product Name"]:
+                        activeTab === "items" ? inv.itemName : inv.productName,
                     "Store": inv.storeType || storeTab,
                     "Total Quantity": inv.totalQuantity || 0,
                     "Average Price": inv.averagePurchasePrice || 0,
-                    "Unit": inv.unitName || "N/A",
                     "Last Updated": inv.updatedAt ? new Date(inv.updatedAt).toLocaleString() : "N/A",
                 }));
 
@@ -396,11 +412,11 @@ const Inventory = () => {
                 XLSX.utils.book_append_sheet(
                     workbook,
                     worksheet,
-                    `product_inventory`
+                    `${activeTab}_inventory`
                 );
                 XLSX.writeFile(
                     workbook,
-                    `product_inventory_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
+                    `${activeTab}_inventory_${storeTab}_${new Date().toISOString().split("T")[0]}.xlsx`
                 );
                 toast.success(`Exported ${data.length} records successfully!`);
             } else {
@@ -464,14 +480,15 @@ const Inventory = () => {
                                 <div className="inventory-form-row">
                                     <div className="inventory-form-field inventory-form-field-full">
                                         <label className="inventory-form-label">
-                                            <FaBox /> Product *
+                                            {activeTab === "items" ? <FaBoxes /> : <FaBox />}
+                                            {' '}{activeTab === "items" ? "Item" : "Product"} *
                                         </label>
                                         <Select
                                             options={productOptions}
                                             styles={selectStyles}
                                             className="inventory-react-select"
                                             classNamePrefix="inventory-select"
-                                            placeholder="Search Product..."
+                                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
                                             isSearchable
                                             onChange={(option) => {
                                                 setFieldValue("productId", option ? option.value : "");
@@ -582,14 +599,15 @@ const Inventory = () => {
                                 <div className="inventory-form-row">
                                     <div className="inventory-form-field inventory-form-field-full">
                                         <label className="inventory-form-label">
-                                            <FaBox /> Product *
+                                            {activeTab === "items" ? <FaBoxes /> : <FaBox />}
+                                            {' '}{activeTab === "items" ? "Item" : "Product"} *
                                         </label>
                                         <Select
                                             options={vendorOptions}
                                             styles={selectStyles}
                                             className="inventory-react-select"
                                             classNamePrefix="inventory-select"
-                                            placeholder="Search Product..."
+                                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
                                             isSearchable
                                             onChange={(option) => {
                                                 setFieldValue("productId", option ? option.value : "");
@@ -659,7 +677,9 @@ const Inventory = () => {
     const renderHistoryModal = () => {
         if (!showHistoryModal || !selectedInventory) return null;
 
-        const name = selectedInventory.productName;
+        const name = activeTab === "items"
+            ? selectedInventory.itemName
+            : selectedInventory.productName;
 
         return (
             <div className="inventory-modal-overlay" onClick={closeHistoryModal}>
@@ -668,7 +688,7 @@ const Inventory = () => {
                         <h3 className="inventory-modal-title">
                             <FaHistory /> {name} - Transaction History
                             <span className="inventory-modal-stock">
-                                Stock: {selectedInventory.totalQuantity || 0} {selectedInventory.unitName || ""}
+                                Stock: {selectedInventory.totalQuantity || 0}
                             </span>
                             <span className="inventory-modal-store-badge">{selectedInventory.storeType}</span>
                         </h3>
@@ -751,7 +771,7 @@ const Inventory = () => {
                     <input
                         type="text"
                         className="inventory-search-input"
-                        placeholder="Search Product Inventory..."
+                        placeholder={`Search ${activeTab === "items" ? "Item" : "Product"} Inventory...`}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -803,8 +823,7 @@ const Inventory = () => {
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Product</th>
-                                    <th>Unit</th>
+                                    <th>{activeTab === "items" ? "Item" : "Product"}</th>
                                     <th>Total Quantity</th>
                                     <th>Avg. Price</th>
                                     <th>Action</th>
@@ -817,9 +836,10 @@ const Inventory = () => {
                                         <tr key={inv.inventoryId} className="inventory-table-row">
                                             <td>{serialNo}</td>
                                             <td className="inventory-product-name">
-                                                <strong>{inv.productName}</strong>
+                                                <strong>
+                                                    {activeTab === "items" ? inv.itemName : inv.productName}
+                                                </strong>
                                             </td>
-                                            <td>{inv.unitName || "N/A"}</td>
                                             <td>
                                                 <span className="inventory-quantity-badge">{inv.totalQuantity || 0}</span>
                                             </td>
@@ -902,6 +922,26 @@ const Inventory = () => {
                                 }}
                             >
                                 <FaStore /> Padra
+                            </button>
+                        </div>
+                        <div className="inventory-tabs-container">
+                            <button
+                                className={`inventory-tab-btn ${activeTab === "items" ? "inventory-tab-active" : ""}`}
+                                onClick={() => {
+                                    setActiveTab("items");
+                                    setPagination(prev => ({ ...prev, page: 1 }));
+                                }}
+                            >
+                                <FaBoxes /> Item Inventory
+                            </button>
+                            <button
+                                className={`inventory-tab-btn ${activeTab === "products" ? "inventory-tab-active" : ""}`}
+                                onClick={() => {
+                                    setActiveTab("products");
+                                    setPagination(prev => ({ ...prev, page: 1 }));
+                                }}
+                            >
+                                <FaBox /> Product Inventory
                             </button>
                         </div>
                     </div>

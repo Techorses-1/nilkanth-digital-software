@@ -39,6 +39,7 @@ const salesRoutes = require('./routes/salesRoutes');
 const itemPurchaseRoutes = require('./routes/itemPurchaseRoutes');
 const productPurchaseRoutes = require('./routes/productPurchaseRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
+const repairingRoutes = require('./routes/repairingRoutes');
 
 
 // ============= ROUTE MIDDLEWARES =============
@@ -59,6 +60,8 @@ app.use('/sales', salesRoutes);
 app.use('/item-purchase', itemPurchaseRoutes);
 app.use('/product-purchase', productPurchaseRoutes);
 app.use('/quotation', quotationRoutes);
+app.use('/repairing', repairingRoutes);
+
 
 
 

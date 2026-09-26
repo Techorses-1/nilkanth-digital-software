@@ -46,6 +46,7 @@ const SalesPrint = ({ invoice }) => {
     taxBreakdown,
     notes,
     paymentType,
+    paymentStatus,
     repairingDescription
   } = invoice;
 
@@ -280,6 +281,13 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                 <span className="info-value">{customerGstin}</span>
               </div>
             )}
+            {/* ✅ Show Payment Pending only when status is Pending */}
+            {paymentStatus === 'Pending' && (
+              <div className="info-row payment-pending-row">
+                <span className="info-label">Payment :</span>
+                <span className="info-value payment-pending-value">Pending</span>
+              </div>
+            )}
           </div>
 
           <div className="owner-info">
@@ -303,7 +311,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
           </div>
         </div>
 
-        {/* ===== ITEMS TABLE - NO DISCOUNT COLUMN, HAS CAPACITY ===== */}
+        {/* ===== ITEMS TABLE ===== */}
         <div className="items-section">
           <h3>ITEMS DETAILS</h3>
           <table className="items-table">
@@ -320,15 +328,25 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
             </thead>
             <tbody>
               {items && items.map((item, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{item.productName || "N/A"}</td>
-                  <td>{hasValue(item.capacity) ? item.capacity : '-'}</td>
-                  <td>{item.hsnCode || "N/A"}</td>
-                  <td>{item.quantity || 1}</td>
-                  <td>{formatCurrency(item.unitPrice)}</td>
-                  <td>{formatCurrency(calculateItemTotal(item))}</td>
-                </tr>
+                <React.Fragment key={index}>
+                  <tr>
+                    <td>{index + 1}</td>
+                    <td>{item.productName || "N/A"}</td>
+                    <td>{hasValue(item.capacity) ? item.capacity : '-'}</td>
+                    <td>{item.hsnCode || "N/A"}</td>
+                    <td>{item.quantity || 1}</td>
+                    <td>{formatCurrency(item.unitPrice)}</td>
+                    <td>{formatCurrency(calculateItemTotal(item))}</td>
+                  </tr>
+                  {/* ✅ Invoice Description Row - Full Width */}
+                  {hasValue(item.invoiceDescription) && (
+                    <tr className="item-description-row">
+                      <td colSpan="7" className="item-description-cell">
+                        {item.invoiceDescription}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -424,7 +442,6 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
               <h3>DECLARATION</h3>
               <p>{declaration}</p>
             </div>
-            {/* ✅ Show Repairing Description only if available */}
             {hasValue(repairingDescription) && (
               <div className="repairing-description-section">
                 <h3>REPAIRING DESCRIPTION</h3>

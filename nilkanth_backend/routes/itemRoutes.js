@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Item = require("../models/item");
 const ItemInventory = require("../models/itemInventory");
-const Unit = require("../models/unit");
 
 // ===== HELPER: Create inventory for BOTH stores =====
 const createItemInventoryForBothStores = async (item) => {
@@ -11,7 +10,6 @@ const createItemInventoryForBothStores = async (item) => {
 
   for (const storeType of stores) {
     try {
-      // Check if inventory already exists for this store
       const existingInventory = await ItemInventory.findOne({
         itemId: item.itemId,
         storeType: storeType
@@ -23,12 +21,8 @@ const createItemInventoryForBothStores = async (item) => {
           itemName: item.itemName,
           itemDescription: item.itemDescription || '',
           hsnCode: item.hsnCode,
-          unitId: item.unitId,
-          unitName: item.unitName,
           storeType: storeType,
           totalQuantity: 0,
-          purchasePrice: 0,
-          sellingPrice: 0,
           addHistory: [],
           removeHistory: []
         });
@@ -48,12 +42,12 @@ const createItemInventoryForBothStores = async (item) => {
 };
 
 // =============================================
-// GET /api/items/get-items - Get all items (with pagination)
+// GET /api/items/get-items - Get all items (with pagination + search)
 // =============================================
 router.get("/get-items", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 20;
     const search = req.query.search || '';
     const skip = (page - 1) * limit;
 
@@ -165,7 +159,7 @@ router.get("/get-item/:id", async (req, res) => {
 // =============================================
 router.post("/create-item", async (req, res) => {
   try {
-    const { itemName, unitId } = req.body;
+    const { itemName, itemDescription, hsnCode } = req.body;
 
     if (!itemName) {
       return res.status(400).json({
@@ -184,26 +178,15 @@ router.post("/create-item", async (req, res) => {
       });
     }
 
-    const unit = await Unit.findOne({ unitId });
-    if (!unit) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid unit selected",
-        field: "unitId"
-      });
-    }
-
     const item = new Item({
       itemName,
-      itemDescription: req.body.itemDescription || '',
-      hsnCode: req.body.hsnCode,
-      unitId: unit.unitId,
-      unitName: unit.unitName
+      itemDescription: itemDescription || '',
+      hsnCode: hsnCode || '8423'
     });
 
     const savedItem = await item.save();
 
-    // ✅ FIX: Create inventory for BOTH stores
+    // ✅ Create inventory for BOTH stores
     const inventoryResults = await createItemInventoryForBothStores(savedItem);
 
     res.status(201).json({
@@ -250,18 +233,6 @@ router.put("/update-item/:id", async (req, res) => {
       }
     }
 
-    if (updateData.unitId) {
-      const unit = await Unit.findOne({ unitId: updateData.unitId });
-      if (!unit) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid unit selected",
-          field: "unitId"
-        });
-      }
-      updateData.unitName = unit.unitName;
-    }
-
     const updatedItem = await Item.findOneAndUpdate(
       { itemId: req.params.id },
       updateData,
@@ -275,13 +246,11 @@ router.put("/update-item/:id", async (req, res) => {
       });
     }
 
-    // ✅ FIX: Update inventory for BOTH stores
+    // ✅ Update inventory for BOTH stores (only name, description, hsnCode)
     const inventoryUpdateData = {
       itemName: updatedItem.itemName,
       itemDescription: updatedItem.itemDescription,
-      hsnCode: updatedItem.hsnCode,
-      unitId: updatedItem.unitId,
-      unitName: updatedItem.unitName
+      hsnCode: updatedItem.hsnCode
     };
 
     await ItemInventory.updateMany(
@@ -317,7 +286,6 @@ router.put("/update-item/:id", async (req, res) => {
 // =============================================
 router.delete("/delete-item/:id", async (req, res) => {
   try {
-    // ✅ FIX: Check inventory for BOTH stores
     const inventories = await ItemInventory.find({ itemId: req.params.id });
     const hasStock = inventories.some(inv => inv.totalQuantity > 0);
 
@@ -336,7 +304,6 @@ router.delete("/delete-item/:id", async (req, res) => {
       });
     }
 
-    // ✅ FIX: Delete inventory for BOTH stores
     await ItemInventory.deleteMany({ itemId: req.params.id });
 
     res.status(200).json({

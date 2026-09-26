@@ -16,6 +16,8 @@ import Footer from "../Components/Footer/Footer";
 import ProductReports from "../Pages/ProductsReports/ProductReports";
 import Purchase from "../Pages/Purchase/Purchase";
 import Sales from "../Pages/Sales/Sales";
+import Quotation from "../Pages/Quotation/Quotation";
+import Repairing from "../Pages/Repairing/Repairing";
 
 
 
@@ -79,6 +81,21 @@ const Router = () => {
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="invoice">
                   <Sales />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/quotation" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="invoice">
+                  <Quotation />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+            <Route path="/repairing" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="invoice">
+                  <Repairing />
                 </PermissionRoute>
               </ProtectedRoute>
             } />

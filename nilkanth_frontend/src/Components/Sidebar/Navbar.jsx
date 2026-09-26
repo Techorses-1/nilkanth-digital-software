@@ -112,11 +112,13 @@ const Navbar = ({
   const allMenuData = [
     { icon: <MdReceiptLong />, title: "Sales", path: "/", permission: "invoice" },
     { icon: <TbUsers />, title: "Customer", path: "/customer", permission: "customer" },
-    { icon: <FaTruck />, title: "Vendor", path: "/vendor", permission: "customer" },
+    // { icon: <FaTruck />, title: "Vendor", path: "/vendor", permission: "customer" },
     { icon: <PiShoppingCart />, title: "Products", path: "/items", permission: "products" },
-    { icon: <FaStore />, title: "Purchase", path: "/purchase", permission: "purchase" },
+    // { icon: <FaStore />, title: "Purchase", path: "/purchase", permission: "purchase" },
     { icon: <MdInventory />, title: "Inventory", path: "/inventory", permission: "inventory" },
     { icon: <MdAdminPanelSettings />, title: "Admin", path: "/admin", permission: "admin" },
+    { icon: <MdAdminPanelSettings />, title: "Quotation", path: "/quotation", permission: "admin" },
+    { icon: <MdAdminPanelSettings />, title: "Repairing", path: "/repairing", permission: "admin" },
   ];
 
   // Filter menu items based on user permissions

@@ -277,7 +277,7 @@ $primary-blue-light: #e9eefb;
       th,
       td {
         border: 1px solid $primary-blue;
-        padding: 6px 8px;
+        padding: 4px 8px;
         text-align: center;
       }
 
@@ -291,7 +291,7 @@ $primary-blue-light: #e9eefb;
       }
 
       td {
-        font-size: 10.5px;
+        font-size: 10px;
         color: #222;
 
         &:nth-child(5),
@@ -870,4 +870,28 @@ $primary-blue-light: #e9eefb;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+// ===== PAYMENT PENDING HIGHLIGHT =====
+.payment-pending-row {
+  .payment-pending-value {
+    color: #dc3545 !important;
+    font-weight: 700 !important;
+  }
+}
+
+// ===== ITEM DESCRIPTION ROW (Full Width) =====
+.item-description-row {
+  .item-description-cell {
+    text-align: left !important;
+    font-size: 9px !important;
+    color: #333;
+    padding: 4px 8px !important;
+    background: #f9f9f9;
+    border-left: 1px solid $primary-blue;
+    border-right: 1px solid $primary-blue;
+    border-bottom: 1px solid $primary-blue;
+    line-height: 1.3;
+    font-weight: 400;
+  }
 }

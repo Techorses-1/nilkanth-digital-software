@@ -1,5 +1,5 @@
 import React from "react";
-import "./QuotationPrint.scss";
+import "./RepairingPrint.scss";
 import logo1 from "../../Assets/logo/logo.jpeg";
 import authorized from "../../Assets/pdf/auth.png";
 
@@ -25,21 +25,27 @@ import heading6 from "../../Assets/pdf/h4.png";
 import heading5 from "../../Assets/pdf/h5.png";
 import heading4 from "../../Assets/pdf/h6.png";
 
-const QuotationPrint = ({ quotation }) => {
-    if (!quotation) return null;
+const RepairingPrint = ({ repairing }) => {
+    if (!repairing) return null;
 
     const {
-        quotationNumber,
-        quotationDate,
+        repairingNumber,
+        repairingDate,
         customerName,
         customerEmail,
         customerPhone,
         customerGstin,
         customerAddress,
         items,
+        subtotal,
+        totalDiscount,
+        totalTax,
         grandTotal,
-        notes
-    } = quotation;
+        taxBreakdown,
+        repairNotes,
+        paymentStatus,
+        paymentType
+    } = repairing;
 
     // ===== STATIC DATA =====
     const companyName = "Nilkanth digital scale co.";
@@ -56,12 +62,11 @@ const QuotationPrint = ({ quotation }) => {
         ifscCode: "CBIN0280489"
     };
 
-    const declaration = `We hereby declare that the information provided in this quotation is true and correct to the best of our knowledge and belief. The goods/services mentioned in this quotation are supplied as per the agreed terms and conditions.`;
+    const declaration = `We hereby declare that the information provided in this repairing invoice is true and correct to the best of our knowledge and belief. The goods/services mentioned in this repairing invoice are supplied as per the agreed terms and conditions.`;
 
-    const termsAndConditions = `All prices mentioned in this quotation are exclusive of GST (18%).
-Warranty: Warranty is applicable against manufacturing defects only.
+    const termsAndConditions = `Warranty: Warranty is applicable against manufacturing defects only.
 Battery is not covered under warranty under any circumstances.
-If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
+Stamping/Verification: If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
 Once the goods are delivered, they will not be taken back or returned.
 To get free repairing service, client needs to bring the product to our workshop.
 For repairing, if we visit your site, charges will be taken accordingly.`;
@@ -142,6 +147,14 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
         return `₹${Number(value).toFixed(2)}`;
     };
 
+    // ===== Format a tax amount as a clean percentage string =====
+    const formatTaxPercent = (amount, base) => {
+        if (!base || base <= 0 || !amount || isNaN(amount)) return "0";
+        const pct = (amount / base) * 100;
+        const rounded = Math.round(pct * 100) / 100;
+        return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+    };
+
     // ===== Format date =====
     const formatDate = (date) => {
         if (!date) return "N/A";
@@ -156,6 +169,16 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     const hasValue = (val) => {
         return val && val !== 'N/A' && val !== '' && val !== null && val !== undefined;
     };
+
+    // ===== Tax split flags =====
+    const hasCgstSgst = taxBreakdown && (taxBreakdown.cgst > 0 || taxBreakdown.sgst > 0);
+    const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
+    const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
+
+    const taxableAmount = (subtotal || 0) - (totalDiscount || 0);
+    const cgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.cgst, taxableAmount) : "0";
+    const sgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.sgst, taxableAmount) : "0";
+    const igstPercent = hasIgst ? formatTaxPercent(taxBreakdown.igst, taxableAmount) : "0";
 
     // ===== Product showcase data =====
     const allProductImages = [
@@ -176,22 +199,25 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
         "LABORATORY SCALES"
     ];
 
+    const heroImage = width;
+    const heroCaption = (items && items[0]?.productName) || "Featured Product";
+
     return (
-        <div id="quotation-pdf">
-            <div className="quotation-container">
+        <div id="repairing-pdf">
+            <div className="repairing-container">
 
                 {/* ===== SHREE GANESHAY NAMAH ===== */}
                 <p className="ganesh-line">|| શ્રી ગણેશાય નમઃ ||</p>
 
                 {/* ===== HEADER ===== */}
-                <div className="quotation-header">
+                <div className="repairing-header">
                     <div className="header-images header-images-left">
                         <img src={heading1} alt="" className="header-img img-pos-1" />
                         <img src={heading2} alt="" className="header-img img-pos-2" />
                         <img src={heading3} alt="" className="header-img img-pos-3" />
                     </div>
 
-                    <div className="quotation-logo">
+                    <div className="repairing-logo">
                         <img src={logo1} alt="Company Logo" />
                     </div>
 
@@ -202,21 +228,24 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                     </div>
                 </div>
 
-                <div className="quotation-divider"></div>
+                <div className="repairing-divider"></div>
 
-                {/* ✅ REMOVED: QUOTATION TITLE BANNER */}
+                {/* ===== REPAIRING TITLE BANNER ===== */}
+                <div className="repairing-title-banner">
+                    <h1>REPAIRING</h1>
+                </div>
 
                 {/* ===== BILLING INFO & OWNER INFO ===== */}
                 <div className="info-section">
                     <div className="customer-info">
-                        <h3 className="info-heading">Quotation Info</h3>
+                        <h3 className="info-heading">Repairing Info</h3>
                         <div className="info-row">
-                            <span className="info-label">Quotation No:</span>
-                            <span className="info-value">{quotationNumber || "N/A"}</span>
+                            <span className="info-label">Repairing No:</span>
+                            <span className="info-value">{repairingNumber || "N/A"}</span>
                         </div>
                         <div className="info-row">
                             <span className="info-label">Date:</span>
-                            <span className="info-value">{formatDate(quotationDate)}</span>
+                            <span className="info-value">{formatDate(repairingDate)}</span>
                         </div>
                         <div className="info-row">
                             <span className="info-label">Customer:</span>
@@ -244,6 +273,12 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                             <div className="info-row">
                                 <span className="info-label">GSTIN:</span>
                                 <span className="info-value">{customerGstin}</span>
+                            </div>
+                        )}
+                        {paymentStatus === 'Pending' && (
+                            <div className="info-row payment-pending-row">
+                                <span className="info-label">Payment :</span>
+                                <span className="info-value payment-pending-value">Pending</span>
                             </div>
                         )}
                     </div>
@@ -296,6 +331,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                                         <td>{formatCurrency(item.unitPrice)}</td>
                                         <td>{formatCurrency(calculateItemTotal(item))}</td>
                                     </tr>
+                                    {/* ✅ Invoice Description Row */}
                                     {hasValue(item.invoiceDescription) && (
                                         <tr className="item-description-row">
                                             <td colSpan="7" className="item-description-cell">
@@ -330,31 +366,76 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                                 <span className="bank-value">{bankDetails.ifscCode}</span>
                             </div>
                         </div>
-                    </div>
 
-                    {/* ✅ RIGHT SIDE: TOTAL + AMOUNT IN WORDS */}
-                    <div className="totals-right">
-                        <div className="calculation-section">
-                            <div className="calculation-box">
-                                <div className="calc-row grand-total">
-                                    <span className="calc-label">TOTAL:</span>
-                                    <span className="calc-value">{formatCurrency(grandTotal)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ✅ Amount in Words - Below Calculation Box */}
                         <div className="amount-in-words">
                             <p><strong>Amount in Words:</strong> {numberToWords(grandTotal)} Only</p>
                         </div>
                     </div>
+
+                    <div className="totals-right">
+                        <div className="calculation-section">
+                            <div className="calculation-box">
+                                <div className="calc-row">
+                                    <span className="calc-label">Subtotal:</span>
+                                    <span className="calc-value">{formatCurrency(subtotal)}</span>
+                                </div>
+
+                                {totalDiscount > 0 && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">Discount:</span>
+                                        <span className="calc-value">{formatCurrency(totalDiscount)}</span>
+                                    </div>
+                                )}
+
+                                {hasCgstSgst && (
+                                    <>
+                                        <div className="calc-row">
+                                            <span className="calc-label">CGST ({cgstPercent}%):</span>
+                                            <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
+                                        </div>
+                                        <div className="calc-row">
+                                            <span className="calc-label">SGST ({sgstPercent}%):</span>
+                                            <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
+                                        </div>
+                                    </>
+                                )}
+
+                                {hasIgst && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">IGST ({igstPercent}%):</span>
+                                        <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
+                                    </div>
+                                )}
+
+                                {hasPlainTax && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">Tax (GST):</span>
+                                        <span className="calc-value">{formatCurrency(totalTax)}</span>
+                                    </div>
+                                )}
+
+                                <div className="calc-row grand-total">
+                                    <span className="calc-label">Grand Total:</span>
+                                    <span className="calc-value">{formatCurrency(grandTotal)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                {/* ===== DECLARATION & TERMS ===== */}
+                {/* ===== DECLARATION + REPAIR NOTES (LEFT) & TERMS (RIGHT) ===== */}
                 <div className="declaration-terms-section">
-                    <div className="declaration-section">
-                        <h3>DECLARATION</h3>
-                        <p>{declaration}</p>
+                    <div className="declaration-left">
+                        <div className="declaration-section">
+                            <h3>DECLARATION</h3>
+                            <p>{declaration}</p>
+                        </div>
+                        {hasValue(repairNotes) && (
+                            <div className="repair-notes-section">
+                                <h3>REPAIR NOTES</h3>
+                                <p>{repairNotes}</p>
+                            </div>
+                        )}
                     </div>
                     <div className="terms-section">
                         <h3>TERMS &amp; CONDITIONS</h3>
@@ -367,7 +448,7 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                 </div>
 
                 {/* ===== FOOTER ===== */}
-                <div className="quotation-footer">
+                <div className="repairing-footer">
                     <div className="footer-left">
                         <p>Subject To Vadodara Jurisdiction</p>
                     </div>
@@ -405,4 +486,4 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     );
 };
 
-export default QuotationPrint;
+export default RepairingPrint;

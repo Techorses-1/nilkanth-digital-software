@@ -1,354 +1,531 @@
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const express = require("express");
+const router = express.Router();
+const ItemInventory = require("../models/itemInventory");
+const Item = require("../models/item");
+const jwt = require("jsonwebtoken");
 
-const itemInventorySchema = new mongoose.Schema({
-    inventoryId: {
-        type: String,
-        unique: true,
-        default: () => uuidv4(),
-    },
+// ===== HELPER: Get user from token =====
+const getUserFromToken = (req) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) return null;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
 
-    // ===== STORE TYPE =====
-    storeType: {
-        type: String,
-        enum: ['Vadodara', 'Padra'],
-        required: true,
-        default: 'Vadodara'
-    },
+// ===== HELPER: Get user details =====
+const getUserDetails = async (userId) => {
+    const User = require("../models/user");
+    const user = await User.findOne({ userId });
+    return user;
+};
 
-    itemId: {
-        type: String,
-        required: true,
-        ref: 'Item'
-    },
-    itemName: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    itemDescription: {
-        type: String,
-        trim: true,
-        default: ''
-    },
-    hsnCode: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    unitId: {
-        type: String,
-        required: true,
-        ref: 'Unit'
-    },
-    unitName: {
-        type: String,
-        required: true,
-        trim: true
-    },
+// =============================================
+// GET /api/item-inventory/get-all - Get all item inventory (with pagination + search)
+// =============================================
+router.get("/get-all", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const search = req.query.search || '';
+        const storeType = req.query.storeType || 'Vadodara';
+        const skip = (page - 1) * limit;
 
-    // ===== TOTAL QUANTITY (calculated) =====
-    totalQuantity: {
-        type: Number,
-        default: 0,
-        min: 0
-    },
+        let filter = { storeType: storeType };
 
-    // ===== ADD HISTORY (Inward/Purchase) =====
-    addHistory: [{
-        entryId: {
-            type: String,
-            default: () => uuidv4(),
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 0.01
-        },
-        purchasePrice: {
-            type: Number,
-            default: 0,
-            min: 0
-        },
-        date: {
-            type: Date,
-            default: Date.now
-        },
-        addedBy: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        addedById: {
-            type: String,
-            required: true
-        },
-        notes: {
-            type: String,
-            trim: true,
-            default: ''
-        },
-        // Store type for this specific entry (for audit)
-        entryStoreType: {
-            type: String,
-            enum: ['Vadodara', 'Padra'],
-            required: true,
-            default: 'Vadodara'
-        },
-        // Soft delete for audit
-        isDeleted: {
-            type: Boolean,
-            default: false
-        },
-        deletedBy: {
-            type: String,
-            trim: true
-        },
-        deletedAt: {
-            type: Date
+        if (search) {
+            filter.$or = [
+                { itemName: { $regex: search, $options: 'i' } },
+                { itemDescription: { $regex: search, $options: 'i' } },
+                { hsnCode: { $regex: search, $options: 'i' } }
+            ];
         }
-    }],
 
-    // ===== REMOVE HISTORY (Outward/Issue) =====
-    removeHistory: [{
-        entryId: {
-            type: String,
-            default: () => uuidv4(),
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 0.01
-        },
-        date: {
-            type: Date,
-            default: Date.now
-        },
-        removedBy: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        removedById: {
-            type: String,
-            required: true
-        },
-        reason: {
-            type: String,
-            trim: true,
-            default: ''
-        },
-        // Store type for this specific entry (for audit)
-        entryStoreType: {
-            type: String,
-            enum: ['Vadodara', 'Padra'],
-            required: true,
-            default: 'Vadodara'
-        },
-        // Soft delete for audit
-        isDeleted: {
-            type: Boolean,
-            default: false
-        },
-        deletedBy: {
-            type: String,
-            trim: true
-        },
-        deletedAt: {
-            type: Date
+        const total = await ItemInventory.countDocuments(filter);
+
+        const inventory = await ItemInventory.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            data: inventory,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+                hasNext: page < Math.ceil(total / limit),
+                hasPrev: page > 1
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching item inventory:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch item inventory",
+            error: error.message
+        });
+    }
+});
+
+// =============================================
+// GET /api/item-inventory/get/:itemId - Get specific item inventory
+// =============================================
+router.get("/get/:itemId", async (req, res) => {
+    try {
+        const { storeType } = req.query;
+        let filter = { itemId: req.params.itemId };
+
+        if (storeType) {
+            filter.storeType = storeType;
         }
-    }],
 
-    // ===== AVERAGE PURCHASE PRICE (calculated) =====
-    averagePurchasePrice: {
-        type: Number,
-        default: 0,
-        min: 0
+        const inventory = await ItemInventory.findOne(filter).lean();
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Item inventory not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: inventory
+        });
+    } catch (error) {
+        console.error("Error fetching item inventory:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch item inventory",
+            error: error.message
+        });
     }
-
-}, {
-    timestamps: true,
 });
 
-// ===== INDEXES =====
-// ✅ Unique combination: itemId + storeType
-itemInventorySchema.index({ itemId: 1, storeType: 1 }, { unique: true });
-itemInventorySchema.index({ storeType: 1 });
-itemInventorySchema.index({ itemName: 1 });
-itemInventorySchema.index({ 'addHistory.date': -1 });
-itemInventorySchema.index({ 'removeHistory.date': -1 });
+// =============================================
+// GET /api/item-inventory/export - Export all filtered data (NO pagination)
+// =============================================
+router.get("/export", async (req, res) => {
+    try {
+        const search = req.query.search || '';
+        const storeType = req.query.storeType || 'Vadodara';
 
-// ===== PRE-SAVE HOOK: Calculate total quantity and average price =====
-itemInventorySchema.pre('save', function (next) {
-    // Calculate total quantity from active entries only
-    const totalAdded = this.addHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        let filter = { storeType: storeType };
 
-    const totalRemoved = this.removeHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        if (search) {
+            filter.$or = [
+                { itemName: { $regex: search, $options: 'i' } },
+                { itemDescription: { $regex: search, $options: 'i' } },
+                { hsnCode: { $regex: search, $options: 'i' } }
+            ];
+        }
 
-    this.totalQuantity = totalAdded - totalRemoved;
+        const inventory = await ItemInventory.find(filter)
+            .sort({ createdAt: -1 })
+            .lean();
 
-    // Calculate average purchase price from active add entries with price > 0
-    const addEntriesWithPrice = this.addHistory
-        .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
-
-    if (addEntriesWithPrice.length > 0) {
-        const totalCost = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-        );
-        const totalQty = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + entry.quantity, 0
-        );
-        this.averagePurchasePrice = totalCost / totalQty;
-    } else {
-        this.averagePurchasePrice = 0;
+        res.status(200).json({
+            success: true,
+            data: inventory,
+            total: inventory.length
+        });
+    } catch (error) {
+        console.error("Error exporting item inventory:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to export item inventory",
+            error: error.message
+        });
     }
-
-    next();
 });
 
-// ===== VIRTUAL: Get all active add entries =====
-itemInventorySchema.virtual('activeAddHistory').get(function () {
-    return this.addHistory.filter(entry => !entry.isDeleted);
+// =============================================
+// POST /api/item-inventory/add - Add quantity to item
+// =============================================
+router.post("/add", async (req, res) => {
+    try {
+        const { itemId, quantity, purchasePrice, date, notes, storeType } = req.body;
+
+        if (!itemId) {
+            return res.status(400).json({
+                success: false,
+                message: "Item ID is required"
+            });
+        }
+        if (!quantity || quantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid quantity is required"
+            });
+        }
+        if (!storeType) {
+            return res.status(400).json({
+                success: false,
+                message: "Store type is required"
+            });
+        }
+
+        const decoded = getUserFromToken(req);
+        if (!decoded) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const user = await getUserDetails(decoded.userId);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const item = await Item.findOne({ itemId });
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found"
+            });
+        }
+
+        // ✅ Find or create inventory (NO unitId/unitName)
+        let inventory = await ItemInventory.findOne({
+            itemId: itemId,
+            storeType: storeType
+        });
+
+        if (!inventory) {
+            inventory = new ItemInventory({
+                itemId: item.itemId,
+                itemName: item.itemName,
+                itemDescription: item.itemDescription || '',
+                hsnCode: item.hsnCode,
+                storeType: storeType,
+                totalQuantity: 0,
+                addHistory: [],
+                removeHistory: []
+            });
+        }
+
+        await inventory.addQuantity(
+            Number(quantity),
+            Number(purchasePrice) || 0,
+            user.name,
+            user.userId,
+            date || new Date(),
+            notes || ''
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Quantity added successfully",
+            data: inventory
+        });
+
+    } catch (error) {
+        console.error("Error adding quantity:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to add quantity",
+            error: error.message
+        });
+    }
 });
 
-// ===== VIRTUAL: Get all active remove entries =====
-itemInventorySchema.virtual('activeRemoveHistory').get(function () {
-    return this.removeHistory.filter(entry => !entry.isDeleted);
+// =============================================
+// POST /api/item-inventory/remove - Remove quantity from item
+// =============================================
+router.post("/remove", async (req, res) => {
+    try {
+        const { itemId, quantity, date, reason, storeType } = req.body;
+
+        if (!itemId) {
+            return res.status(400).json({
+                success: false,
+                message: "Item ID is required"
+            });
+        }
+        if (!quantity || quantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Valid quantity is required"
+            });
+        }
+        if (!storeType) {
+            return res.status(400).json({
+                success: false,
+                message: "Store type is required"
+            });
+        }
+
+        const decoded = getUserFromToken(req);
+        if (!decoded) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const user = await getUserDetails(decoded.userId);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const inventory = await ItemInventory.findOne({
+            itemId: itemId,
+            storeType: storeType
+        });
+
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Item inventory not found for this store"
+            });
+        }
+
+        if (inventory.totalQuantity < Number(quantity)) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient quantity. Available: ${inventory.totalQuantity}, Requested: ${quantity}`
+            });
+        }
+
+        await inventory.removeQuantity(
+            Number(quantity),
+            user.name,
+            user.userId,
+            date || new Date(),
+            reason || ''
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Quantity removed successfully",
+            data: inventory
+        });
+
+    } catch (error) {
+        console.error("Error removing quantity:", error);
+        if (error.message.includes("Insufficient quantity")) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: "Failed to remove quantity",
+            error: error.message
+        });
+    }
 });
 
-// ===== METHOD: Add quantity =====
-itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, addedBy, addedById, date, notes) {
-    this.addHistory.push({
-        quantity: Number(quantity),
-        purchasePrice: Number(purchasePrice) || 0,
-        date: date || new Date(),
-        addedBy: addedBy,
-        addedById: addedById,
-        notes: notes || '',
-        entryStoreType: this.storeType // ✅ Store the store type in history
-    });
+// =============================================
+// DELETE /api/item-inventory/delete-add/:entryId - Delete add entry
+// =============================================
+router.delete("/delete-add/:entryId", async (req, res) => {
+    try {
+        const { entryId } = req.params;
+        const { itemId, storeType } = req.query;
 
-    // Recalculate totals
-    const totalAdded = this.addHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        if (!itemId) {
+            return res.status(400).json({
+                success: false,
+                message: "Item ID is required"
+            });
+        }
+        if (!storeType) {
+            return res.status(400).json({
+                success: false,
+                message: "Store type is required"
+            });
+        }
 
-    const totalRemoved = this.removeHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        const decoded = getUserFromToken(req);
+        if (!decoded) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
 
-    this.totalQuantity = totalAdded - totalRemoved;
+        const user = await getUserDetails(decoded.userId);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found"
+            });
+        }
 
-    // Recalculate average price
-    const addEntriesWithPrice = this.addHistory
-        .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
+        const inventory = await ItemInventory.findOne({
+            itemId: itemId,
+            storeType: storeType
+        });
 
-    if (addEntriesWithPrice.length > 0) {
-        const totalCost = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-        );
-        const totalQty = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + entry.quantity, 0
-        );
-        this.averagePurchasePrice = totalCost / totalQty;
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Item inventory not found"
+            });
+        }
+
+        await inventory.deleteAddEntry(entryId, user.name);
+
+        res.status(200).json({
+            success: true,
+            message: "Add entry deleted successfully",
+            data: inventory
+        });
+
+    } catch (error) {
+        console.error("Error deleting add entry:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete add entry",
+            error: error.message
+        });
     }
+});
 
-    return this.save();
-};
+// =============================================
+// DELETE /api/item-inventory/delete-remove/:entryId - Delete remove entry
+// =============================================
+router.delete("/delete-remove/:entryId", async (req, res) => {
+    try {
+        const { entryId } = req.params;
+        const { itemId, storeType } = req.query;
 
-// ===== METHOD: Remove quantity =====
-itemInventorySchema.methods.removeQuantity = function (quantity, removedBy, removedById, date, reason) {
-    // Check if enough quantity is available
-    if (this.totalQuantity < quantity) {
-        throw new Error(`Insufficient quantity. Available: ${this.totalQuantity}, Requested: ${quantity}`);
+        if (!itemId) {
+            return res.status(400).json({
+                success: false,
+                message: "Item ID is required"
+            });
+        }
+        if (!storeType) {
+            return res.status(400).json({
+                success: false,
+                message: "Store type is required"
+            });
+        }
+
+        const decoded = getUserFromToken(req);
+        if (!decoded) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized"
+            });
+        }
+
+        const user = await getUserDetails(decoded.userId);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const inventory = await ItemInventory.findOne({
+            itemId: itemId,
+            storeType: storeType
+        });
+
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Item inventory not found"
+            });
+        }
+
+        await inventory.deleteRemoveEntry(entryId, user.name);
+
+        res.status(200).json({
+            success: true,
+            message: "Remove entry deleted successfully",
+            data: inventory
+        });
+
+    } catch (error) {
+        console.error("Error deleting remove entry:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to delete remove entry",
+            error: error.message
+        });
     }
+});
 
-    this.removeHistory.push({
-        quantity: Number(quantity),
-        date: date || new Date(),
-        removedBy: removedBy,
-        removedById: removedById,
-        reason: reason || '',
-        entryStoreType: this.storeType // ✅ Store the store type in history
-    });
+// =============================================
+// GET /api/item-inventory/get-history/:itemId - Get full history of an item
+// =============================================
+router.get("/get-history/:itemId", async (req, res) => {
+    try {
+        const { storeType } = req.query;
 
-    // Recalculate total
-    const totalAdded = this.addHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        let filter = { itemId: req.params.itemId };
+        if (storeType) {
+            filter.storeType = storeType;
+        }
 
-    const totalRemoved = this.removeHistory
-        .filter(entry => !entry.isDeleted)
-        .reduce((sum, entry) => sum + entry.quantity, 0);
+        const inventory = await ItemInventory.findOne(filter);
+        if (!inventory) {
+            return res.status(404).json({
+                success: false,
+                message: "Item inventory not found"
+            });
+        }
 
-    this.totalQuantity = totalAdded - totalRemoved;
+        const addHistory = inventory.addHistory
+            .filter(entry => !entry.isDeleted)
+            .map(entry => ({
+                ...entry.toObject(),
+                type: 'ADD',
+                admin: entry.addedBy,
+                price: entry.purchasePrice || 0,
+                store: entry.entryStoreType || inventory.storeType
+            }));
 
-    return this.save();
-};
+        const removeHistory = inventory.removeHistory
+            .filter(entry => !entry.isDeleted)
+            .map(entry => ({
+                ...entry.toObject(),
+                type: 'REMOVE',
+                admin: entry.removedBy,
+                price: 0,
+                store: entry.entryStoreType || inventory.storeType
+            }));
 
-// ===== METHOD: Soft delete an add entry =====
-itemInventorySchema.methods.deleteAddEntry = function (entryId, deletedBy) {
-    const entry = this.addHistory.find(e => e.entryId === entryId);
-    if (!entry) {
-        throw new Error('Add entry not found');
+        const allHistory = [...addHistory, ...removeHistory]
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.status(200).json({
+            success: true,
+            data: {
+                itemId: inventory.itemId,
+                itemName: inventory.itemName,
+                storeType: inventory.storeType,
+                totalQuantity: inventory.totalQuantity,
+                averagePurchasePrice: inventory.averagePurchasePrice,
+                history: allHistory
+            }
+        });
+
+    } catch (error) {
+        console.error("Error fetching history:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch history",
+            error: error.message
+        });
     }
-    if (entry.isDeleted) {
-        throw new Error('Entry already deleted');
-    }
+});
 
-    entry.isDeleted = true;
-    entry.deletedBy = deletedBy;
-    entry.deletedAt = new Date();
-
-    // Recalculate totals
-    const totalAdded = this.addHistory
-        .filter(e => !e.isDeleted)
-        .reduce((sum, e) => sum + e.quantity, 0);
-
-    const totalRemoved = this.removeHistory
-        .filter(e => !e.isDeleted)
-        .reduce((sum, e) => sum + e.quantity, 0);
-
-    this.totalQuantity = totalAdded - totalRemoved;
-
-    return this.save();
-};
-
-// ===== METHOD: Soft delete a remove entry =====
-itemInventorySchema.methods.deleteRemoveEntry = function (entryId, deletedBy) {
-    const entry = this.removeHistory.find(e => e.entryId === entryId);
-    if (!entry) {
-        throw new Error('Remove entry not found');
-    }
-    if (entry.isDeleted) {
-        throw new Error('Entry already deleted');
-    }
-
-    entry.isDeleted = true;
-    entry.deletedBy = deletedBy;
-    entry.deletedAt = new Date();
-
-    // Recalculate totals
-    const totalAdded = this.addHistory
-        .filter(e => !e.isDeleted)
-        .reduce((sum, e) => sum + e.quantity, 0);
-
-    const totalRemoved = this.removeHistory
-        .filter(e => !e.isDeleted)
-        .reduce((sum, e) => sum + e.quantity, 0);
-
-    this.totalQuantity = totalAdded - totalRemoved;
-
-    return this.save();
-};
-
-// ===== Ensure virtuals are included in JSON =====
-itemInventorySchema.set('toJSON', { virtuals: true });
-itemInventorySchema.set('toObject', { virtuals: true });
-
-const ItemInventory = mongoose.models.ItemInventory || mongoose.model('ItemInventory', itemInventorySchema);
-module.exports = ItemInventory;
+module.exports = router;

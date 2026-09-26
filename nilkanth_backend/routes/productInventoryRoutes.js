@@ -29,7 +29,7 @@ const getUserDetails = async (userId) => {
 router.get("/get-all", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || 20;  // ✅ Changed to 20
         const search = req.query.search || '';
         const storeType = req.query.storeType || 'Vadodara';
         const skip = (page - 1) * limit;
@@ -205,8 +205,6 @@ router.post("/add", async (req, res) => {
                 productName: product.productName,
                 productDescription: product.productDescription || '',
                 hsnCode: product.hsnCode || '',
-                // ❌ NO unitId
-                // ❌ NO unitName
                 storeType: storeType,
                 totalQuantity: 0,
                 addHistory: [],

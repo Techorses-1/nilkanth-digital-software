@@ -1,8 +1,8 @@
 // ============================================
-// QUOTATION MODULE - Component Specific Classes
+// REPAIRING MODULE
 // ============================================
 
-.quotation-module-wrapper {
+.repairing-module-wrapper {
     background: #dfeafb !important;
     min-height: 100vh;
     padding-bottom: 40px;
@@ -11,7 +11,7 @@
 // ============================================
 // HEADER
 // ============================================
-.quotation-page-header {
+.repairing-page-header {
     max-width: 1200px;
     margin: 0 auto 25px;
     padding: 20px 25px;
@@ -24,7 +24,7 @@
     flex-wrap: wrap;
     gap: 20px;
 
-    .quotation-page-title {
+    .repairing-page-title {
         font-size: 24px;
         font-weight: 700;
         color: #2d2f87;
@@ -47,7 +47,7 @@
 // ============================================
 // CONTENT WRAPPER
 // ============================================
-.quotation-content-wrapper {
+.repairing-content-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
@@ -57,18 +57,18 @@
 }
 
 // ============================================
-// FORM CONTAINER (premium gradient look)
+// FORM CONTAINER (premium gradient)
 // ============================================
-.quotation-form-container {
+.repairing-form-container {
     background: linear-gradient(145deg, #f9f9ff, #ececff);
     border-radius: 12px;
     padding: 25px 30px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    animation: quotationFormSlideDown 0.3s ease-out;
+    animation: repairingFormSlideDown 0.3s ease-out;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 
-    @keyframes quotationFormSlideDown {
+    @keyframes repairingFormSlideDown {
         from {
             opacity: 0;
             transform: translateY(-20px);
@@ -81,13 +81,13 @@
     }
 }
 
-.quotation-form-header {
+.repairing-form-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 
-    .quotation-form-title {
+    .repairing-form-title {
         font-size: 20px;
         font-weight: 600;
         color: #2d2f87;
@@ -97,7 +97,7 @@
         gap: 10px;
     }
 
-    .quotation-form-close {
+    .repairing-form-close {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -122,7 +122,7 @@
 // ============================================
 // FORM SECTIONS
 // ============================================
-.quotation-section {
+.repairing-section {
     margin-bottom: 20px;
     padding-bottom: 20px;
     border-bottom: 1px solid #f0f0f0;
@@ -132,43 +132,106 @@
         margin-bottom: 0;
         padding-bottom: 0;
     }
+}
 
-    .quotation-section-title {
-        font-size: 16px;
+// ============================================
+// GST TOGGLE (premium pill)
+// ============================================
+.repairing-toggle-section {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    border: 1px solid #e5e5f0;
+}
+
+.repairing-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.repairing-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .repairing-toggle-label {
         font-weight: 600;
-        color: #3f3f91;
-        margin-top: 0;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        color: #555;
+        font-size: 13.5px;
+    }
+}
+
+.repairing-toggle-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 20px 9px 14px;
+    border: 1px solid #e2e2ec;
+    border-radius: 30px;
+    background: #eeeef4;
+    color: #888;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+    svg {
+        font-size: 22px;
+        transition: transform 0.35s ease, color 0.3s ease;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12));
+    }
+
+    &:hover:not(.active) {
+        background: #e0e0ec;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    &.active {
+        background: linear-gradient(135deg, #7366ff 0%, #948cff 70%);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 6px 18px rgba(115, 102, 255, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+
+        svg {
+            color: #fff;
+            transform: rotate(360deg) scale(1.05);
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(115, 102, 255, 0.45);
+        }
     }
 }
 
 // ============================================
-// CUSTOMER ROW
+// CUSTOMER ROW / DETAILS
 // ============================================
-.quotation-customer-row-inline {
+.repairing-customer-row-inline {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-.quotation-customer-select {
+.repairing-customer-select {
     flex: 1;
 }
 
-// ============================================
-// CUSTOMER DETAILS SECTION
-// ============================================
-.quotation-customer-details {
+.repairing-customer-details {
     margin-top: 12px;
     padding: 16px;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 8px;
     border: 1px solid #e8e8e8;
 
-    .quotation-form-row {
+    .repairing-form-row {
         margin-bottom: 12px;
 
         &:last-child {
@@ -176,7 +239,7 @@
         }
     }
 
-    .quotation-input-field {
+    .repairing-input-field {
         background-color: white;
 
         &[readonly] {
@@ -193,7 +256,7 @@
     }
 }
 
-.quotation-customer-selected-badge {
+.repairing-customer-selected-badge {
     margin-top: 10px;
     padding: 8px 14px;
     background: #d4edda;
@@ -210,12 +273,12 @@
 // ============================================
 // PRODUCT ROW
 // ============================================
-.quotation-product-row {
+.repairing-product-row {
     display: flex;
     gap: 12px;
     align-items: flex-end;
 
-    .quotation-product-select {
+    .repairing-product-select {
         flex: 1;
     }
 }
@@ -223,13 +286,13 @@
 // ============================================
 // ITEMS TABLE
 // ============================================
-.quotation-items-table-wrap {
+.repairing-items-table-wrap {
     overflow-x: auto;
     margin-top: 10px;
     border-radius: 8px;
 }
 
-.quotation-items-table {
+.repairing-items-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
@@ -251,12 +314,12 @@
         letter-spacing: 0.3px;
     }
 
-    .quotation-item-name {
+    .repairing-item-name {
         font-weight: 500;
         min-width: 150px;
     }
 
-    .quotation-item-input {
+    .repairing-item-input {
         width: 60px;
         padding: 6px 8px;
         border: 1px solid #ddd;
@@ -272,36 +335,35 @@
         }
     }
 
-    // Invoice Desc — wider, left aligned (long text)
-    .quotation-invoice-desc-input {
+    .repairing-invoice-desc-input {
         width: 190px !important;
         min-width: 160px !important;
         text-align: left;
     }
 
-    .quotation-capacity-input {
+    .repairing-capacity-input {
         width: 85px !important;
         min-width: 70px !important;
         text-align: center;
     }
 
-    .quotation-unit-input {
+    .repairing-unit-input {
         width: 70px !important;
         min-width: 60px !important;
     }
 
-    .quotation-hsn-input {
+    .repairing-hsn-input {
         width: 80px !important;
         min-width: 65px !important;
     }
 
-    .quotation-item-final {
+    .repairing-item-final {
         font-weight: 600;
         color: #2d2f87;
         white-space: nowrap;
     }
 
-    .quotation-item-remove {
+    .repairing-item-remove {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -328,21 +390,21 @@
 // ============================================
 // FORM FIELDS
 // ============================================
-.quotation-form-row {
+.repairing-form-row {
     display: flex;
     gap: 15px;
     margin-bottom: 14px;
 
-    .quotation-form-field {
+    .repairing-form-field {
         flex: 1;
         display: flex;
         flex-direction: column;
 
-        &.quotation-form-field-full {
+        &.repairing-form-field-full {
             flex: 1 1 100%;
         }
 
-        .quotation-form-label {
+        .repairing-form-label {
             font-weight: 600;
             margin-bottom: 5px;
             color: #444;
@@ -357,8 +419,8 @@
             }
         }
 
-        .quotation-input-field,
-        .quotation-textarea-field {
+        .repairing-input-field,
+        .repairing-textarea-field {
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid #ddd;
@@ -375,7 +437,7 @@
             }
         }
 
-        .quotation-textarea-field {
+        .repairing-textarea-field {
             resize: vertical;
         }
     }
@@ -384,8 +446,8 @@
 // ============================================
 // REACT-SELECT STYLES
 // ============================================
-.quotation-react-select {
-    .quotation-select__control {
+.repairing-react-select {
+    .repairing-select__control {
         min-height: 40px;
         border-color: #ddd;
         border-radius: 6px;
@@ -401,7 +463,7 @@
         }
     }
 
-    .quotation-select__option {
+    .repairing-select__option {
         padding: 8px 12px;
         cursor: pointer;
 
@@ -415,127 +477,25 @@
         }
     }
 
-    .quotation-select__menu {
+    .repairing-select__menu {
         z-index: 999;
     }
 
-    .quotation-select__placeholder {
+    .repairing-select__placeholder {
         color: #999;
     }
 }
 
 // ============================================
-// UNIQUE NUMBERS SECTION
+// SUMMARY
 // ============================================
-.quotation-unique-section {
-    margin-top: 20px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 8px;
-    border: 1px solid #e8e8e8;
-
-    .quotation-unique-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .quotation-unique-product {
-        background: white;
-        border-radius: 8px;
-        padding: 12px 16px;
-        border: 1px solid #e8e8e8;
-
-        .quotation-unique-product-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-
-            .quotation-unique-product-name {
-                font-weight: 600;
-                color: #333;
-                font-size: 14px;
-            }
-        }
-
-        .quotation-unique-numbers-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .quotation-unique-number-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-
-            .quotation-unique-input {
-                width: 120px;
-                padding: 6px 10px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 13px;
-                font-family: monospace;
-                transition: all 0.3s;
-
-                &:focus {
-                    border-color: #7366ff;
-                    outline: none;
-                    box-shadow: 0 0 0 2px rgba(115, 102, 255, 0.1);
-                }
-
-                &::placeholder {
-                    color: #bbb;
-                    font-size: 12px;
-                }
-            }
-
-            .quotation-unique-remove-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 28px;
-                height: 28px;
-                background: #f5f5f5;
-                border: none;
-                border-radius: 4px;
-                color: #999;
-                cursor: pointer;
-                transition: all 0.3s;
-
-                &:hover {
-                    background: #ffebee;
-                    color: #dc3545;
-                }
-            }
-        }
-    }
-}
-
-.quotation-unique-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
-    color: #3f3f91;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    font-family: monospace;
-    margin: 2px 3px;
-    white-space: nowrap;
-}
-
-// ============================================
-// SUMMARY - COLUMN VIEW
-// ============================================
-.quotation-summary-column {
+.repairing-summary-column {
     background: rgba(255, 255, 255, 0.7);
     border-radius: 8px;
     padding: 20px;
     margin-top: 15px;
 
-    .quotation-summary-title {
+    .repairing-summary-title {
         font-size: 16px;
         font-weight: 600;
         color: #2d2f87;
@@ -544,13 +504,13 @@
         border-bottom: 2px solid #e8e8ff;
     }
 
-    .quotation-summary-items {
+    .repairing-summary-items {
         display: flex;
         flex-direction: column;
         gap: 8px;
         margin-bottom: 15px;
 
-        .quotation-summary-row {
+        .repairing-summary-row {
             display: flex;
             justify-content: space-between;
             padding: 4px 0;
@@ -566,11 +526,11 @@
                 font-weight: 600;
             }
 
-            &.quotation-summary-discount span:last-child {
+            &.repairing-summary-discount span:last-child {
                 color: #dc3545;
             }
 
-            &.quotation-summary-grand {
+            &.repairing-summary-grand {
                 padding-top: 10px;
                 border-top: 2px solid #ddd;
                 font-size: 18px;
@@ -588,7 +548,7 @@
 // ============================================
 // SUBMIT BUTTON
 // ============================================
-.quotation-submit-btn {
+.repairing-submit-btn {
     width: 100%;
     padding: 12px;
     background: linear-gradient(to right, #7366ff, #948cff);
@@ -616,67 +576,138 @@
 // ============================================
 // TABLE CONTAINER
 // ============================================
-.quotation-table-container {
+.repairing-table-container {
     background: white;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 
-    .quotation-table-header {
+    .repairing-table-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
         flex-wrap: wrap;
         gap: 15px;
+    }
+}
 
-        .quotation-search-container {
-            position: relative;
-            flex: 1;
-            min-width: 200px;
-            max-width: 400px;
+// ============================================
+// SEARCH + FILTER GROUP
+// ============================================
+.repairing-search-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    flex-wrap: wrap;
+}
 
-            .quotation-search-input {
-                width: 100%;
-                padding: 10px 14px 10px 40px;
-                border: none;
-                border-radius: 50px;
-                background: #f5f7fa;
-                font-size: 15px;
-                color: #333;
-                transition: 0.3s;
-                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0, 0, 0, 0.08);
+.repairing-search-container {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
 
-                &:focus {
-                    outline: none;
-                    background: #fff;
-                    box-shadow: 0 0 8px rgba(115, 102, 255, 0.5);
-                }
+    .repairing-search-input {
+        width: 100%;
+        padding: 10px 14px 10px 40px;
+        border: none;
+        border-radius: 50px;
+        background: #f5f7fa;
+        font-size: 15px;
+        color: #333;
+        transition: 0.3s;
+        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), 0 2px 5px rgba(0, 0, 0, 0.08);
+
+        &:focus {
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 8px rgba(115, 102, 255, 0.5);
+        }
+    }
+
+    .repairing-search-icon {
+        position: absolute;
+        top: 50%;
+        left: 15px;
+        transform: translateY(-50%);
+        color: #666;
+        font-size: 16px;
+    }
+}
+
+.repairing-filter-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 170px;
+
+    .repairing-filter-icon {
+        color: #7366ff;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .repairing-filter-select {
+        flex: 1;
+        min-width: 140px;
+
+        .repairing-filter__control {
+            min-height: 40px;
+            border-radius: 30px;
+            border-color: #e2e2ec;
+            background: #f5f7fa;
+            box-shadow: none;
+
+            &:hover {
+                border-color: #7366ff;
             }
 
-            .quotation-search-icon {
-                position: absolute;
-                top: 50%;
-                left: 15px;
-                transform: translateY(-50%);
-                color: #666;
-                font-size: 16px;
+            &--is-focused {
+                border-color: #7366ff;
+                box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
             }
         }
 
-        .quotation-action-buttons {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        .repairing-filter__value-container {
+            padding-left: 14px;
+        }
+
+        .repairing-filter__option {
+            padding: 8px 14px;
+            cursor: pointer;
+
+            &--is-focused {
+                background: #f0f0ff;
+            }
+
+            &--is-selected {
+                background: #7366ff;
+                color: white;
+            }
+        }
+
+        .repairing-filter__menu {
+            z-index: 999;
+            border-radius: 10px;
+            overflow: hidden;
         }
     }
 }
 
 // ============================================
-// ACTION BUTTONS (Create / PDF / Excel)
+// ACTION BUTTONS
 // ============================================
-.quotation-create-btn {
+.repairing-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.repairing-create-btn {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -697,7 +728,7 @@
     }
 }
 
-.quotation-pdf-export-btn {
+.repairing-pdf-export-btn {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -725,7 +756,7 @@
     }
 }
 
-.quotation-export-btn {
+.repairing-export-btn {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -752,21 +783,21 @@
     }
 }
 
-.quotation-loading-spinner-small {
+.repairing-loading-spinner-small {
     display: inline-block;
     width: 16px;
     height: 16px;
     border: 2px solid #f3f3f3;
     border-top: 2px solid #fff;
     border-radius: 50%;
-    animation: quotation-spin 0.8s linear infinite;
+    animation: repairing-spin 0.8s linear infinite;
     margin-right: 6px;
 }
 
 // ============================================
 // TABLE ROW ACTION BUTTONS
 // ============================================
-.quotation-action-btns {
+.repairing-action-btns {
     display: flex;
     gap: 6px;
     align-items: center;
@@ -795,7 +826,7 @@
         }
     }
 
-    .quotation-view-btn {
+    .repairing-view-btn {
         background: linear-gradient(135deg, #667eea, #764ba2);
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 
@@ -804,7 +835,7 @@
         }
     }
 
-    .quotation-edit-btn {
+    .repairing-edit-btn {
         background: linear-gradient(135deg, #ff9800, #ffb74d);
         box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 
@@ -813,7 +844,7 @@
         }
     }
 
-    .quotation-delete-btn {
+    .repairing-delete-btn {
         background: linear-gradient(135deg, #dc3545, #e74c3c);
         box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
 
@@ -822,7 +853,7 @@
         }
     }
 
-    .quotation-pdf-row-btn {
+    .repairing-pdf-row-btn {
         background: linear-gradient(135deg, #e74c3c, #c0392b);
         box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 
@@ -835,11 +866,11 @@
 // ============================================
 // MAIN TABLE
 // ============================================
-.quotation-table-responsive {
+.repairing-table-responsive {
     overflow-x: auto;
 }
 
-.quotation-table {
+.repairing-table {
     width: 100%;
     border-collapse: collapse;
 
@@ -861,7 +892,7 @@
         letter-spacing: 0.3px;
     }
 
-    .quotation-table-row {
+    .repairing-table-row {
         transition: background-color 0.2s;
 
         &:hover {
@@ -869,12 +900,12 @@
         }
     }
 
-    .quotation-number {
+    .repairing-number {
         font-weight: 500;
         color: #2d2f87;
     }
 
-    .quotation-total-badge {
+    .repairing-total-badge {
         display: inline-block;
         padding: 4px 14px;
         background: linear-gradient(135deg, #e8e8ff, #d4d0ff);
@@ -885,10 +916,35 @@
     }
 }
 
+.repairing-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    svg {
+        font-size: 11px;
+    }
+
+    &.repairing-status-paid {
+        background: linear-gradient(135deg, #28a745, #34ce57);
+        color: white;
+    }
+
+    &.repairing-status-pending {
+        background: linear-gradient(135deg, #ffc107, #ffca2c);
+        color: #664d03;
+    }
+}
+
 // ============================================
 // PAGINATION
 // ============================================
-.quotation-pagination {
+.repairing-pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -898,18 +954,18 @@
     flex-wrap: wrap;
     gap: 15px;
 
-    .quotation-pagination-info {
+    .repairing-pagination-info {
         font-size: 14px;
         color: #666;
     }
 
-    .quotation-pagination-buttons {
+    .repairing-pagination-buttons {
         display: flex;
         align-items: center;
         gap: 12px;
     }
 
-    .quotation-page-btn {
+    .repairing-page-btn {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -934,13 +990,9 @@
             transform: none;
             box-shadow: none;
         }
-
-        svg {
-            font-size: 12px;
-        }
     }
 
-    .quotation-page-info {
+    .repairing-page-info {
         font-size: 14px;
         font-weight: 600;
         color: #333;
@@ -952,7 +1004,7 @@
 // ============================================
 // LOADING / EMPTY STATE
 // ============================================
-.quotation-empty-state {
+.repairing-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -972,20 +1024,20 @@
     }
 }
 
-.quotation-loading-container {
+.repairing-loading-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 60px 20px;
 
-    .quotation-loading-spinner {
+    .repairing-loading-spinner {
         width: 40px;
         height: 40px;
         border: 4px solid #f0f0f0;
         border-top: 4px solid #7366ff;
         border-radius: 50%;
-        animation: quotation-spin 1s linear infinite;
+        animation: repairing-spin 1s linear infinite;
         margin-bottom: 15px;
     }
 
@@ -995,7 +1047,7 @@
     }
 }
 
-@keyframes quotation-spin {
+@keyframes repairing-spin {
     0% {
         transform: rotate(0deg);
     }
@@ -1008,7 +1060,7 @@
 // ============================================
 // MODAL
 // ============================================
-.quotation-modal-overlay {
+.repairing-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -1022,7 +1074,7 @@
     padding: 20px;
 }
 
-.quotation-modal-content {
+.repairing-modal-content {
     background: white;
     border-radius: 12px;
     max-width: 800px;
@@ -1031,9 +1083,9 @@
     display: flex;
     flex-direction: column;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    animation: quotationModalSlideUp 0.3s ease-out;
+    animation: repairingModalSlideUp 0.3s ease-out;
 
-    @keyframes quotationModalSlideUp {
+    @keyframes repairingModalSlideUp {
         from {
             transform: translateY(20px);
             opacity: 0;
@@ -1046,7 +1098,7 @@
     }
 }
 
-.quotation-modal-header {
+.repairing-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1056,7 +1108,7 @@
     flex-wrap: wrap;
     gap: 10px;
 
-    .quotation-modal-title {
+    .repairing-modal-title {
         font-size: 18px;
         font-weight: 600;
         color: #2d2f87;
@@ -1066,7 +1118,7 @@
         gap: 10px;
     }
 
-    .quotation-modal-close {
+    .repairing-modal-close {
         background: none;
         border: none;
         font-size: 20px;
@@ -1083,13 +1135,13 @@
     }
 }
 
-.quotation-modal-body {
+.repairing-modal-body {
     padding: 20px 24px;
     overflow-y: auto;
     flex: 1;
 }
 
-.quotation-modal-footer {
+.repairing-modal-footer {
     padding: 12px 24px;
     border-top: 1px solid #eee;
     display: flex;
@@ -1098,12 +1150,12 @@
     flex-shrink: 0;
     flex-wrap: wrap;
 
-    .quotation-pdf-btn {
+    .repairing-pdf-btn {
         padding: 8px 20px;
         font-size: 14px;
     }
 
-    .quotation-modal-close-btn {
+    .repairing-modal-close-btn {
         padding: 8px 24px;
         background: #6c757d;
         color: white;
@@ -1119,7 +1171,7 @@
     }
 }
 
-.quotation-pdf-btn {
+.repairing-pdf-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1147,7 +1199,7 @@
 // ============================================
 // VIEW MODAL
 // ============================================
-.quotation-view-grid {
+.repairing-view-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px 20px;
@@ -1156,21 +1208,21 @@
     background: #f8f9fa;
     border-radius: 8px;
 
-    .quotation-view-item {
+    .repairing-view-item {
         display: flex;
         justify-content: space-between;
 
-        &.quotation-view-item-full {
+        &.repairing-view-item-full {
             grid-column: 1 / -1;
         }
 
-        .quotation-view-label {
+        .repairing-view-label {
             font-weight: 600;
             color: #555;
             font-size: 13px;
         }
 
-        .quotation-view-value {
+        .repairing-view-value {
             color: #333;
             font-size: 13px;
             text-align: right;
@@ -1178,11 +1230,11 @@
     }
 }
 
-.quotation-view-table-wrap {
+.repairing-view-table-wrap {
     overflow-x: auto;
     margin-bottom: 20px;
 
-    .quotation-view-table {
+    .repairing-view-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
@@ -1204,7 +1256,7 @@
     }
 }
 
-.quotation-view-summary {
+.repairing-view-summary {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -1213,7 +1265,7 @@
     background: #f8f9fa;
     border-radius: 8px;
 
-    .quotation-view-total {
+    .repairing-view-total {
         display: flex;
         gap: 30px;
         font-size: 14px;
@@ -1231,7 +1283,7 @@
             text-align: right;
         }
 
-        &.quotation-view-grand {
+        &.repairing-view-grand {
             font-size: 16px;
             padding-top: 4px;
             border-top: 2px solid #ddd;
@@ -1247,7 +1299,7 @@
 // ============================================
 // DELETE CONFIRMATION MODAL
 // ============================================
-.quotation-delete-modal {
+.repairing-delete-modal {
     background: white;
     border-radius: 14px;
     max-width: 420px;
@@ -1255,9 +1307,9 @@
     padding: 30px 28px 26px;
     text-align: center;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
-    animation: quotationModalSlideUp 0.3s ease-out;
+    animation: repairingModalSlideUp 0.3s ease-out;
 
-    .quotation-delete-modal-icon {
+    .repairing-delete-modal-icon {
         width: 56px;
         height: 56px;
         margin: 0 auto 16px;
@@ -1270,21 +1322,21 @@
         font-size: 26px;
     }
 
-    .quotation-delete-modal-title {
+    .repairing-delete-modal-title {
         font-size: 19px;
         font-weight: 700;
         color: #2d2f87;
         margin: 0 0 8px;
     }
 
-    .quotation-delete-modal-text {
+    .repairing-delete-modal-text {
         font-size: 13.5px;
         color: #777;
         margin: 0 0 18px;
         line-height: 1.5;
     }
 
-    .quotation-delete-modal-info {
+    .repairing-delete-modal-info {
         background: #f8f9fa;
         border-radius: 10px;
         padding: 14px 16px;
@@ -1292,24 +1344,24 @@
         text-align: left;
     }
 
-    .quotation-delete-modal-row {
+    .repairing-delete-modal-row {
         display: flex;
         justify-content: space-between;
         padding: 4px 0;
         font-size: 13px;
 
-        .quotation-delete-modal-label {
+        .repairing-delete-modal-label {
             color: #666;
             font-weight: 500;
         }
 
-        .quotation-delete-modal-value {
+        .repairing-delete-modal-value {
             color: #2d2f87;
             font-weight: 700;
         }
     }
 
-    .quotation-delete-modal-buttons {
+    .repairing-delete-modal-buttons {
         display: flex;
         gap: 12px;
 
@@ -1330,7 +1382,7 @@
             }
         }
 
-        .quotation-delete-modal-cancel {
+        .repairing-delete-modal-cancel {
             background: #eee;
             color: #555;
 
@@ -1339,7 +1391,7 @@
             }
         }
 
-        .quotation-delete-modal-confirm {
+        .repairing-delete-modal-confirm {
             background: linear-gradient(135deg, #dc3545, #e74c3c);
             color: white;
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.35);
@@ -1355,7 +1407,7 @@
 // ============================================
 // PDF BULK EXPORT PROGRESS LOADER
 // ============================================
-.quotation-pdf-progress-overlay {
+.repairing-pdf-progress-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -1369,7 +1421,7 @@
     padding: 20px;
 }
 
-.quotation-pdf-progress-modal {
+.repairing-pdf-progress-modal {
     background: white;
     border-radius: 14px;
     max-width: 380px;
@@ -1377,9 +1429,9 @@
     padding: 32px 28px 26px;
     text-align: center;
     box-shadow: 0 15px 45px rgba(0, 0, 0, 0.3);
-    animation: quotationModalSlideUp 0.3s ease-out;
+    animation: repairingModalSlideUp 0.3s ease-out;
 
-    .quotation-pdf-progress-icon {
+    .repairing-pdf-progress-icon {
         width: 56px;
         height: 56px;
         margin: 0 auto 14px;
@@ -1392,21 +1444,21 @@
         font-size: 26px;
     }
 
-    .quotation-pdf-progress-title {
+    .repairing-pdf-progress-title {
         font-size: 18px;
         font-weight: 700;
         color: #2d2f87;
         margin: 0 0 8px;
     }
 
-    .quotation-pdf-progress-status {
+    .repairing-pdf-progress-status {
         font-size: 13px;
         color: #666;
         margin: 0 0 16px;
         min-height: 18px;
     }
 
-    .quotation-pdf-progress-bar-container {
+    .repairing-pdf-progress-bar-container {
         width: 100%;
         height: 8px;
         background: #eee;
@@ -1415,31 +1467,31 @@
         margin-bottom: 8px;
     }
 
-    .quotation-pdf-progress-bar {
+    .repairing-pdf-progress-bar {
         height: 100%;
         background: linear-gradient(90deg, #7366ff, #948cff);
         border-radius: 10px;
         transition: width 0.3s ease;
     }
 
-    .quotation-pdf-progress-percentage {
+    .repairing-pdf-progress-percentage {
         font-size: 13px;
         font-weight: 700;
         color: #7366ff;
         margin-bottom: 18px;
     }
 
-    .quotation-pdf-progress-spinner {
+    .repairing-pdf-progress-spinner {
         width: 30px;
         height: 30px;
         border: 3px solid #f0f0f0;
         border-top: 3px solid #7366ff;
         border-radius: 50%;
-        animation: quotation-spin 1s linear infinite;
+        animation: repairing-spin 1s linear infinite;
         margin: 0 auto 16px;
     }
 
-    .quotation-pdf-progress-hint {
+    .repairing-pdf-progress-hint {
         font-size: 11.5px;
         color: #999;
         font-style: italic;
@@ -1451,7 +1503,7 @@
 // RESPONSIVE - TABLET (max-width: 992px)
 // ============================================
 @media (max-width: 992px) {
-    .quotation-page-header {
+    .repairing-page-header {
         flex-direction: column;
         align-items: flex-start;
     }
@@ -1461,38 +1513,48 @@
 // RESPONSIVE - MOBILE (max-width: 768px)
 // ============================================
 @media (max-width: 768px) {
-    .quotation-content-wrapper {
+    .repairing-content-wrapper {
         padding: 0 10px;
     }
 
-    .quotation-form-container {
+    .repairing-form-container {
         padding: 20px;
     }
 
-    .quotation-form-header {
+    .repairing-form-header {
         flex-wrap: wrap;
 
-        .quotation-form-title {
+        .repairing-form-title {
             font-size: 17px;
         }
     }
 
-    .quotation-customer-row-inline {
+    .repairing-toggle-row {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .quotation-product-row {
+    .repairing-toggle-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .repairing-customer-row-inline {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .quotation-form-row {
+    .repairing-product-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .repairing-form-row {
         flex-direction: column;
         gap: 12px;
     }
 
-    .quotation-items-table {
+    .repairing-items-table {
         font-size: 12px;
 
         th,
@@ -1500,62 +1562,75 @@
             padding: 6px 8px;
         }
 
-        .quotation-item-input {
+        .repairing-item-input {
             width: 40px;
             font-size: 12px;
         }
 
-        .quotation-invoice-desc-input {
+        .repairing-invoice-desc-input {
             width: 120px !important;
             min-width: 100px !important;
         }
 
-        .quotation-capacity-input {
+        .repairing-capacity-input {
             width: 65px !important;
             min-width: 55px !important;
         }
 
-        .quotation-unit-input {
+        .repairing-unit-input {
             width: 55px !important;
             min-width: 50px !important;
         }
 
-        .quotation-hsn-input {
+        .repairing-hsn-input {
             width: 60px !important;
             min-width: 50px !important;
         }
     }
 
-    .quotation-customer-details {
+    .repairing-customer-details {
         padding: 12px;
     }
 
-    .quotation-table-container {
+    .repairing-search-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .repairing-filter-container {
+        width: 100%;
+
+        .repairing-filter-select {
+            width: 100%;
+        }
+    }
+
+    .repairing-table-container {
         padding: 15px;
 
-        .quotation-table-header {
+        .repairing-table-header {
             flex-direction: column;
             align-items: stretch;
 
-            .quotation-search-container {
+            .repairing-search-container {
                 max-width: 100%;
                 min-width: auto;
             }
+        }
 
-            .quotation-action-buttons {
-                width: 100%;
-                justify-content: stretch;
+        .repairing-action-buttons {
+            width: 100%;
 
-                button {
-                    flex: 1;
-                    justify-content: center;
-                    padding: 8px 14px;
-                    font-size: 12px;
-                }
+            button {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 12px;
+                font-size: 12px;
             }
         }
 
-        .quotation-table {
+        .repairing-table {
             font-size: 12px;
 
             th,
@@ -1566,39 +1641,29 @@
         }
     }
 
-    .quotation-pagination {
+    .repairing-pagination {
         flex-direction: column;
         align-items: center;
         text-align: center;
 
-        .quotation-pagination-buttons {
+        .repairing-pagination-buttons {
             width: 100%;
             justify-content: center;
             flex-wrap: wrap;
         }
-
-        .quotation-page-btn {
-            padding: 6px 14px;
-            font-size: 12px;
-        }
-
-        .quotation-page-info {
-            font-size: 13px;
-            min-width: 80px;
-        }
     }
 
-    .quotation-modal-content {
+    .repairing-modal-content {
         max-width: 100%;
         max-height: 90vh;
         margin: 10px;
     }
 
-    .quotation-view-grid {
+    .repairing-view-grid {
         grid-template-columns: 1fr;
     }
 
-    .quotation-action-btns {
+    .repairing-action-btns {
         flex-wrap: wrap;
         gap: 4px;
 
@@ -1608,51 +1673,25 @@
         }
     }
 
-    .quotation-summary-column {
+    .repairing-summary-column {
         padding: 15px;
 
-        .quotation-summary-items .quotation-summary-row {
+        .repairing-summary-items .repairing-summary-row {
             font-size: 13px;
 
-            &.quotation-summary-grand {
+            &.repairing-summary-grand {
                 font-size: 15px;
             }
         }
     }
 
-    .quotation-unique-section {
-        padding: 12px;
-
-        .quotation-unique-product {
-            padding: 10px 12px;
-
-            .quotation-unique-numbers-row {
-                gap: 6px;
-            }
-
-            .quotation-unique-number-item {
-                .quotation-unique-input {
-                    width: 90px;
-                    font-size: 12px;
-                    padding: 4px 8px;
-                }
-
-                .quotation-unique-remove-btn {
-                    width: 24px;
-                    height: 24px;
-                    font-size: 10px;
-                }
-            }
-        }
-    }
-
-    .quotation-delete-modal,
-    .quotation-pdf-progress-modal {
+    .repairing-delete-modal,
+    .repairing-pdf-progress-modal {
         max-width: 92%;
         padding: 24px 20px;
     }
 
-    .quotation-delete-modal-buttons {
+    .repairing-delete-modal-buttons {
         flex-direction: column;
     }
 }
@@ -1661,55 +1700,55 @@
 // RESPONSIVE - SMALL MOBILE (max-width: 480px)
 // ============================================
 @media (max-width: 480px) {
-    .quotation-page-header {
+    .repairing-page-header {
         padding: 15px;
 
-        .quotation-page-title {
+        .repairing-page-title {
             font-size: 18px;
         }
     }
 
-    .quotation-form-container {
+    .repairing-form-container {
         padding: 12px;
     }
 
-    .quotation-modal-body {
+    .repairing-modal-body {
         padding: 15px;
     }
 
-    .quotation-modal-header .quotation-modal-title {
+    .repairing-modal-header .repairing-modal-title {
         font-size: 16px;
     }
 
-    .quotation-modal-footer {
+    .repairing-modal-footer {
         flex-direction: column;
 
-        .quotation-pdf-btn,
-        .quotation-modal-close-btn {
+        .repairing-pdf-btn,
+        .repairing-modal-close-btn {
             width: 100%;
             justify-content: center;
         }
     }
 
-    .quotation-invoice-desc-input {
+    .repairing-invoice-desc-input {
         width: 95px !important;
         min-width: 85px !important;
     }
 
-    .quotation-unit-input {
+    .repairing-unit-input {
         width: 50px !important;
         min-width: 45px !important;
     }
 
-    .quotation-hsn-input {
+    .repairing-hsn-input {
         width: 60px !important;
         min-width: 50px !important;
     }
 
-    .quotation-table-container {
+    .repairing-table-container {
         padding: 10px;
 
-        .quotation-table {
+        .repairing-table {
 
             th,
             td {
@@ -1717,77 +1756,60 @@
                 font-size: 10px;
             }
 
-            .quotation-total-badge {
+            .repairing-total-badge {
                 font-size: 11px;
                 padding: 2px 10px;
             }
 
-            .quotation-number {
+            .repairing-number {
                 font-size: 11px;
             }
         }
-
-        .quotation-table-header .quotation-action-buttons button {
-            font-size: 11px;
-            padding: 6px 10px;
-        }
     }
 
-    .quotation-action-btns button {
+    .repairing-action-btns button {
         padding: 3px 6px;
         font-size: 10px;
     }
 
-    .quotation-pagination {
-        .quotation-pagination-info {
+    .repairing-pagination {
+        .repairing-pagination-info {
             font-size: 12px;
         }
 
-        .quotation-page-btn {
+        .repairing-page-btn {
             padding: 5px 12px;
             font-size: 11px;
-
-            svg {
-                font-size: 10px;
-            }
         }
 
-        .quotation-page-info {
+        .repairing-page-info {
             font-size: 12px;
             min-width: 60px;
         }
     }
 
-    .quotation-view-summary .quotation-view-total {
+    .repairing-view-summary .repairing-view-total {
         font-size: 12px;
         gap: 15px;
 
-        &.quotation-view-grand {
+        &.repairing-view-grand {
             font-size: 14px;
         }
     }
 
-    .quotation-customer-selected-badge {
-        padding: 6px 12px;
-
-        span {
-            font-size: 12px;
-        }
-    }
-
-    .quotation-summary-column {
+    .repairing-summary-column {
         padding: 12px;
 
-        .quotation-summary-items .quotation-summary-row {
+        .repairing-summary-items .repairing-summary-row {
             font-size: 12px;
 
-            &.quotation-summary-grand {
+            &.repairing-summary-grand {
                 font-size: 14px;
             }
         }
     }
 
-    .quotation-submit-btn {
+    .repairing-submit-btn {
         font-size: 14px;
         padding: 10px;
     }
