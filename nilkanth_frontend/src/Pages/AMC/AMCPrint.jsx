@@ -1,0 +1,552 @@
+import React from "react";
+import "./AMCPrint.scss";
+import logo1 from "../../Assets/logo/logo.jpeg";
+import authorized from "../../Assets/pdf/auth.png";
+
+import width from "../../Assets/pdf/width.png";
+
+import product1 from "../../Assets/pdf/n1.png";
+import product2 from "../../Assets/pdf/n2.png";
+import product3 from "../../Assets/pdf/n3.png";
+import product4 from "../../Assets/pdf/n4.png";
+import product5 from "../../Assets/pdf/n5.png";
+import product6 from "../../Assets/pdf/n6.png";
+import product7 from "../../Assets/pdf/n7.png";
+import product8 from "../../Assets/pdf/n8.png";
+import product9 from "../../Assets/pdf/p9.png";
+import product10 from "../../Assets/pdf/p10.png";
+import product11 from "../../Assets/pdf/p11.png";
+import product12 from "../../Assets/pdf/p12.png";
+
+import heading1 from "../../Assets/pdf/h1.png";
+import heading2 from "../../Assets/pdf/h2.png";
+import heading3 from "../../Assets/pdf/h3.png";
+import heading6 from "../../Assets/pdf/h4.png";
+import heading5 from "../../Assets/pdf/h5.png";
+import heading4 from "../../Assets/pdf/h6.png";
+
+const AMCPrint = ({ amc }) => {
+    if (!amc) return null;
+
+    const {
+        amcNumber,
+        startDate,
+        endDate,
+        durationYears,
+        customerName,
+        customerEmail,
+        customerPhone,
+        customerGstin,
+        customerAddress,
+        customerState,
+        products,
+        subtotal,
+        totalDiscount,
+        totalTax,
+        grandTotal,
+        taxBreakdown,
+        notes,
+        paymentType,
+        paymentStatus,
+        isGstMode,
+        linkedInvoiceNumber,
+        renewalOf,
+        serviceHistory
+    } = amc;
+
+    // ===== STATIC DATA =====
+    const companyName = "Nilkanth digital scale co.";
+    const companyAddress = "Dayal Bhuvan lane opp lalcourt rajmahel road vadodara 390001)";
+    const companyGst = "24GJOPM0742J1ZY";
+    const companyWebsite = "https://nilkanthdigitalscale.in";
+    const companyPhone = "+91 8485921934";
+    const companyEmail = "nilkanthdigitalscale@gmail.com";
+
+    const bankDetails = {
+        bankName: "Central Bank of India",
+        branch: "Rajmahal Road",
+        accountNo: "5955669435",
+        ifscCode: "CBIN0280489"
+    };
+
+    const declaration = `We hereby declare that the information provided in this AMC is true and correct to the best of our knowledge and belief. The Annual Maintenance Charge contract mentioned in this document is provided as per the agreed terms and conditions.`;
+
+    const termsAndConditions = `This AMC is valid for the duration mentioned in this document.
+Warranty: Warranty is applicable against manufacturing defects only.
+Battery is not covered under warranty under any circumstances.
+Stamping/Verification: If required, the weighing machine shall be re-stamped/re-verified after one year as per applicable Government norms.
+Free repairing service is included in this AMC — client needs to bring the product to our workshop.
+For on-site repairs, charges will be taken accordingly.
+Once the goods are delivered, they will not be taken back or returned.`;
+
+    // ===== Convert numbers to words =====
+    const numberToWords = (num) => {
+        if (num === 0) return 'Zero Only';
+
+        const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+            'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
+            'Eighteen', 'Nineteen'];
+        const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        let integerPart = Math.floor(num);
+        let words = '';
+
+        if (integerPart >= 10000000) {
+            words += numberToWords(Math.floor(integerPart / 10000000)) + ' Crore ';
+            integerPart %= 10000000;
+        }
+
+        if (integerPart >= 100000) {
+            words += numberToWords(Math.floor(integerPart / 100000)) + ' Lakh ';
+            integerPart %= 100000;
+        }
+
+        if (integerPart >= 1000) {
+            words += numberToWords(Math.floor(integerPart / 1000)) + ' Thousand ';
+            integerPart %= 1000;
+        }
+
+        if (integerPart >= 100) {
+            words += numberToWords(Math.floor(integerPart / 100)) + ' Hundred ';
+            integerPart %= 100;
+        }
+
+        if (integerPart > 0) {
+            if (words !== '') words += ' ';
+            if (integerPart < 20) {
+                words += ones[integerPart];
+            } else {
+                words += tens[Math.floor(integerPart / 10)];
+                if (integerPart % 10 > 0) {
+                    words += ' ' + ones[integerPart % 10];
+                }
+            }
+        }
+
+        const decimalPart = Math.round((num - Math.floor(num)) * 100);
+        if (decimalPart > 0) {
+            if (words !== '') words += ' and ';
+            if (decimalPart < 20) {
+                words += ones[decimalPart] + ' Paise';
+            } else {
+                words += tens[Math.floor(decimalPart / 10)];
+                if (decimalPart % 10 > 0) {
+                    words += ' ' + ones[decimalPart % 10] + ' Paise';
+                }
+            }
+        }
+
+        return words || 'Zero Only';
+    };
+
+    // ===== Calculate item total =====
+    const calculateItemTotal = (item) => {
+        const quantity = item.quantity || 1;
+        const price = item.unitPrice || 0;
+        const discountPercentage = item.discountPercent || 0;
+        const itemTotal = price * quantity;
+        const discountAmount = itemTotal * (discountPercentage / 100);
+        return itemTotal - discountAmount;
+    };
+
+    // ===== Safe number formatting =====
+    const formatCurrency = (value) => {
+        if (value === undefined || value === null || isNaN(value)) return "₹0.00";
+        return `₹${Number(value).toFixed(2)}`;
+    };
+
+    // ===== Format a tax amount as a clean percentage string =====
+    const formatTaxPercent = (amount, base) => {
+        if (!base || base <= 0 || !amount || isNaN(amount)) return "0";
+        const pct = (amount / base) * 100;
+        const rounded = Math.round(pct * 100) / 100;
+        return rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(2);
+    };
+
+    // ===== Format date =====
+    const formatDate = (date) => {
+        if (!date) return "N/A";
+        return new Date(date).toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    };
+
+    // ===== Helper: Check if value exists =====
+    const hasValue = (val) => {
+        return val && val !== 'N/A' && val !== '' && val !== null && val !== undefined;
+    };
+
+    // ===== Tax split flags =====
+    const hasCgstSgst = taxBreakdown && (taxBreakdown.cgst > 0 || taxBreakdown.sgst > 0);
+    const hasIgst = taxBreakdown && !hasCgstSgst && taxBreakdown.igst > 0;
+    const hasPlainTax = !hasCgstSgst && !hasIgst && totalTax > 0;
+
+    const taxableAmount = (subtotal || 0) - (totalDiscount || 0);
+    const cgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.cgst, taxableAmount) : "0";
+    const sgstPercent = hasCgstSgst ? formatTaxPercent(taxBreakdown.sgst, taxableAmount) : "0";
+    const igstPercent = hasIgst ? formatTaxPercent(taxBreakdown.igst, taxableAmount) : "0";
+
+    // ===== Product showcase data =====
+    const allProductImages = [
+        product1, product2, product3, product4, product5, product6,
+        product7, product8, product9, product10, product11, product12
+    ];
+
+    const galleryImages = allProductImages.slice(0, 8);
+
+    const galleryLabels = [
+        "PLATFORM SCALES",
+        "TABLE TOP SCALES",
+        "JEWELLERY SCALES",
+        "HANGING SCALES",
+        "BABY SCALES",
+        "INDUSTRIAL SCALES",
+        "WEIGH BRIDGE",
+        "LABORATORY SCALES"
+    ];
+
+    return (
+        <div id="amc-pdf">
+            <div className="amc-invoice-container">
+
+                {/* ===== SHREE GANESHAY NAMAH ===== */}
+                <p className="ganesh-line">|| શ્રી ગણેશાય નમઃ ||</p>
+
+                {/* ===== HEADER ===== */}
+                <div className="amc-header">
+                    <div className="header-images header-images-left">
+                        <img src={heading1} alt="" className="header-img img-pos-1" />
+                        <img src={heading2} alt="" className="header-img img-pos-2" />
+                        <img src={heading3} alt="" className="header-img img-pos-3" />
+                    </div>
+
+                    <div className="amc-logo">
+                        <img src={logo1} alt="Company Logo" />
+                    </div>
+
+                    <div className="header-images header-images-right">
+                        <img src={heading4} alt="" className="header-img img-pos-4" />
+                        <img src={heading5} alt="" className="header-img img-pos-5" />
+                        <img src={heading6} alt="" className="header-img img-pos-6" />
+                    </div>
+                </div>
+
+                <div className="amc-divider"></div>
+
+                {/* ===== AMC TITLE BANNER ===== */}
+                <div className="amc-title-banner">
+                    <h2>ANNUAL MAINTENANCE CHARGE</h2>
+                </div>
+
+                {/* ===== BILLING INFO & OWNER INFO ===== */}
+                <div className="info-section">
+                    <div className="customer-info">
+                        <h3 className="info-heading">AMC Info</h3>
+                        <div className="info-row">
+                            <span className="info-label">AMC No:</span>
+                            <span className="info-value">{amcNumber || "N/A"}</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label">Start Date:</span>
+                            <span className="info-value">{formatDate(startDate)}</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label">End Date:</span>
+                            <span className="info-value">{formatDate(endDate)}</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label">Duration:</span>
+                            <span className="info-value">{durationYears} Year(s)</span>
+                        </div>
+                        <div className="info-row">
+                            <span className="info-label">Customer:</span>
+                            <span className="info-value">{customerName || "N/A"}</span>
+                        </div>
+                        {hasValue(customerAddress) && (
+                            <div className="info-row">
+                                <span className="info-label">Address:</span>
+                                <span className="info-value">{customerAddress}</span>
+                            </div>
+                        )}
+                        {hasValue(customerPhone) && (
+                            <div className="info-row">
+                                <span className="info-label">Phone:</span>
+                                <span className="info-value">{customerPhone}</span>
+                            </div>
+                        )}
+                        {hasValue(customerEmail) && (
+                            <div className="info-row">
+                                <span className="info-label">Email:</span>
+                                <span className="info-value">{customerEmail}</span>
+                            </div>
+                        )}
+                        {hasValue(customerGstin) && (
+                            <div className="info-row">
+                                <span className="info-label">GSTIN:</span>
+                                <span className="info-value">{customerGstin}</span>
+                            </div>
+                        )}
+                        {hasValue(linkedInvoiceNumber) && (
+                            <div className="info-row">
+                                <span className="info-label">Linked Invoice:</span>
+                                <span className="info-value">{linkedInvoiceNumber}</span>
+                            </div>
+                        )}
+                        {hasValue(renewalOf) && (
+                            <div className="info-row">
+                                <span className="info-label">Renewal Of:</span>
+                                <span className="info-value">{renewalOf}</span>
+                            </div>
+                        )}
+                        {paymentStatus === 'Pending' && (
+                            <div className="info-row payment-pending-row">
+                                <span className="info-label">Payment :</span>
+                                <span className="info-value payment-pending-value">Pending</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="owner-info">
+                        <h3 className="info-heading">Owner Info</h3>
+                        <div className="owner-name">{companyName}</div>
+                        <div className="owner-email">{companyEmail}</div>
+                        <div className="owner-phone">{companyPhone}</div>
+                        <div className="owner-address">{companyAddress}</div>
+                        <div className="owner-gst">GST: {companyGst}</div>
+                        <div className="owner-website-row">
+                            <span className="owner-website-label">Website: </span>
+                            <a
+                                href={companyWebsite}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="owner-website-link"
+                            >
+                                {companyWebsite}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ===== PRODUCTS TABLE ===== */}
+                <div className="items-section">
+                    <h3>PRODUCTS COVERED UNDER AMC</h3>
+                    <table className="items-table">
+                        <thead>
+                            <tr>
+                                <th>SR NO</th>
+                                <th>PRODUCT NAME</th>
+                                <th>CAPACITY</th>
+                                <th>HSN CODE</th>
+                                <th>QTY</th>
+                                <th>PRICE</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products && products.map((item, index) => (
+                                <React.Fragment key={index}>
+                                    <tr>
+                                        <td>{index + 1}</td>
+                                        <td>{item.productName || "N/A"}</td>
+                                        <td>{hasValue(item.capacity) ? item.capacity : '-'}</td>
+                                        <td>{item.hsnCode || "N/A"}</td>
+                                        <td>{item.quantity || 1}</td>
+                                        <td>{formatCurrency(item.unitPrice)}</td>
+                                        <td>{formatCurrency(calculateItemTotal(item))}</td>
+                                    </tr>
+                                    {hasValue(item.invoiceDescription) && (
+                                        <tr className="item-description-row">
+                                            <td colSpan="7" className="item-description-cell">
+                                                {item.invoiceDescription}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* ===== TOTALS ROW ===== */}
+                <div className="totals-row">
+                    <div className="totals-left">
+                        <div className="bank-details">
+                            <div className="bank-row">
+                                <span className="bank-label">Bank Name:</span>
+                                <span className="bank-value">{bankDetails.bankName}</span>
+                            </div>
+                            <div className="bank-row">
+                                <span className="bank-label">Branch:</span>
+                                <span className="bank-value">{bankDetails.branch}</span>
+                            </div>
+                            <div className="bank-row">
+                                <span className="bank-label">A/c No.:</span>
+                                <span className="bank-value">{bankDetails.accountNo}</span>
+                            </div>
+                            <div className="bank-row">
+                                <span className="bank-label">IFSC Code:</span>
+                                <span className="bank-value">{bankDetails.ifscCode}</span>
+                            </div>
+                        </div>
+
+                        <div className="amount-in-words">
+                            <p><strong>Amount in Words:</strong> {numberToWords(grandTotal)} Only</p>
+                        </div>
+                    </div>
+
+                    <div className="totals-right">
+                        <div className="calculation-section">
+                            <div className="calculation-box">
+                                <div className="calc-row">
+                                    <span className="calc-label">Subtotal:</span>
+                                    <span className="calc-value">{formatCurrency(subtotal)}</span>
+                                </div>
+
+                                {totalDiscount > 0 && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">Discount:</span>
+                                        <span className="calc-value">{formatCurrency(totalDiscount)}</span>
+                                    </div>
+                                )}
+
+                                <div className="calc-row">
+                                    <span className="calc-label">Taxable Amount:</span>
+                                    <span className="calc-value">{formatCurrency(subtotal - totalDiscount)}</span>
+                                </div>
+
+                                {hasCgstSgst && (
+                                    <>
+                                        <div className="calc-row">
+                                            <span className="calc-label">CGST ({cgstPercent}%):</span>
+                                            <span className="calc-value">{formatCurrency(taxBreakdown.cgst)}</span>
+                                        </div>
+                                        <div className="calc-row">
+                                            <span className="calc-label">SGST ({sgstPercent}%):</span>
+                                            <span className="calc-value">{formatCurrency(taxBreakdown.sgst)}</span>
+                                        </div>
+                                    </>
+                                )}
+
+                                {hasIgst && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">IGST ({igstPercent}%):</span>
+                                        <span className="calc-value">{formatCurrency(taxBreakdown.igst)}</span>
+                                    </div>
+                                )}
+
+                                {hasPlainTax && (
+                                    <div className="calc-row">
+                                        <span className="calc-label">Tax (GST):</span>
+                                        <span className="calc-value">{formatCurrency(totalTax)}</span>
+                                    </div>
+                                )}
+
+                                <div className="calc-row grand-total">
+                                    <span className="calc-label">Grand Total:</span>
+                                    <span className="calc-value">{formatCurrency(grandTotal)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ===== SERVICE HISTORY ===== */}
+                {serviceHistory && serviceHistory.length > 0 && (
+                    <div className="service-history-section">
+                        <h3>SERVICE HISTORY</h3>
+                        <table className="service-table">
+                            <thead>
+                                <tr>
+                                    <th>SR NO</th>
+                                    <th>PRODUCT</th>
+                                    <th>SERVICE DATE</th>
+                                    <th>QTY</th>
+                                    <th>STORE</th>
+                                    <th>NOTES</th>
+                                    <th>SERVICED BY</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {serviceHistory.map((entry, index) => (
+                                    <tr key={entry.serviceId || index}>
+                                        <td>{index + 1}</td>
+                                        <td>{entry.productName || "N/A"}</td>
+                                        <td>{formatDate(entry.serviceDate)}</td>
+                                        <td>{entry.quantity || 1}</td>
+                                        <td>{entry.storeType || "N/A"}</td>
+                                        <td>{entry.notes || "-"}</td>
+                                        <td>{entry.servicedBy || "N/A"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* ===== DECLARATION + NOTES (LEFT) & TERMS (RIGHT) ===== */}
+                <div className="declaration-terms-section">
+                    <div className="declaration-left">
+                        <div className="declaration-section">
+                            <h3>DECLARATION</h3>
+                            <p>{declaration}</p>
+                        </div>
+                        {hasValue(notes) && (
+                            <div className="amc-notes-section">
+                                <h3>NOTES</h3>
+                                <p>{notes}</p>
+                            </div>
+                        )}
+                    </div>
+                    <div className="terms-section">
+                        <h3>TERMS &amp; CONDITIONS</h3>
+                        <ul>
+                            {termsAndConditions.split('\n').map((term, index) => (
+                                term.trim() && <li key={index}>{term.trim()}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
+                {/* ===== FOOTER ===== */}
+                <div className="amc-footer">
+                    <div className="footer-left">
+                        <p>Subject To Vadodara Jurisdiction</p>
+                    </div>
+                    <div className="footer-right">
+                        <div className="signature-container">
+                            <img src={authorized} alt="Authorized Signature" className="signature-image" />
+                            <p className="signature-label">Authorized Signature</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* ===== PAGE 2: PRODUCT GALLERY ===== */}
+            <div className="product-gallery-page">
+
+                <div className="gallery-banner">
+                    <h2>OUR PRODUCT RANGE</h2>
+                    <p>A glimpse of the products &amp; equipment we deal in</p>
+                </div>
+
+                <div className="gallery-grid">
+                    {galleryImages.map((src, index) => (
+                        <div className="gallery-card" key={index}>
+                            <div className="gallery-category">{galleryLabels[index]}</div>
+                            <div className="gallery-img-wrap">
+                                <img src={src} alt={galleryLabels[index]} />
+                            </div>
+                            <p className="gallery-caption">{galleryLabels[index]}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+        </div>
+    );
+};
+
+export default AMCPrint;

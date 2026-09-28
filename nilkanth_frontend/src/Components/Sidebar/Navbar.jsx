@@ -119,6 +119,8 @@ const Navbar = ({
     { icon: <MdAdminPanelSettings />, title: "Admin", path: "/admin", permission: "admin" },
     { icon: <MdAdminPanelSettings />, title: "Quotation", path: "/quotation", permission: "admin" },
     { icon: <MdAdminPanelSettings />, title: "Repairing", path: "/repairing", permission: "admin" },
+    { icon: <MdAdminPanelSettings />, title: "AMC", path: "/amc", permission: "admin" },
+    { icon: <MdAdminPanelSettings />, title: "Stamping", path: "/stamping", permission: "admin" },
   ];
 
   // Filter menu items based on user permissions

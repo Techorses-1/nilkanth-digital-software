@@ -40,7 +40,11 @@ const itemPurchaseRoutes = require('./routes/itemPurchaseRoutes');
 const productPurchaseRoutes = require('./routes/productPurchaseRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
 const repairingRoutes = require('./routes/repairingRoutes');
+const stampingRoutes = require('./routes/stampingRoutes');
 
+// ===== AMC ROUTES  =====
+const amcRoutes = require('./routes/amcRoutes');
+const startAmcStatusCron = require('./cron/amcStatusCron');
 
 // ============= ROUTE MIDDLEWARES =============
 // Old routes
@@ -62,7 +66,10 @@ app.use('/product-purchase', productPurchaseRoutes);
 app.use('/quotation', quotationRoutes);
 app.use('/repairing', repairingRoutes);
 
+app.use('/stamping', stampingRoutes);
 
+// AMC routes
+app.use('/amc', amcRoutes);
 
 
 // ============= CRON JOB (Keep as is) =============
@@ -74,6 +81,8 @@ cron.schedule("0 0 1 1 *", async () => {
     console.error("❌ Error resetting loyalty coins:", error);
   }
 });
+
+startAmcStatusCron();
 
 // Basic Route
 app.get('/', (req, res) => {

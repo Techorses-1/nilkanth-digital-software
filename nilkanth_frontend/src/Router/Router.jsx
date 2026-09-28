@@ -18,6 +18,8 @@ import Purchase from "../Pages/Purchase/Purchase";
 import Sales from "../Pages/Sales/Sales";
 import Quotation from "../Pages/Quotation/Quotation";
 import Repairing from "../Pages/Repairing/Repairing";
+import AMC from "../Pages/AMC/AMC";
+import Stamping from "../Pages/Stamping/Stamping";
 
 
 
@@ -44,7 +46,7 @@ const Router = () => {
               </ProtectedRoute>
             } />
 
-            
+
             <Route path="/customer" element={
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="customer">
@@ -92,10 +94,26 @@ const Router = () => {
                 </PermissionRoute>
               </ProtectedRoute>
             } />
+
             <Route path="/repairing" element={
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="invoice">
                   <Repairing />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/amc" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="amc">
+                  <AMC />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+            <Route path="/stamping" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="amc">
+                  <Stamping />
                 </PermissionRoute>
               </ProtectedRoute>
             } />

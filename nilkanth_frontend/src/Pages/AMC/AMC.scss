@@ -1,0 +1,2034 @@
+// ==================== THEME TOKENS ====================
+$primary-dark: #2d2f87;
+$primary: #3f3f91;
+$primary-light: #6a6ac5;
+$accent: #7366ff;
+$accent-light: #948cff;
+$success: #28a745;
+$success-dark: #218838;
+$danger: #dc3545;
+$danger-dark: #c82333;
+$warning: #f39c12;
+$warning-dark: #b9770e;
+$info: #17a2b8;
+$blue: #007bff;
+$text-main: #2b2b3a;
+$text-muted: #666;
+$border-soft: #e6e8f0;
+$bg-soft: #f7f8fc;
+
+@keyframes amc-fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes amc-slideUp {
+    from {
+        transform: translateY(24px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes amc-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// ==================== PAGE WRAPPER + HEADER ====================
+.amc-module-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 4px 30px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: $text-main;
+}
+
+.amc-page-header {
+    margin: 0 0 22px;
+    padding: 22px 28px;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid $border-soft;
+    box-shadow: 0 4px 18px rgba(63, 63, 145, 0.08);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(180deg, $accent, $primary-light);
+    }
+
+    .amc-page-title {
+        margin: 0;
+        padding-left: 6px;
+        font-size: 25px;
+        font-weight: 800;
+        letter-spacing: -0.3px;
+        color: $primary-dark;
+    }
+}
+
+.amc-content-wrapper {
+    width: 100%;
+}
+
+// ==================== TABLE CONTAINER ====================
+.amc-table-container {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid $border-soft;
+    box-shadow: 0 4px 18px rgba(63, 63, 145, 0.08);
+    padding: 22px;
+}
+
+.amc-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.amc-search-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.amc-search-container {
+    position: relative;
+    width: 300px;
+    max-width: 100%;
+
+    .amc-search-icon {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        transform: translateY(-50%);
+        color: $accent;
+        font-size: 15px;
+    }
+
+    .amc-search-input {
+        width: 100%;
+        padding: 11px 14px 11px 42px;
+        border: 1px solid $border-soft;
+        border-radius: 50px;
+        background: $bg-soft;
+        font-size: 14.5px;
+        color: #333;
+        transition: 0.25s;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+
+        &::placeholder {
+            color: #9a9aab;
+        }
+
+        &:focus {
+            outline: none;
+            background: #fff;
+            border-color: $accent;
+            box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.15);
+        }
+    }
+}
+
+.amc-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .amc-filter-icon {
+        color: $accent;
+        font-size: 15px;
+    }
+
+    .amc-filter-select {
+        min-width: 170px;
+    }
+}
+
+.amc-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 20px;
+        border: none;
+        border-radius: 30px;
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+        transition: all 0.25s ease;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    .amc-create-btn {
+        background: linear-gradient(135deg, $accent, $accent-light);
+    }
+
+    .amc-pdf-export-btn {
+        background: linear-gradient(135deg, $danger, #f0605f);
+    }
+
+    .amc-export-btn {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+    }
+}
+
+.amc-loading-spinner-small {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+    animation: amc-spin 0.8s linear infinite;
+}
+
+// ==================== LOADING / EMPTY ====================
+.amc-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 50px 20px;
+    color: $text-muted;
+
+    p {
+        margin: 0;
+        font-size: 14px;
+    }
+}
+
+.amc-loading-spinner {
+    width: 38px;
+    height: 38px;
+    border: 4px solid rgba(115, 102, 255, 0.18);
+    border-top-color: $accent;
+    border-radius: 50%;
+    animation: amc-spin 0.8s linear infinite;
+}
+
+.amc-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 50px 20px;
+    background: $bg-soft;
+    border: 1px dashed $border-soft;
+    border-radius: 12px;
+
+    p {
+        margin: 0;
+        color: #999;
+        font-style: italic;
+        font-size: 14px;
+    }
+}
+
+// ==================== MAIN TABLE ====================
+.amc-table-responsive {
+    overflow-x: auto;
+    border: 1px solid $border-soft;
+    border-radius: 12px;
+}
+
+.amc-table {
+    width: 100%;
+    min-width: 1080px;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead tr th:first-child {
+        border-top-left-radius: 11px;
+    }
+
+    thead tr th:last-child {
+        border-top-right-radius: 11px;
+    }
+
+    th,
+    td {
+        padding: 13px 14px;
+        text-align: left;
+        font-size: 13.5px;
+        color: $text-main;
+        white-space: nowrap;
+    }
+
+    th {
+        background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+        color: $primary;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid $border-soft;
+    }
+
+    .amc-table-row {
+        border-bottom: 1px solid #f0f1f7;
+        transition: background-color 0.15s;
+
+        &:nth-child(even) {
+            background: #fbfbfe;
+        }
+
+        &:hover {
+            background: #eef0ff;
+        }
+    }
+
+    tbody tr td {
+        border-bottom: 1px solid #f0f1f7;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .amc-number {
+        strong {
+            color: $primary-dark;
+        }
+    }
+}
+
+.amc-renewal-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin-left: 8px;
+    border-radius: 50%;
+    background: rgba(115, 102, 255, 0.14);
+    color: $accent;
+    font-size: 10px;
+    vertical-align: middle;
+}
+
+.amc-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+
+    &::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    &.amc-status-active {
+        background: #e6f7ec;
+        color: $success-dark;
+    }
+
+    &.amc-status-pending {
+        background: #fff4e0;
+        color: $warning-dark;
+    }
+
+    &.amc-status-expired {
+        background: #fdecec;
+        color: $danger-dark;
+    }
+
+    &.amc-status-cancelled {
+        background: #eceef5;
+        color: #6b6b80;
+    }
+}
+
+// Plain-text status (view modal value, renew info)
+.amc-view-value.amc-status-active,
+.amc-renew-info-row strong.amc-status-active {
+    color: $success-dark;
+    font-weight: 700;
+}
+
+.amc-view-value.amc-status-pending,
+.amc-renew-info-row strong.amc-status-pending {
+    color: $warning-dark;
+    font-weight: 700;
+}
+
+.amc-view-value.amc-status-expired,
+.amc-renew-info-row strong.amc-status-expired {
+    color: $danger-dark;
+    font-weight: 700;
+}
+
+.amc-view-value.amc-status-cancelled,
+.amc-renew-info-row strong.amc-status-cancelled {
+    color: #6b6b80;
+    font-weight: 700;
+}
+
+.amc-total-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #f0eeff;
+    color: $primary-dark;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+// Row action icon buttons
+.amc-action-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    button {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13.5px;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+
+    .amc-view-btn {
+        background: #e6f1ff;
+        color: $blue;
+
+        &:hover:not(:disabled) {
+            background: $blue;
+            color: #fff;
+        }
+    }
+
+    .amc-edit-btn {
+        background: #fff4e0;
+        color: $warning-dark;
+
+        &:hover:not(:disabled) {
+            background: $warning;
+            color: #fff;
+        }
+    }
+
+    .amc-service-icon-btn {
+        background: #e0f7fa;
+        color: #0e8a9c;
+
+        &:hover:not(:disabled) {
+            background: $info;
+            color: #fff;
+        }
+    }
+
+    .amc-renew-icon-btn {
+        background: #f0eeff;
+        color: $accent;
+
+        &:hover:not(:disabled) {
+            background: $accent;
+            color: #fff;
+        }
+    }
+
+    .amc-delete-btn {
+        background: #fdecec;
+        color: $danger;
+
+        &:hover:not(:disabled) {
+            background: $danger;
+            color: #fff;
+        }
+    }
+
+    .amc-pdf-row-btn {
+        background: #ffece8;
+        color: #d9482b;
+
+        &:hover:not(:disabled) {
+            background: #d9482b;
+            color: #fff;
+        }
+    }
+}
+
+// ==================== PAGINATION ====================
+.amc-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 18px;
+
+    .amc-pagination-info {
+        font-size: 13px;
+        color: $text-muted;
+    }
+
+    .amc-pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .amc-page-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 18px;
+        border: 1.5px solid $accent;
+        border-radius: 30px;
+        background: #fff;
+        color: $accent;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.2s;
+
+        &:hover:not(:disabled) {
+            background: $accent;
+            color: #fff;
+        }
+
+        &:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+    }
+
+    .amc-page-info {
+        font-size: 13px;
+        font-weight: 700;
+        color: $primary-dark;
+    }
+}
+
+// ==================== FORM CONTAINER ====================
+.amc-form-container {
+    position: relative;
+    margin-bottom: 24px;
+    padding: 26px 28px;
+    background: linear-gradient(150deg, #ffffff 0%, #f4f4fd 55%, #ececfa 100%);
+    border: 1px solid $border-soft;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(63, 63, 145, 0.1);
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        border-radius: 18px 18px 0 0;
+        background: linear-gradient(90deg, $accent, $primary-light, $accent-light);
+    }
+}
+
+.amc-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid $border-soft;
+
+    .amc-form-title {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: 800;
+        color: $primary-dark;
+    }
+
+    .amc-form-close {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 50%;
+        background: #f0f0f7;
+        color: $text-muted;
+        cursor: pointer;
+        transition: 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+            background: $danger;
+            color: #fff;
+        }
+    }
+}
+
+// Toggle section
+.amc-toggle-section {
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 1px solid $border-soft;
+    border-radius: 12px;
+
+    .amc-toggle-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px 32px;
+    }
+
+    .amc-toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .amc-toggle-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: $primary;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .amc-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        border: 1.5px solid $border-soft;
+        border-radius: 30px;
+        background: $bg-soft;
+        color: $text-muted;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        svg {
+            font-size: 17px;
+        }
+
+        &:hover {
+            border-color: $accent;
+            color: $accent;
+        }
+
+        &.active {
+            background: linear-gradient(135deg, $accent, $accent-light);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(115, 102, 255, 0.3);
+        }
+    }
+}
+
+// Sections
+.amc-section {
+    margin-bottom: 16px;
+    padding: 18px;
+    background: #fff;
+    border: 1px solid $border-soft;
+    border-radius: 12px;
+}
+
+.amc-form-row {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 14px;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.amc-form-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    &.amc-form-field-full {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+}
+
+.amc-form-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #4a4a5e;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    svg {
+        color: $accent;
+        font-size: 12.5px;
+    }
+}
+
+.amc-input-field,
+.amc-textarea-field {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #dcdce8;
+    border-radius: 8px;
+    background: #fff;
+    color: $text-main;
+    font-size: 14.5px;
+    font-family: inherit;
+    transition: 0.25s;
+
+    &::placeholder {
+        color: #b3b3c2;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: $accent;
+        background: #fbfbff;
+        box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.14);
+    }
+
+    &[readonly],
+    &:disabled {
+        background: $bg-soft;
+        color: #55556a;
+        cursor: not-allowed;
+
+        &:focus {
+            border-color: #dcdce8;
+            box-shadow: none;
+        }
+    }
+}
+
+.amc-textarea-field {
+    resize: vertical;
+    min-height: 64px;
+}
+
+.amc-field-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: $text-muted;
+    font-weight: 600;
+}
+
+.amc-customer-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed $border-soft;
+}
+
+.amc-product-row {
+    display: flex;
+    gap: 16px;
+
+    .amc-product-select {
+        min-width: 0;
+    }
+}
+
+// ==================== REACT-SELECT OVERRIDES ====================
+.amc-react-select,
+.amc-filter-select {
+    width: 100%;
+
+    .amc-select__control,
+    .amc-filter__control {
+        min-height: 44px;
+        border: 1.5px solid #dcdce8;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: none;
+        transition: 0.25s;
+
+        &:hover {
+            border-color: #c3c3d8;
+        }
+    }
+
+    .amc-select__control--is-focused,
+    .amc-filter__control--is-focused {
+        border-color: $accent;
+        box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.14);
+
+        &:hover {
+            border-color: $accent;
+        }
+    }
+
+    .amc-select__control--is-disabled {
+        background: $bg-soft;
+        cursor: not-allowed;
+    }
+
+    .amc-select__value-container,
+    .amc-filter__value-container {
+        padding: 2px 12px;
+    }
+
+    .amc-select__single-value,
+    .amc-filter__single-value {
+        color: $text-main;
+        font-size: 14.5px;
+        font-weight: 500;
+    }
+
+    .amc-select__placeholder,
+    .amc-filter__placeholder {
+        color: #b3b3c2;
+        font-size: 14px;
+    }
+
+    .amc-select__indicator,
+    .amc-filter__indicator {
+        color: $accent;
+    }
+
+    .amc-select__indicator-separator,
+    .amc-filter__indicator-separator {
+        background: #e3e3ee;
+    }
+
+    .amc-select__menu,
+    .amc-filter__menu {
+        margin-top: 6px;
+        border: 1px solid $border-soft;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(63, 63, 145, 0.18);
+        z-index: 1200;
+    }
+
+    .amc-select__option,
+    .amc-filter__option {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .amc-select__option--is-selected,
+    .amc-filter__option--is-selected {
+        background: rgba(115, 102, 255, 0.14);
+        color: $primary-dark;
+        font-weight: 700;
+    }
+}
+
+// ==================== LINE ITEMS TABLE ====================
+.amc-items-table-wrap {
+    overflow-x: auto;
+    border: 1px solid $border-soft;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.amc-items-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th {
+        padding: 12px 12px;
+        background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+        color: $primary;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        border-bottom: 2px solid $border-soft;
+    }
+
+    td {
+        padding: 10px 12px;
+        vertical-align: middle;
+        font-size: 13.5px;
+        color: $text-main;
+        border-bottom: 1px solid #f0f1f7;
+    }
+
+    tbody tr:hover {
+        background: #fafaff;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .amc-item-name {
+        font-weight: 700;
+        color: $primary-dark;
+        min-width: 160px;
+    }
+
+    .amc-item-input {
+        width: 90px;
+        padding: 8px 10px;
+        border: 1.5px solid #dcdce8;
+        border-radius: 6px;
+        background: #fff;
+        font-size: 13.5px;
+        font-family: inherit;
+        color: $text-main;
+        transition: 0.2s;
+
+        &:focus {
+            outline: none;
+            border-color: $accent;
+            box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.14);
+        }
+
+        &[readonly] {
+            background: $bg-soft;
+            cursor: not-allowed;
+
+            &:focus {
+                border-color: #dcdce8;
+                box-shadow: none;
+            }
+        }
+
+        &.amc-invoice-desc-input {
+            width: 170px;
+        }
+
+        &.amc-capacity-input {
+            width: 100px;
+        }
+
+        &.amc-hsn-input {
+            width: 100px;
+        }
+    }
+
+    .amc-item-final {
+        font-weight: 800;
+        color: $primary-dark;
+        white-space: nowrap;
+    }
+
+    .amc-item-remove {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 7px;
+        background: #fee;
+        color: $danger;
+        cursor: pointer;
+        transition: 0.2s;
+
+        &:hover {
+            background: $danger;
+            color: #fff;
+        }
+    }
+}
+
+// ==================== SUMMARY ====================
+.amc-summary-column {
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid $border-soft;
+    border-left: 4px solid $accent;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(63, 63, 145, 0.08);
+
+    .amc-summary-title {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid $border-soft;
+        font-size: 15px;
+        font-weight: 800;
+        color: $primary-dark;
+    }
+
+    .amc-summary-items {
+        margin-bottom: 16px;
+    }
+
+    .amc-summary-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 14px;
+        color: $text-main;
+
+        &.amc-summary-discount {
+            color: $danger-dark;
+        }
+
+        &.amc-summary-grand {
+            margin-top: 8px;
+            padding: 12px 14px;
+            background: #f0eeff;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            color: $primary-dark;
+        }
+    }
+
+    .amc-submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.amc-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    background: linear-gradient(135deg, $accent, $accent-light);
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(115, 102, 255, 0.35);
+    transition: all 0.25s;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(115, 102, 255, 0.45);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+// ==================== MODALS (view / service / renew) ====================
+.amc-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(30, 27, 60, 0.55);
+    backdrop-filter: blur(2px);
+    animation: amc-fadeIn 0.25s ease-out;
+}
+
+.amc-modal-content {
+    width: 92%;
+    max-width: 980px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(30, 27, 60, 0.35);
+    animation: amc-slideUp 0.25s ease-out;
+
+    &.amc-modal-small {
+        max-width: 580px;
+    }
+}
+
+.amc-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 26px;
+    background: linear-gradient(135deg, #fbfbff, #f2f2fb);
+    border-bottom: 1px solid $border-soft;
+    border-radius: 16px 16px 0 0;
+
+    .amc-modal-title {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 800;
+        color: $primary-dark;
+
+        svg {
+            color: $accent;
+        }
+    }
+
+    .amc-modal-close {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 50%;
+        background: #f0f0f7;
+        color: $text-muted;
+        cursor: pointer;
+        transition: 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+            background: $danger;
+            color: #fff;
+        }
+    }
+}
+
+.amc-modal-body {
+    padding: 24px 26px;
+}
+
+.amc-modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 26px;
+    background: #fff;
+    border-top: 1px solid $border-soft;
+    border-radius: 0 0 16px 16px;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    }
+
+    .amc-service-btn {
+        background: linear-gradient(135deg, $info, #33c2d6);
+        color: #fff;
+    }
+
+    .amc-renew-btn {
+        background: linear-gradient(135deg, $accent, $accent-light);
+        color: #fff;
+    }
+
+    .amc-pdf-btn {
+        background: linear-gradient(135deg, $danger, #f0605f);
+        color: #fff;
+    }
+
+    .amc-modal-close-btn {
+        background: #eceef5;
+        color: #444;
+
+        &:hover:not(:disabled) {
+            background: #dfe1eb;
+        }
+    }
+
+    .amc-submit-btn {
+        border-radius: 8px;
+        padding: 11px 22px;
+        font-size: 13.5px;
+        box-shadow: none;
+    }
+}
+
+// ---------- View modal content ----------
+.amc-view-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 8px;
+}
+
+.amc-view-item {
+    padding: 12px 14px;
+    background: $bg-soft;
+    border: 1px solid $border-soft;
+    border-radius: 10px;
+    transition: 0.2s;
+
+    &:hover {
+        border-color: #d6d8ee;
+    }
+
+    &.amc-view-item-full {
+        grid-column: 1 / -1;
+    }
+
+    .amc-view-label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: $primary;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .amc-view-value {
+        display: block;
+        font-size: 14.5px;
+        font-weight: 600;
+        color: $text-main;
+        word-break: break-word;
+    }
+}
+
+.amc-view-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 26px 0 12px;
+    padding-bottom: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    color: $primary-dark;
+    border-bottom: 2px solid $border-soft;
+
+    svg {
+        color: $accent;
+    }
+}
+
+.amc-view-table-wrap {
+    overflow-x: auto;
+    border: 1px solid $border-soft;
+    border-radius: 10px;
+}
+
+.amc-view-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    th {
+        padding: 10px 12px;
+        background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+        color: $primary;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        border-bottom: 2px solid $border-soft;
+    }
+
+    td {
+        padding: 10px 12px;
+        font-size: 13.5px;
+        color: $text-main;
+        border-bottom: 1px solid #f0f1f7;
+    }
+
+    tbody tr:nth-child(even) {
+        background: #fbfbfe;
+    }
+
+    tbody tr:hover {
+        background: #f0f0ff;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+}
+
+.amc-view-summary {
+    width: 100%;
+    max-width: 360px;
+    margin: 18px 0 0 auto;
+    padding: 14px 16px;
+    background: #fff;
+    border: 1px solid $border-soft;
+    border-left: 4px solid $accent;
+    border-radius: 10px;
+
+    .amc-view-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 14px;
+        color: $text-main;
+
+        &.amc-view-grand {
+            margin-top: 6px;
+            padding: 10px 12px;
+            background: #f0eeff;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 800;
+            color: $primary-dark;
+        }
+    }
+}
+
+.amc-view-empty {
+    margin: 0;
+    padding: 22px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    font-size: 13.5px;
+    background: $bg-soft;
+    border: 1px dashed $border-soft;
+    border-radius: 10px;
+}
+
+// ---------- Renew modal ----------
+.amc-renew-info {
+    margin-bottom: 18px;
+    padding: 16px 18px;
+    background: #eef4ff;
+    border: 1px solid #d6e4ff;
+    border-radius: 12px;
+
+    .amc-renew-info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 5px 0;
+        font-size: 13.5px;
+        color: $text-muted;
+
+        strong {
+            color: $text-main;
+        }
+
+        &.amc-renew-note {
+            justify-content: flex-start;
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: #fff;
+            border-radius: 8px;
+            color: $primary;
+            font-size: 12.5px;
+            font-weight: 600;
+
+            svg {
+                color: $blue;
+                flex-shrink: 0;
+            }
+        }
+    }
+}
+
+// ==================== DELETE MODAL ====================
+.amc-delete-modal {
+    width: 92%;
+    max-width: 420px;
+    padding: 28px 26px;
+    background: #fff;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: amc-slideUp 0.25s ease-out;
+
+    .amc-delete-modal-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #fdecec;
+        color: $danger;
+        font-size: 28px;
+    }
+
+    .amc-delete-modal-title {
+        margin: 0 0 8px;
+        font-size: 19px;
+        font-weight: 800;
+        color: $primary-dark;
+    }
+
+    .amc-delete-modal-text {
+        margin: 0 0 18px;
+        font-size: 13.5px;
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .amc-delete-modal-info {
+        margin-bottom: 20px;
+        padding: 12px 14px;
+        background: $bg-soft;
+        border: 1px solid $border-soft;
+        border-radius: 10px;
+        text-align: left;
+    }
+
+    .amc-delete-modal-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 5px 0;
+        font-size: 13.5px;
+    }
+
+    .amc-delete-modal-label {
+        color: $text-muted;
+        font-weight: 600;
+    }
+
+    .amc-delete-modal-value {
+        color: $text-main;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .amc-delete-modal-buttons {
+        display: flex;
+        gap: 10px;
+
+        button {
+            flex: 1;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
+
+        .amc-delete-modal-cancel {
+            background: #e9ecef;
+            color: #333;
+
+            &:hover:not(:disabled) {
+                background: #dee2e6;
+            }
+        }
+
+        .amc-delete-modal-confirm {
+            background: linear-gradient(135deg, $danger, #f0605f);
+            color: #fff;
+
+            &:hover:not(:disabled) {
+                transform: translateY(-1px);
+                box-shadow: 0 6px 14px rgba(220, 53, 69, 0.35);
+            }
+        }
+    }
+}
+
+// ==================== PDF EXPORT PROGRESS ====================
+.amc-pdf-progress-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(30, 27, 60, 0.7);
+    backdrop-filter: blur(3px);
+    animation: amc-fadeIn 0.2s ease-out;
+}
+
+.amc-pdf-progress-modal {
+    width: 92%;
+    max-width: 420px;
+    padding: 30px 28px;
+    background: #fff;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+    .amc-pdf-progress-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f0eeff;
+        color: $accent;
+        font-size: 28px;
+    }
+
+    .amc-pdf-progress-title {
+        margin: 0 0 6px;
+        font-size: 19px;
+        font-weight: 800;
+        color: $primary-dark;
+    }
+
+    .amc-pdf-progress-status {
+        margin: 0 0 16px;
+        font-size: 13.5px;
+        color: $text-muted;
+        font-weight: 600;
+    }
+
+    .amc-pdf-progress-bar-container {
+        height: 10px;
+        overflow: hidden;
+        background: #eceef5;
+        border-radius: 10px;
+    }
+
+    .amc-pdf-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, $accent, $accent-light);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .amc-pdf-progress-percentage {
+        margin: 8px 0 14px;
+        font-size: 14px;
+        font-weight: 800;
+        color: $primary-dark;
+    }
+
+    .amc-pdf-progress-spinner {
+        width: 30px;
+        height: 30px;
+        margin: 0 auto 14px;
+        border: 3px solid rgba(115, 102, 255, 0.18);
+        border-top-color: $accent;
+        border-radius: 50%;
+        animation: amc-spin 0.8s linear infinite;
+    }
+
+    .amc-pdf-progress-hint {
+        margin: 0;
+        font-size: 12px;
+        color: #999;
+        font-style: italic;
+    }
+}
+
+// ==================== TABLET (769px – 1024px) ====================
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .amc-page-header {
+        padding: 18px 22px;
+    }
+
+    .amc-table-container {
+        padding: 18px;
+    }
+
+    .amc-search-container {
+        width: 240px;
+    }
+
+    .amc-action-buttons button {
+        padding: 10px 14px;
+        font-size: 12.5px;
+    }
+
+    .amc-form-container {
+        padding: 22px 20px;
+    }
+
+    .amc-form-row {
+        flex-wrap: wrap;
+
+        .amc-form-field {
+            flex: 1 1 45%;
+        }
+    }
+
+    .amc-view-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .amc-modal-content {
+        width: 94%;
+    }
+}
+
+// ==================== MOBILE (≤768px) ====================
+@media screen and (max-width: 768px) {
+    .amc-page-header {
+        padding: 16px 18px;
+
+        .amc-page-title {
+            font-size: 21px;
+        }
+    }
+
+    .amc-table-container {
+        padding: 14px;
+    }
+
+    .amc-table-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .amc-search-filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .amc-search-container {
+        width: 100%;
+    }
+
+    .amc-filter-container {
+        width: 100%;
+
+        .amc-filter-select {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
+    .amc-action-buttons {
+        width: 100%;
+
+        button {
+            flex: 1;
+            justify-content: center;
+            padding: 11px 12px;
+        }
+    }
+
+    .amc-form-container {
+        padding: 18px 14px;
+    }
+
+    .amc-form-header .amc-form-title {
+        font-size: 17px;
+    }
+
+    .amc-toggle-section {
+        padding: 12px 14px;
+
+        .amc-toggle-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+    }
+
+    .amc-section {
+        padding: 14px;
+    }
+
+    .amc-form-row {
+        flex-direction: column;
+        gap: 14px;
+
+        // beats the inline flex: 7 / flex: 3 set in the JSX for customer + start date
+        .amc-form-field {
+            flex: none !important;
+            width: 100%;
+        }
+    }
+
+    .amc-summary-column {
+        max-width: 100%;
+    }
+
+    .amc-pagination {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+
+        .amc-pagination-buttons {
+            justify-content: space-between;
+        }
+    }
+
+    .amc-modal-content,
+    .amc-modal-content.amc-modal-small {
+        width: 96%;
+        max-height: 88vh;
+    }
+
+    .amc-modal-header,
+    .amc-modal-footer {
+        padding: 14px 16px;
+    }
+
+    .amc-modal-body {
+        padding: 16px;
+    }
+
+    .amc-modal-footer button {
+        flex: 1;
+        justify-content: center;
+        padding: 11px 12px;
+    }
+
+    .amc-view-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .amc-view-summary {
+        max-width: 100%;
+    }
+
+    .amc-delete-modal {
+        padding: 22px 18px;
+    }
+
+    .amc-delete-modal .amc-delete-modal-buttons {
+        flex-direction: column;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .amc-action-buttons {
+        flex-direction: column;
+    }
+
+    .amc-pagination .amc-pagination-buttons {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+// ============================================================
+// EXTRA — RENEW MODAL (product editor) — paste at the bottom of AMC.scss
+// Uses the same $variables already defined at the top of your file.
+// ============================================================
+
+// Wider modal for the renew flow
+.amc-modal-content.amc-modal-large {
+  max-width: 1120px;
+}
+
+// ---------- Products table wrapper ----------
+.amc-renew-products-wrap {
+  overflow-x: auto;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-radius: 12px;
+}
+
+.amc-renew-products-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    padding: 12px 12px;
+    background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+    color: $primary;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    border-bottom: 2px solid $border-soft;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    font-size: 13.5px;
+    color: $text-main;
+    border-bottom: 1px solid #f0f1f7;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s, opacity 0.15s;
+
+    &:hover { background: #fafaff; }
+    &:last-child td { border-bottom: none; }
+  }
+
+  // Use checkbox column
+  th:first-child,
+  td:first-child {
+    width: 56px;
+    text-align: center;
+  }
+
+  // Inputs inside this table (same look as the create-form items table)
+  .amc-item-input {
+    width: 90px;
+    padding: 8px 10px;
+    border: 1.5px solid #dcdce8;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: $text-main;
+    transition: 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $accent;
+      box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.14);
+    }
+
+    &:disabled {
+      background: $bg-soft;
+      color: #9a9aab;
+      cursor: not-allowed;
+    }
+  }
+
+  // Column-specific widths (Invoice Desc / Capacity / HSN)
+  td:nth-child(3) .amc-item-input { width: 170px; }
+  td:nth-child(4) .amc-item-input { width: 100px; }
+  td:nth-child(5) .amc-item-input { width: 100px; }
+
+  .amc-item-final {
+    font-weight: 800;
+    color: $primary-dark;
+    white-space: nowrap;
+  }
+
+  .amc-item-remove {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: #fee;
+    color: $danger;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover { background: $danger; color: #fff; }
+  }
+}
+
+// Checkbox
+.amc-renew-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: $accent;
+}
+
+// Product name cell + NEW tag
+.amc-renew-product-name {
+  min-width: 170px;
+  font-weight: 700;
+  color: $primary-dark;
+}
+
+.amc-renew-new-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, $accent, $accent-light);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+}
+
+// Unchecked (excluded) rows look muted
+.amc-renew-products-table tbody tr.amc-renew-row-disabled {
+  background: #fafafc;
+
+  &:hover { background: #f6f6fa; }
+
+  .amc-renew-product-name {
+    color: #9a9aab;
+    text-decoration: line-through;
+  }
+
+  .amc-item-final { color: #b3b3c2; }
+}
+
+// ---------- Add product box ----------
+.amc-renew-add-product {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  background: $bg-soft;
+  border: 1px dashed $accent;
+  border-radius: 12px;
+
+  .amc-form-label {
+    margin-bottom: 8px;
+  }
+}
+
+// ---------- Renew summary (no submit button, sits above the footer) ----------
+.amc-renew-summary {
+  width: 100%;
+  max-width: 380px;
+  margin: 18px 0 0 auto;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-left: 4px solid $accent;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(63, 63, 145, 0.08);
+
+  .amc-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 14px;
+    color: $text-main;
+
+    &.amc-summary-discount { color: $danger-dark; }
+
+    &.amc-summary-grand {
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: #f0eeff;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: $primary-dark;
+    }
+  }
+}
+
+// ---------- Renew modal: spacing between its sections ----------
+.amc-modal-body .amc-renew-info + .amc-form-row {
+  margin-top: 4px;
+}
+
+.amc-modal-body .amc-view-subtitle:first-of-type {
+  margin-top: 8px;
+}
+
+// ============================================================
+// RESPONSIVE (extra)
+// ============================================================
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .amc-modal-content.amc-modal-large {
+    max-width: 94%;
+  }
+
+  .amc-renew-summary {
+    max-width: 340px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .amc-renew-add-product {
+    padding: 14px;
+  }
+
+  .amc-renew-summary {
+    max-width: 100%;
+  }
+
+  .amc-renew-products-wrap {
+    border-radius: 10px;
+  }
+}
