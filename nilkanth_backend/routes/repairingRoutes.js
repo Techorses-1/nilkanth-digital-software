@@ -48,17 +48,28 @@ const buildFilter = (search, filterType) => {
 
     return filter;
 };
-
-// ===== HELPER: Generate Repairing Number (No gaps, reuse latest deleted) =====
-const generateRepairingNumber = async () => {
+// ✅ NEW: Handles 2 series - REP (GST) and NGR (Non-GST)
+const generateRepairingNumber = async (isGstMode = true) => {
     const year = new Date().getFullYear();
-    const fullPrefix = `REP${year}`;
 
+    // ✅ Determine prefix based on GST mode
+    const prefix = isGstMode ? 'REP' : 'NGR';
+    const fullPrefix = `${prefix}${year}`;
+
+    // ✅ Build series filter
+    const seriesFilter = {
+        isGstMode: isGstMode ? true : false
+    };
+
+    // Get active repairings for this series and year
     const activeRepairings = await Repairing.find({
+        ...seriesFilter,
         repairingNumber: { $regex: `^${fullPrefix}` }
     }).select('repairingNumber').lean();
 
+    // Get deleted repairings for this series and year
     const deletedRepairings = await DeletedRepairing.find({
+        ...seriesFilter,
         repairingNumber: { $regex: `^${fullPrefix}` }
     }).select('repairingNumber').lean();
 
@@ -80,15 +91,16 @@ const generateRepairingNumber = async () => {
         const maxActiveNumber = activeNumbers.length > 0 ? Math.max(...activeNumbers) : 0;
 
         if (maxAllNumber > maxActiveNumber) {
+            // Latest number was deleted → reuse it
             nextNumber = maxAllNumber;
         } else {
+            // Latest is active → increment
             nextNumber = maxActiveNumber + 1;
         }
     }
 
     return `${fullPrefix}${String(nextNumber).padStart(4, '0')}`;
 };
-
 // ===== HELPER: Determine tax type =====
 const determineTaxType = (gstin) => {
     if (!gstin || gstin.trim().length === 0) {
@@ -197,7 +209,12 @@ router.post("/create-repairing", async (req, res) => {
 
         const gstin = customerGstin || customer.gstNumber || '';
         const taxType = determineTaxType(gstin);
-        const repairingNumber = await generateRepairingNumber();
+
+        // ✅ FIX: Pass isGstMode to generateRepairingNumber
+        const repairingNumber = await generateRepairingNumber(
+            isGstMode !== undefined ? isGstMode : true
+        );
+
         const finalPaymentType = paymentStatus === 'Pending' ? null : (paymentType || 'Cash');
 
         const newRepairing = new Repairing({

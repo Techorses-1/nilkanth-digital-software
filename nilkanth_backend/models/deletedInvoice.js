@@ -23,6 +23,11 @@ const deletedInvoiceSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    // ✅ NEW: Track GST mode for series identification
+    isGstMode: {
+        type: Boolean,
+        default: true
+    },
     customerId: String,
     customerName: String,
     customerEmail: String,
@@ -33,7 +38,6 @@ const deletedInvoiceSchema = new mongoose.Schema({
     storeType: String,
     paymentStatus: String,
     paymentType: String,
-    isGstMode: Boolean,
     saleDate: Date,
     items: [{
         productId: String,
@@ -102,6 +106,8 @@ deletedInvoiceSchema.index({ internalInvoiceNumber: 1 });
 deletedInvoiceSchema.index({ customerId: 1 });
 deletedInvoiceSchema.index({ deletedAt: -1 });
 deletedInvoiceSchema.index({ isChallan: 1 });
+// ✅ NEW: Index for isGstMode
+deletedInvoiceSchema.index({ isGstMode: 1 });
 
 const DeletedInvoice = mongoose.models.DeletedInvoice || mongoose.model('DeletedInvoice', deletedInvoiceSchema);
 module.exports = DeletedInvoice;

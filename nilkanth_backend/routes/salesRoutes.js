@@ -57,18 +57,41 @@ const buildFilter = (search, filterType) => {
 
   return filter;
 };
-
-// ===== HELPER: Generate Invoice Number (No gaps, reuse latest deleted) =====
-const generateInvoiceNumber = async (isChallan = false) => {
+// ✅ NEW: Handles 3 series - CHALLAN, NGS (Non-GST), INV (GST)
+const generateInvoiceNumber = async (isChallan = false, isGstMode = true) => {
   const year = new Date().getFullYear();
-  const prefix = isChallan ? 'CHALLAN' : 'INV';
+
+  // ✅ Determine prefix based on type
+  let prefix;
+  if (isChallan) {
+    prefix = 'CHALLAN';
+  } else if (!isGstMode) {
+    prefix = 'NGS';
+  } else {
+    prefix = 'INV';
+  }
+
   const fullPrefix = `${prefix}${year}`;
 
+  // Build filter for series identification
+  let seriesFilter;
+  if (isChallan) {
+    seriesFilter = { isChallan: true };
+  } else if (!isGstMode) {
+    seriesFilter = { isChallan: false, isGstMode: false };
+  } else {
+    seriesFilter = { isChallan: false, isGstMode: true };
+  }
+
+  // Get active sales for this series and year
   const activeSales = await Sales.find({
+    ...seriesFilter,
     invoiceNumber: { $regex: `^${fullPrefix}` }
   }).select('invoiceNumber').lean();
 
+  // Get deleted invoices for this series and year
   const deletedInvoices = await DeletedInvoice.find({
+    ...seriesFilter,
     invoiceNumber: { $regex: `^${fullPrefix}` }
   }).select('invoiceNumber').lean();
 
@@ -90,8 +113,10 @@ const generateInvoiceNumber = async (isChallan = false) => {
     const maxActiveNumber = activeNumbers.length > 0 ? Math.max(...activeNumbers) : 0;
 
     if (maxAllNumber > maxActiveNumber) {
+      // Latest number was deleted → reuse it
       nextNumber = maxAllNumber;
     } else {
+      // Latest is active → increment
       nextNumber = maxActiveNumber + 1;
     }
   }
@@ -266,7 +291,12 @@ router.post("/create-sale", async (req, res) => {
 
     const gstin = customerGstin || customer.gstNumber || '';
     const taxType = determineTaxType(gstin);
-    const invoiceNumber = await generateInvoiceNumber(isChallan || false);
+
+    // ✅ FIX: Pass both isChallan and isGstMode to generateInvoiceNumber
+    const invoiceNumber = await generateInvoiceNumber(
+      isChallan || false,
+      isChallan ? false : (isGstMode !== undefined ? isGstMode : true)
+    );
     const internalInvoiceNumber = await generateInternalInvoiceNumber();
 
     const finalPaymentType = paymentStatus === 'Pending' ? null : (paymentType || 'Cash');
@@ -318,7 +348,6 @@ router.post("/create-sale", async (req, res) => {
     });
   }
 });
-
 
 // =============================================
 // PUT /api/sales/update-sale/:id - Update sale
