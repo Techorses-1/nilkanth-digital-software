@@ -54,7 +54,7 @@
     display: flex;
     flex-direction: column;
     gap: 25px;
-    padding: 10px 20px 0 ;
+    padding: 10px 20px 0;
 }
 
 // ============================================
@@ -379,7 +379,22 @@
     }
 
     .sales-item-input {
-        width: 60px;
+        width: 55px;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        text-align: center;
+        transition: border 0.2s, box-shadow 0.2s;
+
+        &:focus {
+            border-color: #7366ff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
+        }
+    }
+    .sales-price-input {
+        width: 90px;
         padding: 6px 8px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -394,16 +409,24 @@
         }
     }
 
-    // ✅ Invoice Desc — wider, left aligned (long text)
+    // ✅ Invoice Desc — wide + multiline for full description
     .sales-invoice-desc-input {
-        width: 190px !important;
-        min-width: 160px !important;
+        width: 250px !important;
+        min-width: 240px !important;
         text-align: left;
+        resize: vertical; // user can drag taller if needed
+        min-height: 40px;
+        max-height: 150px;
+        line-height: 1.3;
+        white-space: pre-wrap; // wrap long lines
+        word-break: break-word; // break long words
+        font-family: inherit;
+        overflow-y: auto;
     }
 
     // ✅ Capacity — slightly wider than default
     .sales-capacity-input {
-        width: 85px !important;
+        width: 75px !important;
         min-width: 70px !important;
         text-align: center;
     }
@@ -414,7 +437,7 @@
     }
 
     .sales-hsn-input {
-        width: 80px !important;
+        width: 60px !important;
         min-width: 65px !important;
     }
 

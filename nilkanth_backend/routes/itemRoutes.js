@@ -28,19 +28,18 @@ const createItemInventoryForBothStores = async (item) => {
         });
 
         await inventoryEntry.save();
-        results.push({ storeType, success: true });
+        results.push({ storeType, success: true, created: true });
       } else {
         results.push({ storeType, success: true, existing: true });
       }
     } catch (error) {
-      console.error(`Error creating inventory for store ${storeType}:`, error);
+      console.error(`❌ Error creating inventory for store ${storeType}:`, error.message);
       results.push({ storeType, success: false, error: error.message });
     }
   }
 
   return results;
 };
-
 // =============================================
 // GET /api/items/get-items - Get all items (with pagination + search)
 // =============================================

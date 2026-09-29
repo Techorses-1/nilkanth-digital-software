@@ -499,14 +499,7 @@ const CustomerHistory = () => {
                                 <span className="ch-info-text">{customer.address}</span>
                             </div>
                         )}
-                        {customer.loyaltyCoins !== undefined && (
-                            <div className="ch-info-item">
-                                <FaRupeeSign className="ch-info-icon" />
-                                <span className="ch-info-text">
-                                    Loyalty Coins: <strong>{customer.loyaltyCoins || 0}</strong>
-                                </span>
-                            </div>
-                        )}
+                        
                     </div>
                 </div>
 

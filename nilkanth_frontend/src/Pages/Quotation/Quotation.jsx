@@ -25,7 +25,6 @@ import {
     FaMapMarkerAlt,
     FaMinus,
     FaFilePdf,
-    FaHashtag,
     FaFileArchive,
     FaExclamationTriangle
 } from "react-icons/fa";
@@ -276,8 +275,7 @@ const Quotation = () => {
             discountPercent: 0,
             discountAmount: 0,
             discountedUnitPrice: 0,
-            finalPrice: 0,
-            uniqueNumbers: [{ number: '', isUsed: false }]
+            finalPrice: 0
         };
 
         setLineItems(prev => [...prev, newItem]);
@@ -294,43 +292,12 @@ const Quotation = () => {
         updated[index].discountAmount = updated[index].unitPrice - updated[index].discountedUnitPrice;
         updated[index].finalPrice = updated[index].discountedUnitPrice * updated[index].quantity;
 
-        const quantity = updated[index].quantity;
-        const currentUniqueCount = updated[index].uniqueNumbers?.length || 0;
-
-        if (currentUniqueCount < quantity) {
-            const difference = quantity - currentUniqueCount;
-            for (let i = 0; i < difference; i++) {
-                updated[index].uniqueNumbers.push({ number: '', isUsed: false });
-            }
-        } else if (currentUniqueCount > quantity) {
-            updated[index].uniqueNumbers = updated[index].uniqueNumbers.slice(0, quantity);
-        }
-
         setLineItems(updated);
     };
 
     const handleUpdateLineItemText = (index, field, value) => {
         const updated = [...lineItems];
         updated[index][field] = value;
-        setLineItems(updated);
-    };
-
-    const handleUniqueNumberChange = (productIndex, numberIndex, value) => {
-        const updated = [...lineItems];
-        updated[productIndex].uniqueNumbers[numberIndex].number = value;
-        setLineItems(updated);
-    };
-
-    const handleRemoveUniqueNumber = (productIndex, numberIndex) => {
-        const updated = [...lineItems];
-        const item = updated[productIndex];
-
-        if (item.uniqueNumbers.length <= item.quantity) {
-            toast.warning("Cannot remove. Quantity is " + item.quantity);
-            return;
-        }
-
-        item.uniqueNumbers.splice(numberIndex, 1);
         setLineItems(updated);
     };
 
@@ -638,7 +605,6 @@ const Quotation = () => {
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
                     discountPercent: item.discountPercent,
-                    uniqueNumbers: item.uniqueNumbers || [],
                     hsnCode: item.hsnCode || '',
                     unitName: item.unitName || '',
                     capacity: item.capacity || '',
@@ -719,7 +685,6 @@ const Quotation = () => {
 
         const items = quotation.items.map(item => ({
             ...item,
-            uniqueNumbers: item.uniqueNumbers || [],
             capacity: item.capacity || '',
             invoiceDescription: item.invoiceDescription || ''
         }));
@@ -787,10 +752,7 @@ const Quotation = () => {
                     "Items": quotation.items?.length || 0,
                     "Subtotal": quotation.subtotal || 0,
                     "Discount": quotation.totalDiscount || 0,
-                    "Grand Total": quotation.grandTotal || 0,
-                    "Unique Numbers": quotation.items?.map(item =>
-                        item.uniqueNumbers?.filter(un => un.number).map(un => un.number).join(', ') || ''
-                    ).filter(Boolean).join('; ') || ''
+                    "Grand Total": quotation.grandTotal || 0
                 }));
 
                 const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -824,55 +786,6 @@ const Quotation = () => {
         if (pagination.hasPrev) {
             setPagination(prev => ({ ...prev, page: prev.page - 1 }));
         }
-    };
-
-    // ============= RENDER UNIQUE NUMBERS =============
-    const renderUniqueNumbers = () => {
-        if (lineItems.length === 0) return null;
-
-        return (
-            <div className="quotation-unique-section">
-                <h3 className="quotation-section-title">
-                    <FaHashtag style={{ color: '#7366ff' }} /> Unique Numbers for Products (Optional)
-                </h3>
-                <div className="quotation-unique-grid">
-                    {lineItems.map((item, productIndex) => {
-                        const displayNumbers = item.uniqueNumbers || [];
-
-                        return (
-                            <div key={productIndex} className="quotation-unique-product">
-                                <div className="quotation-unique-product-header">
-                                    <span className="quotation-unique-product-name">
-                                        {item.productName} (Qty: {item.quantity})
-                                    </span>
-                                </div>
-                                <div className="quotation-unique-numbers-row">
-                                    {displayNumbers.map((un, numberIndex) => (
-                                        <div key={numberIndex} className="quotation-unique-number-item">
-                                            <input
-                                                type="text"
-                                                className="quotation-unique-input"
-                                                placeholder={`Unit ${numberIndex + 1}`}
-                                                value={un.number || ''}
-                                                onChange={(e) => handleUniqueNumberChange(productIndex, numberIndex, e.target.value)}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="quotation-unique-remove-btn"
-                                                onClick={() => handleRemoveUniqueNumber(productIndex, numberIndex)}
-                                                title="Remove this number"
-                                            >
-                                                <FaTimes />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
     };
 
     // ============= RENDER VIEW MODAL =============
@@ -929,14 +842,13 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Product Desc</th>
+                                        <th>Invoice Desc</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>Price</th>
                                         <th>Final</th>
                                         <th>HSN Code</th>
-                                        <th>Unique Numbers</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -951,13 +863,6 @@ const Quotation = () => {
                                             <td>₹{item.unitPrice.toFixed(2)}</td>
                                             <td>₹{item.finalPrice.toFixed(2)}</td>
                                             <td>{item.hsnCode || '-'}</td>
-                                            <td>
-                                                {item.uniqueNumbers?.filter(un => un.number).map((un, i) => (
-                                                    <span key={i} className="quotation-unique-tag">
-                                                        {un.number}
-                                                    </span>
-                                                )) || '-'}
-                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -1176,7 +1081,7 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Product Desc</th>
+                                        <th>Invoice Desc</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
@@ -1265,9 +1170,6 @@ const Quotation = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Unique Numbers Section */}
-                {lineItems.length > 0 && renderUniqueNumbers()}
 
                 {/* Store + Notes */}
                 <div className="quotation-section">
@@ -1615,8 +1517,6 @@ const Quotation = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="quotation-module-wrapper">
-                {/*  */}
-
                 <div className="quotation-content-wrapper">
                     {renderTable()}
                 </div>

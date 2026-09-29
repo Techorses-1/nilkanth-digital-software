@@ -12,7 +12,6 @@ import ProtectedRoute from "../Components/Protected/ProtectedRoute";
 import AdminUsers from "../Pages/Authentication/Admin/AdminUsers";
 import SmartRedirect from "./SmartRedirect"; // ADD THIS
 import Footer from "../Components/Footer/Footer";
-import ProductReports from "../Pages/ProductsReports/ProductReports";
 import Purchase from "../Pages/Purchase/Purchase";
 import Sales from "../Pages/Sales/Sales";
 import Quotation from "../Pages/Quotation/Quotation";
@@ -133,13 +132,6 @@ const Router = () => {
 
 
 
-            <Route path="/report" element={
-              <ProtectedRoute>
-                <PermissionRoute requiredPermission="report">
-                  <ProductReports />
-                </PermissionRoute>
-              </ProtectedRoute>
-            } />
             <Route path="/history" element={
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="report">

@@ -1449,12 +1449,12 @@ const Sales = () => {
                                             <td>{idx + 1}</td>
                                             <td className="sales-item-name">{item.productName}</td>
                                             <td>
-                                                <input
-                                                    type="text"
+                                                <textarea
                                                     className="sales-item-input sales-invoice-desc-input"
                                                     value={item.invoiceDescription || ''}
                                                     onChange={(e) => handleUpdateLineItemText(idx, 'invoiceDescription', e.target.value)}
-                                                    placeholder="Desc"
+                                                    placeholder="Description..."
+                                                    rows={2}
                                                 />
                                             </td>
                                             <td>
@@ -1497,7 +1497,7 @@ const Sales = () => {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    className="sales-item-input"
+                                                    className="sales-price-input"
                                                     value={item.unitPrice}
                                                     min="0"
                                                     step="1"

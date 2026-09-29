@@ -5,15 +5,18 @@ import authorized from "../../Assets/pdf/auth.png";
 
 import width from "../../Assets/pdf/width.png";
 
-import product1 from "../../Assets/pdf/n1.png";
-import product2 from "../../Assets/pdf/n2.png";
-import product3 from "../../Assets/pdf/n3.png";
+import product1 from "../../Assets/pdf/n7.png";
+import product2 from "../../Assets/pdf/n1.png";
+import product3 from "../../Assets/pdf/n6.png";
+
 import product4 from "../../Assets/pdf/n4.png";
-import product5 from "../../Assets/pdf/n5.png";
-import product6 from "../../Assets/pdf/n6.png";
-import product7 from "../../Assets/pdf/n7.png";
-import product8 from "../../Assets/pdf/n8.png";
-import product9 from "../../Assets/pdf/p9.png";
+import product5 from "../../Assets/pdf/n2.png";
+import product6 from "../../Assets/pdf/n5.png";
+
+import product7 from "../../Assets/pdf/pn7.png";
+import product8 from "../../Assets/pdf/pn8.png";
+import product9 from "../../Assets/pdf/pn9.png";
+
 import product10 from "../../Assets/pdf/p10.png";
 import product11 from "../../Assets/pdf/p11.png";
 import product12 from "../../Assets/pdf/p12.png";
@@ -166,15 +169,19 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
     const galleryImages = allProductImages.slice(0, 8);
 
     const galleryLabels = [
-        "PLATFORM SCALES",
-        "TABLE TOP SCALES",
-        "JEWELLERY SCALES",
-        "HANGING SCALES",
-        "BABY SCALES",
-        "INDUSTRIAL SCALES",
-        "WEIGH BRIDGE",
-        "LABORATORY SCALES"
-    ];
+
+    "WEIGH BRIDGE",
+    "PLATFORM SCALES",
+    "INDUSTRIAL SCALES",
+
+    "HANGING SCALES",
+    "TABLE TOP SCALES",
+    "BABY SCALES",
+
+    "JEWELLERY SCALES",
+    "FLP SCALES",
+    "PIECE COUNTING SCALES",
+  ];
 
     return (
         <div id="quotation-pdf">

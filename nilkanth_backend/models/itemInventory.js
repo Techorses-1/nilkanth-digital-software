@@ -36,16 +36,6 @@ const itemInventorySchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    unitId: {
-        type: String,
-        required: true,
-        ref: 'Unit'
-    },
-    unitName: {
-        type: String,
-        required: true,
-        trim: true
-    },
 
     // ===== TOTAL QUANTITY (calculated) =====
     totalQuantity: {
@@ -88,14 +78,12 @@ const itemInventorySchema = new mongoose.Schema({
             trim: true,
             default: ''
         },
-        // Store type for this specific entry (for audit)
         entryStoreType: {
             type: String,
             enum: ['Vadodara', 'Padra'],
             required: true,
             default: 'Vadodara'
         },
-        // Soft delete for audit
         isDeleted: {
             type: Boolean,
             default: false
@@ -138,14 +126,12 @@ const itemInventorySchema = new mongoose.Schema({
             trim: true,
             default: ''
         },
-        // Store type for this specific entry (for audit)
         entryStoreType: {
             type: String,
             enum: ['Vadodara', 'Padra'],
             required: true,
             default: 'Vadodara'
         },
-        // Soft delete for audit
         isDeleted: {
             type: Boolean,
             default: false
@@ -171,16 +157,14 @@ const itemInventorySchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-// ✅ Unique combination: itemId + storeType
 itemInventorySchema.index({ itemId: 1, storeType: 1 }, { unique: true });
 itemInventorySchema.index({ storeType: 1 });
 itemInventorySchema.index({ itemName: 1 });
 itemInventorySchema.index({ 'addHistory.date': -1 });
 itemInventorySchema.index({ 'removeHistory.date': -1 });
 
-// ===== PRE-SAVE HOOK: Calculate total quantity and average price =====
+// ===== PRE-SAVE HOOK =====
 itemInventorySchema.pre('save', function (next) {
-    // Calculate total quantity from active entries only
     const totalAdded = this.addHistory
         .filter(entry => !entry.isDeleted)
         .reduce((sum, entry) => sum + entry.quantity, 0);
@@ -191,7 +175,6 @@ itemInventorySchema.pre('save', function (next) {
 
     this.totalQuantity = totalAdded - totalRemoved;
 
-    // Calculate average purchase price from active add entries with price > 0
     const addEntriesWithPrice = this.addHistory
         .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
 
@@ -210,12 +193,11 @@ itemInventorySchema.pre('save', function (next) {
     next();
 });
 
-// ===== VIRTUAL: Get all active add entries =====
+// ===== VIRTUALS =====
 itemInventorySchema.virtual('activeAddHistory').get(function () {
     return this.addHistory.filter(entry => !entry.isDeleted);
 });
 
-// ===== VIRTUAL: Get all active remove entries =====
 itemInventorySchema.virtual('activeRemoveHistory').get(function () {
     return this.removeHistory.filter(entry => !entry.isDeleted);
 });
@@ -229,10 +211,9 @@ itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, add
         addedBy: addedBy,
         addedById: addedById,
         notes: notes || '',
-        entryStoreType: this.storeType // ✅ Store the store type in history
+        entryStoreType: this.storeType
     });
 
-    // Recalculate totals
     const totalAdded = this.addHistory
         .filter(entry => !entry.isDeleted)
         .reduce((sum, entry) => sum + entry.quantity, 0);
@@ -243,7 +224,6 @@ itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, add
 
     this.totalQuantity = totalAdded - totalRemoved;
 
-    // Recalculate average price
     const addEntriesWithPrice = this.addHistory
         .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
 
@@ -262,7 +242,6 @@ itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, add
 
 // ===== METHOD: Remove quantity =====
 itemInventorySchema.methods.removeQuantity = function (quantity, removedBy, removedById, date, reason) {
-    // Check if enough quantity is available
     if (this.totalQuantity < quantity) {
         throw new Error(`Insufficient quantity. Available: ${this.totalQuantity}, Requested: ${quantity}`);
     }
@@ -273,10 +252,9 @@ itemInventorySchema.methods.removeQuantity = function (quantity, removedBy, remo
         removedBy: removedBy,
         removedById: removedById,
         reason: reason || '',
-        entryStoreType: this.storeType // ✅ Store the store type in history
+        entryStoreType: this.storeType
     });
 
-    // Recalculate total
     const totalAdded = this.addHistory
         .filter(entry => !entry.isDeleted)
         .reduce((sum, entry) => sum + entry.quantity, 0);
@@ -290,21 +268,16 @@ itemInventorySchema.methods.removeQuantity = function (quantity, removedBy, remo
     return this.save();
 };
 
-// ===== METHOD: Soft delete an add entry =====
+// ===== METHOD: Delete add entry =====
 itemInventorySchema.methods.deleteAddEntry = function (entryId, deletedBy) {
     const entry = this.addHistory.find(e => e.entryId === entryId);
-    if (!entry) {
-        throw new Error('Add entry not found');
-    }
-    if (entry.isDeleted) {
-        throw new Error('Entry already deleted');
-    }
+    if (!entry) throw new Error('Add entry not found');
+    if (entry.isDeleted) throw new Error('Entry already deleted');
 
     entry.isDeleted = true;
     entry.deletedBy = deletedBy;
     entry.deletedAt = new Date();
 
-    // Recalculate totals
     const totalAdded = this.addHistory
         .filter(e => !e.isDeleted)
         .reduce((sum, e) => sum + e.quantity, 0);
@@ -318,21 +291,16 @@ itemInventorySchema.methods.deleteAddEntry = function (entryId, deletedBy) {
     return this.save();
 };
 
-// ===== METHOD: Soft delete a remove entry =====
+// ===== METHOD: Delete remove entry =====
 itemInventorySchema.methods.deleteRemoveEntry = function (entryId, deletedBy) {
     const entry = this.removeHistory.find(e => e.entryId === entryId);
-    if (!entry) {
-        throw new Error('Remove entry not found');
-    }
-    if (entry.isDeleted) {
-        throw new Error('Entry already deleted');
-    }
+    if (!entry) throw new Error('Remove entry not found');
+    if (entry.isDeleted) throw new Error('Entry already deleted');
 
     entry.isDeleted = true;
     entry.deletedBy = deletedBy;
     entry.deletedAt = new Date();
 
-    // Recalculate totals
     const totalAdded = this.addHistory
         .filter(e => !e.isDeleted)
         .reduce((sum, e) => sum + e.quantity, 0);
@@ -346,7 +314,6 @@ itemInventorySchema.methods.deleteRemoveEntry = function (entryId, deletedBy) {
     return this.save();
 };
 
-// ===== Ensure virtuals are included in JSON =====
 itemInventorySchema.set('toJSON', { virtuals: true });
 itemInventorySchema.set('toObject', { virtuals: true });
 
