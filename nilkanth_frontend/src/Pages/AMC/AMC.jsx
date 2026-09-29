@@ -148,7 +148,7 @@ const AMC = () => {
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [filterType, setFilterType] = useState("All");
+    const [filterType, setFilterType] = useState("GST");
 
     // ============= DELETE MODAL STATE =============
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -1313,9 +1313,12 @@ const AMC = () => {
                             {selectedAmc.renewalOf && (
                                 <div className="amc-view-item">
                                     <span className="amc-view-label">Renewal Of:</span>
-                                    <span className="amc-view-value">{selectedAmc.renewalOf}</span>
+                                    <span className="amc-view-value">
+                                        {selectedAmc.renewalOfNumber || selectedAmc.renewalOf}
+                                    </span>
                                 </div>
                             )}
+
                             <div className="amc-view-item amc-view-item-full">
                                 <span className="amc-view-label">Notes:</span>
                                 <span className="amc-view-value">{selectedAmc.notes || 'No notes'}</span>
@@ -1329,7 +1332,7 @@ const AMC = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Capacity</th>
                                         <th>Price</th>
@@ -1735,7 +1738,7 @@ const AMC = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
                                         <th>Qty</th>
@@ -2167,7 +2170,7 @@ const AMC = () => {
                                     <tr>
                                         <th>Use</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
                                         <th>Qty</th>
@@ -2675,9 +2678,9 @@ const AMC = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="amc-module-wrapper">
-                <div className="amc-page-header">
+                {/* <div className="amc-page-header">
                     <h2 className="amc-page-title">AMC Management</h2>
-                </div>
+                </div> */}
 
                 <div className="amc-content-wrapper">
                     {renderTable()}

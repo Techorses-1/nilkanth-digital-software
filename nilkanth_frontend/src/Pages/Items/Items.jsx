@@ -949,7 +949,7 @@ const Items = () => {
       <ToastContainer position="top-center" autoClose={3000} />
       <div className="items-page-wrapper">
         <div className="items-page-header">
-          <h2>Master Data</h2>
+          {/* <h2>Master Data</h2> */}
           <div className="items-header-right">
             <div className="items-tabs-container">
               <button

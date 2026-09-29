@@ -148,7 +148,7 @@ router.get("/export", async (req, res) => {
 // =============================================
 router.post("/add", async (req, res) => {
     try {
-        const { productId, quantity, purchasePrice, date, notes, storeType } = req.body;
+        const { productId, quantity, date, notes, storeType } = req.body;
 
         if (!productId) {
             return res.status(400).json({
@@ -193,7 +193,7 @@ router.post("/add", async (req, res) => {
             });
         }
 
-        // ✅ Find or create inventory WITHOUT unitId and unitName
+        // ✅ Find or create inventory
         let inventory = await ProductInventory.findOne({
             productId: productId,
             storeType: storeType
@@ -214,7 +214,6 @@ router.post("/add", async (req, res) => {
 
         await inventory.addQuantity(
             Number(quantity),
-            Number(purchasePrice) || 0,
             user.name,
             user.userId,
             date || new Date(),
@@ -488,7 +487,6 @@ router.get("/get-history/:productId", async (req, res) => {
                 ...entry.toObject(),
                 type: 'ADD',
                 admin: entry.addedBy,
-                price: entry.purchasePrice || 0,
                 store: entry.entryStoreType || inventory.storeType
             }));
 
@@ -498,7 +496,6 @@ router.get("/get-history/:productId", async (req, res) => {
                 ...entry.toObject(),
                 type: 'REMOVE',
                 admin: entry.removedBy,
-                price: 0,
                 store: entry.entryStoreType || inventory.storeType
             }));
 
@@ -512,7 +509,6 @@ router.get("/get-history/:productId", async (req, res) => {
                 productName: inventory.productName,
                 storeType: inventory.storeType,
                 totalQuantity: inventory.totalQuantity,
-                averagePurchasePrice: inventory.averagePurchasePrice,
                 history: allHistory
             }
         });

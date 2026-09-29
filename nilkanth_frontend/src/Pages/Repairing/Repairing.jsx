@@ -131,7 +131,7 @@ const Repairing = () => {
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [filterType, setFilterType] = useState("All");
+    const [filterType, setFilterType] = useState("GST");
 
     // ============= DELETE MODAL =============
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -981,7 +981,7 @@ const Repairing = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
@@ -1244,7 +1244,7 @@ const Repairing = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
@@ -1767,9 +1767,9 @@ const Repairing = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="repairing-module-wrapper">
-                <div className="repairing-page-header">
+                {/* <div className="repairing-page-header">
                     <h2 className="repairing-page-title">Repairing Management</h2>
-                </div>
+                </div> */}
 
                 <div className="repairing-content-wrapper">
                     {renderTable()}

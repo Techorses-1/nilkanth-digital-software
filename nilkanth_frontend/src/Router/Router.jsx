@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 // import Home from "../Pages/Home/Home";
 import Customer from "../Pages/Customer/Customer";
-import Vendor from "../Pages/Vendor/Vendor";
 import Items from "../Pages/Items/Items";
 
 import Inventory from "../Pages/Inventory/Inventory";
@@ -20,6 +19,7 @@ import Quotation from "../Pages/Quotation/Quotation";
 import Repairing from "../Pages/Repairing/Repairing";
 import AMC from "../Pages/AMC/AMC";
 import Stamping from "../Pages/Stamping/Stamping";
+import CustomerHistory from "../Pages/CustomerHistory/CustomerHistory";
 
 
 
@@ -37,10 +37,10 @@ const Router = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
 
-            {/* Smart Root Route - Redirects based on permissions */}
+            
             <Route path="/" element={
               <ProtectedRoute>
-                <PermissionRoute requiredPermission="invoice">  {/* Sales page requires invoice permission */}
+                <PermissionRoute requiredPermission="invoice">  
                   <Sales />
                 </PermissionRoute>
               </ProtectedRoute>
@@ -55,13 +55,7 @@ const Router = () => {
               </ProtectedRoute>
             } />
 
-            <Route path="/vendor" element={
-              <ProtectedRoute>
-                <PermissionRoute requiredPermission="vendor">
-                  <Vendor />
-                </PermissionRoute>
-              </ProtectedRoute>
-            } />
+
 
             <Route path="/items" element={
               <ProtectedRoute>
@@ -143,6 +137,13 @@ const Router = () => {
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="report">
                   <ProductReports />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+            <Route path="/history" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="report">
+                  <CustomerHistory />
                 </PermissionRoute>
               </ProtectedRoute>
             } />

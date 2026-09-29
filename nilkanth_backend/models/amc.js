@@ -19,6 +19,11 @@ const amcSchema = new mongoose.Schema({
         default: null,  // amcId of previous AMC (null if first AMC)
     },
 
+    renewalOfNumber: {        // ← NEW
+        type: String,
+        default: null,
+    },
+
     // ===== LINKED SALE (optional) =====
     linkedSaleId: {
         type: String,

@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 
 // Icon imports
-import { BiLogOut, BiLayout, BiLogIn } from "react-icons/bi";
-import { TbUsers, TbReportAnalytics } from "react-icons/tb";
-import { LuFile, LuFileText } from "react-icons/lu";
-import { PiBasket, PiShoppingCart } from "react-icons/pi";
+import { BiLogOut, BiLogIn } from "react-icons/bi";
+import { TbUsers } from "react-icons/tb";
+import {  PiShoppingCart } from "react-icons/pi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import { FiUser } from "react-icons/fi";
-import { MdDiscount, MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
-import { FaStore, FaTruck } from "react-icons/fa";
+import {  MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
+import {  FaTools } from "react-icons/fa";
+import {  RiFilePaper2Line } from "react-icons/ri";
+import { TbCertificate } from "react-icons/tb";
+import { FaClipboardList, FaStamp } from "react-icons/fa";
 
 import logo from "../../Assets/logo/logo.png";
 import "./Navbar.css";
@@ -20,7 +22,6 @@ const Navbar = ({
   onNavigation,
   isCollapsed = false,
   onToggleCollapse,
-  // New prop for page-specific dashboard
   pageDashboard = null
 }) => {
   const [toggle, setToggle] = useState(false);
@@ -28,7 +29,6 @@ const Navbar = ({
   const [userPermissions, setUserPermissions] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-
 
   // Sync with parent's collapsed state
   useEffect(() => {
@@ -101,6 +101,16 @@ const Navbar = ({
         return 'Product Disposal Dashboard';
       case '/report':
         return 'Business Reports And Analytics';
+      case '/quotation':
+        return 'Quotation Management';
+      case '/repairing':
+        return 'Repairing Management';
+      case '/amc':
+        return 'AMC Management';
+      case '/stamping':
+        return 'Stamping Management';
+      case '/history':
+        return 'Customer History';
       default:
         return '';
     }
@@ -109,18 +119,70 @@ const Navbar = ({
   const pageTitle = getPageTitle();
 
   // Define all possible menu items with their required permissions
+  // ✅ ACTUAL PROPER ICONS per menu item
   const allMenuData = [
-    { icon: <MdReceiptLong />, title: "Sales", path: "/", permission: "invoice" },
-    { icon: <TbUsers />, title: "Customer", path: "/customer", permission: "customer" },
+    {
+      icon: <MdReceiptLong />,
+      title: "Sales",
+      path: "/",
+      permission: "invoice"
+    },
+    {
+      icon: <TbUsers />,
+      title: "Customer",
+      path: "/customer",
+      permission: "customer"
+    },
     // { icon: <FaTruck />, title: "Vendor", path: "/vendor", permission: "customer" },
-    { icon: <PiShoppingCart />, title: "Products", path: "/items", permission: "products" },
+    {
+      icon: <PiShoppingCart />,
+      title: "Products",
+      path: "/items",
+      permission: "products"
+    },
     // { icon: <FaStore />, title: "Purchase", path: "/purchase", permission: "purchase" },
-    { icon: <MdInventory />, title: "Inventory", path: "/inventory", permission: "inventory" },
-    { icon: <MdAdminPanelSettings />, title: "Admin", path: "/admin", permission: "admin" },
-    { icon: <MdAdminPanelSettings />, title: "Quotation", path: "/quotation", permission: "admin" },
-    { icon: <MdAdminPanelSettings />, title: "Repairing", path: "/repairing", permission: "admin" },
-    { icon: <MdAdminPanelSettings />, title: "AMC", path: "/amc", permission: "admin" },
-    { icon: <MdAdminPanelSettings />, title: "Stamping", path: "/stamping", permission: "admin" },
+    {
+      icon: <MdInventory />,
+      title: "Inventory",
+      path: "/inventory",
+      permission: "inventory"
+    },
+    {
+      icon: <RiFilePaper2Line />,
+      title: "Quotation",
+      path: "/quotation",
+      permission: "admin"
+    },
+    {
+      icon: <FaTools />,
+      title: "Repairing",
+      path: "/repairing",
+      permission: "admin"
+    },
+    {
+      icon: <TbCertificate />,
+      title: "AMC",
+      path: "/amc",
+      permission: "admin"
+    },
+    {
+      icon: <FaStamp />,
+      title: "Stamping",
+      path: "/stamping",
+      permission: "admin"
+    },
+    {
+      icon: <FaClipboardList />,
+      title: "History",
+      path: "/history",
+      permission: "admin"
+    },
+    {
+      icon: <MdAdminPanelSettings />,
+      title: "Admin",
+      path: "/admin",
+      permission: "admin"
+    },
   ];
 
   // Filter menu items based on user permissions
@@ -193,7 +255,6 @@ const Navbar = ({
               onClick={handleHamburgerClick}
             />
 
-            {/* Page-specific dashboard controls */}
             {pageTitle && (
               <div className="page-title">
                 {pageTitle}

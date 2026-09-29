@@ -294,12 +294,7 @@ Once the goods are delivered, they will not be taken back or returned.`;
                                 <span className="info-value">{linkedInvoiceNumber}</span>
                             </div>
                         )}
-                        {hasValue(renewalOf) && (
-                            <div className="info-row">
-                                <span className="info-label">Renewal Of:</span>
-                                <span className="info-value">{renewalOf}</span>
-                            </div>
-                        )}
+                        
                         {paymentStatus === 'Pending' && (
                             <div className="info-row payment-pending-row">
                                 <span className="info-label">Payment :</span>

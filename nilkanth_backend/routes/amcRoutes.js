@@ -350,6 +350,7 @@ router.post("/renew-amc/:id", async (req, res) => {
         // ===== CHECK: Only ONE pending renewal allowed =====
         const existingPending = await AMC.findOne({
             renewalOf: existingAmc.amcId,
+            renewalOfNumber: existingAmc.amcNumber,
             status: 'Pending'
         });
 

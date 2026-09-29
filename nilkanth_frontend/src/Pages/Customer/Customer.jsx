@@ -22,7 +22,6 @@ import html2pdf from "html2pdf.js";
 import * as XLSX from "xlsx";
 import axios from "axios";
 import Navbar from "../../Components/Sidebar/Navbar";
-import "../Form/Form.scss";
 import "./Customer.scss";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -49,7 +48,6 @@ const Customer = () => {
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [isBulkImportLoading, setIsBulkImportLoading] = useState(false);
 
-  // ============= PAGINATION STATE =============
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -63,7 +61,6 @@ const Customer = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Debounce logic
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm.trim());
@@ -72,7 +69,6 @@ const Customer = () => {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Fetch customers
   useEffect(() => {
     fetchCustomers();
   }, [debouncedSearch, pagination.page]);
@@ -119,7 +115,6 @@ const Customer = () => {
     }
   };
 
-  // Form initial values
   const initialValues = {
     customerName: "",
     email: "",
@@ -128,7 +123,6 @@ const Customer = () => {
     address: ""
   };
 
-  // Validation schema
   const validationSchema = Yup.object({
     customerName: Yup.string()
       .required("Customer Name is required")
@@ -144,7 +138,6 @@ const Customer = () => {
     address: Yup.string()
   });
 
-  // Handle form submission
   const handleSubmit = async (values, { resetForm, setFieldError }) => {
     setIsFormSubmitting(true);
     try {
@@ -212,12 +205,10 @@ const Customer = () => {
     }
   };
 
-  // Handle row selection
   const selectCustomer = (customerId) => {
     setSelectedCustomer((prev) => (prev === customerId ? null : customerId));
   };
 
-  // Export single customer as PDF
   const exportAsPdf = () => {
     if (!selectedCustomer) {
       toast.warning("Please select a customer first");
@@ -288,7 +279,6 @@ const Customer = () => {
     html2pdf().from(content).set(opt).save();
   };
 
-  // Export all customers as Excel
   const exportAllAsExcel = async () => {
     if (isExporting) return;
     setIsExporting(true);
@@ -422,7 +412,6 @@ const Customer = () => {
     }
   };
 
-  // ============= PAGINATION HANDLERS =============
   const nextPage = () => {
     if (pagination.hasNext) {
       setPagination(prev => ({ ...prev, page: prev.page + 1 }));
@@ -468,7 +457,6 @@ const Customer = () => {
     );
   };
 
-  // Customer Modal Component
   const CustomerModal = ({ customer, onClose, onExport, onUpdate, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedCustomer, setEditedCustomer] = useState({});
@@ -536,131 +524,131 @@ const Customer = () => {
     if (!customer) return null;
 
     return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
-            <div className="modal-title">
+      <div className="customer-modal-overlay" onClick={onClose}>
+        <div className="customer-modal-content" onClick={e => e.stopPropagation()}>
+          <div className="customer-modal-header">
+            <div className="customer-modal-title">
               {isEditing ? "Edit Customer" : `Customer Details: ${customer.customerName}`}
             </div>
-            <button className="modal-close" onClick={onClose}>
+            <button className="customer-modal-close" onClick={onClose}>
               &times;
             </button>
           </div>
 
-          <div className="modal-body">
-            <div className="wo-details-grid">
-              <div className="detail-row">
-                <span className="detail-label">Customer Name *</span>
+          <div className="customer-modal-body">
+            <div className="customer-wo-details-grid">
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">Customer Name *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="customer-edit-field-container">
                     <input
                       type="text"
                       name="customerName"
                       value={editedCustomer.customerName || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.customerName ? 'error' : ''}`}
+                      className={`customer-edit-input ${errors.customerName ? 'customer-error' : ''}`}
                     />
-                    {errors.customerName && <div className="error-message">{errors.customerName}</div>}
+                    {errors.customerName && <div className="customer-error-message">{errors.customerName}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{customer.customerName}</span>
+                  <span className="customer-detail-value">{customer.customerName}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Email</span>
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">Email</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="customer-edit-field-container">
                     <input
                       type="email"
                       name="email"
                       value={editedCustomer.email || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.email ? 'error' : ''}`}
+                      className={`customer-edit-input ${errors.email ? 'customer-error' : ''}`}
                     />
-                    {errors.email && <div className="error-message">{errors.email}</div>}
+                    {errors.email && <div className="customer-error-message">{errors.email}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{customer.email || 'N/A'}</span>
+                  <span className="customer-detail-value">{customer.email || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Mobile Number *</span>
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">Mobile Number *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="customer-edit-field-container">
                     <input
                       type="text"
                       name="contactNumber"
                       value={editedCustomer.contactNumber || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.contactNumber ? 'error' : ''}`}
+                      className={`customer-edit-input ${errors.contactNumber ? 'customer-error' : ''}`}
                     />
-                    {errors.contactNumber && <div className="error-message">{errors.contactNumber}</div>}
+                    {errors.contactNumber && <div className="customer-error-message">{errors.contactNumber}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{customer.contactNumber || 'N/A'}</span>
+                  <span className="customer-detail-value">{customer.contactNumber || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">GST Number</span>
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">GST Number</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="customer-edit-field-container">
                     <input
                       type="text"
                       name="gstNumber"
                       value={editedCustomer.gstNumber || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.gstNumber ? 'error' : ''}`}
+                      className={`customer-edit-input ${errors.gstNumber ? 'customer-error' : ''}`}
                     />
-                    {errors.gstNumber && <div className="error-message">{errors.gstNumber}</div>}
+                    {errors.gstNumber && <div className="customer-error-message">{errors.gstNumber}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{customer.gstNumber || 'N/A'}</span>
+                  <span className="customer-detail-value">{customer.gstNumber || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Address</span>
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">Address</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="customer-edit-field-container">
                     <textarea
                       name="address"
                       value={editedCustomer.address || ''}
                       onChange={handleInputChange}
-                      className={`edit-textarea ${errors.address ? 'error' : ''}`}
+                      className={`customer-edit-textarea ${errors.address ? 'customer-error' : ''}`}
                       rows="3"
                     />
-                    {errors.address && <div className="error-message">{errors.address}</div>}
+                    {errors.address && <div className="customer-error-message">{errors.address}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{customer.address || 'N/A'}</span>
+                  <span className="customer-detail-value">{customer.address || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Created At:</span>
-                <span className="detail-value">
+              <div className="customer-detail-row">
+                <span className="customer-detail-label">Created At:</span>
+                <span className="customer-detail-value">
                   {new Date(customer.createdAt || customer._id?.getTimestamp()).toLocaleDateString()}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="modal-footer">
-            <button className="export-btn" onClick={onExport}>
+          <div className="customer-modal-footer">
+            <button className="customer-export-btn" onClick={onExport}>
               <FaFileExport /> Export as PDF
             </button>
             <button
-              className={`update-btn ${isEditing ? 'save-btn' : ''}`}
+              className={`customer-update-btn ${isEditing ? 'customer-save-btn' : ''}`}
               onClick={isEditing ? handleSave : () => setIsEditing(true)}
             >
               {isEditing ? <FaSave /> : <FaEdit />}
               {isEditing ? "Save Changes" : "Update"}
             </button>
             <button
-              className="delete-btn"
+              className="customer-delete-btn"
               onClick={() => setShowDeleteConfirm(true)}
             >
               <FaTrash /> Delete
@@ -669,19 +657,19 @@ const Customer = () => {
         </div>
 
         {showDeleteConfirm && (
-          <div className="confirm-dialog-overlay">
-            <div className="confirm-dialog">
+          <div className="customer-confirm-dialog-overlay">
+            <div className="customer-confirm-dialog">
               <h3>Confirm Deletion</h3>
               <p>Are you sure you want to delete {customer.customerName}? This action cannot be undone.</p>
-              <div className="confirm-buttons">
+              <div className="customer-confirm-buttons">
                 <button
-                  className="confirm-cancel"
+                  className="customer-confirm-cancel"
                   onClick={() => setShowDeleteConfirm(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="confirm-delete"
+                  className="customer-confirm-delete"
                   onClick={() => {
                     onDelete(customer.customerId);
                     setShowDeleteConfirm(false);
@@ -697,7 +685,6 @@ const Customer = () => {
     );
   };
 
-  // BulkImportModal component
   const BulkImportModal = ({ onClose, onImport, isLoading }) => {
     const [file, setFile] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -746,31 +733,31 @@ const Customer = () => {
     };
 
     return (
-      <div className="modal-overlay" onClick={!isLoading ? onClose : undefined}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
-            <div className="modal-title">
+      <div className="customer-modal-overlay" onClick={!isLoading ? onClose : undefined}>
+        <div className="customer-modal-content" onClick={e => e.stopPropagation()}>
+          <div className="customer-modal-header">
+            <div className="customer-modal-title">
               {isLoading ? "Importing Customers..." : "Bulk Import Customers"}
             </div>
             {!isLoading && (
-              <button className="modal-close" onClick={onClose}>&times;</button>
+              <button className="customer-modal-close" onClick={onClose}>&times;</button>
             )}
           </div>
 
-          <div className="modal-body">
+          <div className="customer-modal-body">
             {isLoading ? (
-              <div className="import-loading">
-                <div className="loading-spinner large"></div>
+              <div className="customer-import-loading">
+                <div className="customer-loading-spinner customer-large"></div>
                 <p>Importing customers, please wait...</p>
-                <div className="loading-progress">
-                  <div className="progress-bar">
-                    <div className="progress-fill"></div>
+                <div className="customer-loading-progress">
+                  <div className="customer-progress-bar">
+                    <div className="customer-progress-fill"></div>
                   </div>
                 </div>
               </div>
             ) : (
               <>
-                <div className="import-instructions">
+                <div className="customer-import-instructions">
                   <h4>File Requirements:</h4>
                   <ul>
                     <li>File format: Excel (.xlsx, .xls) or CSV</li>
@@ -781,7 +768,7 @@ const Customer = () => {
                 </div>
 
                 <div
-                  className={`file-drop-zone ${isDragging ? 'dragging' : ''} ${file ? 'has-file' : ''} ${isLoading ? 'disabled' : ''}`}
+                  className={`customer-file-drop-zone ${isDragging ? 'customer-dragging' : ''} ${file ? 'customer-has-file' : ''} ${isLoading ? 'customer-disabled' : ''}`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -797,15 +784,15 @@ const Customer = () => {
                   />
 
                   {file ? (
-                    <div className="file-selected">
-                      <FaFileExcel className="file-icon" />
-                      <div className="file-info">
-                        <div className="file-name">{file.name}</div>
-                        <div className="file-size">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    <div className="customer-file-selected">
+                      <FaFileExcel className="customer-file-icon" />
+                      <div className="customer-file-info">
+                        <div className="customer-file-name">{file.name}</div>
+                        <div className="customer-file-size">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
                       </div>
                       {!isLoading && (
                         <button
-                          className="remove-file"
+                          className="customer-remove-file"
                           onClick={(e) => {
                             e.stopPropagation();
                             setFile(null);
@@ -816,8 +803,8 @@ const Customer = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="file-placeholder">
-                      <FaFileExcel className="upload-icon" />
+                    <div className="customer-file-placeholder">
+                      <FaFileExcel className="customer-upload-icon" />
                       <p>Drop Excel file here or click to browse</p>
                       <small>Supports .xlsx, .xls, .csv files</small>
                     </div>
@@ -827,20 +814,20 @@ const Customer = () => {
             )}
           </div>
 
-          <div className="modal-footer">
+          <div className="customer-modal-footer">
             {!isLoading && (
-              <button className="cancel-btn" onClick={onClose}>
+              <button className="customer-cancel-btn" onClick={onClose}>
                 Cancel
               </button>
             )}
             <button
-              className={`import-btn ${isLoading ? 'loading' : ''}`}
+              className={`customer-import-btn ${isLoading ? 'customer-loading' : ''}`}
               onClick={handleImport}
               disabled={!file || isLoading}
             >
               {isLoading ? (
                 <>
-                  <div className="loading-spinner small"></div>
+                  <div className="customer-loading-spinner customer-small"></div>
                   Importing...
                 </>
               ) : (
@@ -858,11 +845,11 @@ const Customer = () => {
   return (
     <Navbar>
       <ToastContainer position="top-center" autoClose={3000} />
-      <div className="main">
-        <div className="page-header">
-          <div className="right-section">
-            <div className="search-container">
-              <FaSearch className="search-icon" />
+      <div className="customer-main">
+        <div className="customer-page-header">
+          <div className="customer-right-section">
+            <div className="customer-search-container">
+              <FaSearch className="customer-search-icon" />
               <input
                 type="text"
                 placeholder="Search Customers..."
@@ -870,26 +857,26 @@ const Customer = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="action-buttons-group">
+            <div className="customer-action-buttons-group">
               <button
-                className="export-all-btn"
+                className="customer-export-all-btn"
                 onClick={exportAllAsExcel}
                 disabled={isExporting || isLoading}
               >
                 {isExporting ? (
-                  <span className="loading-spinner-small"></span>
+                  <span className="customer-loading-spinner-small"></span>
                 ) : (
                   <FaFileExcel />
                 )}
                 {isExporting ? "Exporting..." : "Export All"}
               </button>
               <button
-                className="bulk-import-btn"
+                className="customer-bulk-import-btn"
                 onClick={() => setShowBulkImport(true)}
               >
                 <FaFileExcel /> Bulk Import
               </button>
-              <button className="add-btn" onClick={() => setShowForm(!showForm)}>
+              <button className="customer-add-btn" onClick={() => setShowForm(!showForm)}>
                 <FaPlus /> {showForm ? "Close" : "Add Customer"}
               </button>
             </div>
@@ -897,7 +884,7 @@ const Customer = () => {
         </div>
 
         {showForm && (
-          <div className="form-container premium">
+          <div className="customer-form-container customer-premium">
             <h2>Add Customer</h2>
             <Formik
               initialValues={initialValues}
@@ -905,50 +892,50 @@ const Customer = () => {
               onSubmit={handleSubmit}
             >
               <Form>
-                <div className="form-row">
-                  <div className="form-field">
+                <div className="customer-form-row">
+                  <div className="customer-form-field">
                     <label><FaUser /> Customer Name *</label>
                     <Field name="customerName" type="text" />
-                    <ErrorMessage name="customerName" component="div" className="error" />
+                    <ErrorMessage name="customerName" component="div" className="customer-error" />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-field">
+                <div className="customer-form-row">
+                  <div className="customer-form-field">
                     <label><FaEnvelope /> Email</label>
                     <Field name="email" type="email" />
-                    <ErrorMessage name="email" component="div" className="error" />
+                    <ErrorMessage name="email" component="div" className="customer-error" />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-field">
+                <div className="customer-form-row">
+                  <div className="customer-form-field">
                     <label><FaPhone /> Mobile Number *</label>
                     <Field name="contactNumber" type="text" />
-                    <ErrorMessage name="contactNumber" component="div" className="error" />
+                    <ErrorMessage name="contactNumber" component="div" className="customer-error" />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-field">
+                <div className="customer-form-row">
+                  <div className="customer-form-field">
                     <label><FaIdCard /> GST Number</label>
                     <Field name="gstNumber" type="text" placeholder="15 characters (digits & uppercase letters)" />
-                    <ErrorMessage name="gstNumber" component="div" className="error" />
+                    <ErrorMessage name="gstNumber" component="div" className="customer-error" />
                   </div>
                 </div>
 
-                <div className="form-row">
-                  <div className="form-field">
+                <div className="customer-form-row">
+                  <div className="customer-form-field">
                     <label><FaMapMarkerAlt /> Address</label>
                     <Field name="address" as="textarea" rows="2" placeholder="Enter address" />
-                    <ErrorMessage name="address" component="div" className="error" />
+                    <ErrorMessage name="address" component="div" className="customer-error" />
                   </div>
                 </div>
 
                 <button type="submit" disabled={isFormSubmitting}>
                   {isFormSubmitting ? (
                     <>
-                      <div className="loading-spinner small"></div>
+                      <div className="customer-loading-spinner customer-small"></div>
                       Adding...
                     </>
                   ) : (
@@ -960,14 +947,14 @@ const Customer = () => {
           </div>
         )}
 
-        <div className="data-table">
+        <div className="customer-data-table">
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner large"></div>
+            <div className="customer-loading-container">
+              <div className="customer-loading-spinner customer-large"></div>
               <p>Loading customers...</p>
             </div>
           ) : customers.length === 0 ? (
-            <div className="empty-state">
+            <div className="customer-empty-state">
               <p>No customers found</p>
             </div>
           ) : (
@@ -990,7 +977,7 @@ const Customer = () => {
                       <tr
                         key={cust.customerId || index}
                         className={
-                          selectedCustomer === cust.customerId ? "selected" : ""
+                          selectedCustomer === cust.customerId ? "customer-selected" : ""
                         }
                         onClick={() => selectCustomer(cust.customerId)}
                       >

@@ -929,7 +929,7 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
@@ -1176,7 +1176,7 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
@@ -1615,9 +1615,7 @@ const Quotation = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="quotation-module-wrapper">
-                <div className="quotation-page-header">
-                    <h2 className="quotation-page-title">Quotation Management</h2>
-                </div>
+                {/*  */}
 
                 <div className="quotation-content-wrapper">
                     {renderTable()}

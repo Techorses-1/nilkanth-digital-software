@@ -37,8 +37,6 @@ const productInventorySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  // ❌ REMOVED unitId
-  // ❌ REMOVED unitName
 
   // ===== TOTAL QUANTITY (calculated) =====
   totalQuantity: {
@@ -47,7 +45,7 @@ const productInventorySchema = new mongoose.Schema({
     min: 0
   },
 
-  // ===== ADD HISTORY (Inward/Purchase) =====
+  // ===== ADD HISTORY (Inward) =====
   addHistory: [{
     entryId: {
       type: String,
@@ -57,11 +55,6 @@ const productInventorySchema = new mongoose.Schema({
       type: Number,
       required: true,
       min: 0.01
-    },
-    purchasePrice: {
-      type: Number,
-      default: 0,
-      min: 0
     },
     date: {
       type: Date,
@@ -146,14 +139,7 @@ const productInventorySchema = new mongoose.Schema({
     deletedAt: {
       type: Date
     }
-  }],
-
-  // ===== AVERAGE PURCHASE PRICE (calculated) =====
-  averagePurchasePrice: {
-    type: Number,
-    default: 0,
-    min: 0
-  }
+  }]
 
 }, {
   timestamps: true,
@@ -178,21 +164,6 @@ productInventorySchema.pre('save', function (next) {
 
   this.totalQuantity = totalAdded - totalRemoved;
 
-  const addEntriesWithPrice = this.addHistory
-    .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
-
-  if (addEntriesWithPrice.length > 0) {
-    const totalCost = addEntriesWithPrice.reduce(
-      (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-    );
-    const totalQty = addEntriesWithPrice.reduce(
-      (sum, entry) => sum + entry.quantity, 0
-    );
-    this.averagePurchasePrice = totalCost / totalQty;
-  } else {
-    this.averagePurchasePrice = 0;
-  }
-
   next();
 });
 
@@ -206,10 +177,9 @@ productInventorySchema.virtual('activeRemoveHistory').get(function () {
 });
 
 // ===== METHOD: Add quantity =====
-productInventorySchema.methods.addQuantity = function (quantity, purchasePrice, addedBy, addedById, date, notes) {
+productInventorySchema.methods.addQuantity = function (quantity, addedBy, addedById, date, notes) {
   this.addHistory.push({
     quantity: Number(quantity),
-    purchasePrice: Number(purchasePrice) || 0,
     date: date || new Date(),
     addedBy: addedBy,
     addedById: addedById,
@@ -226,19 +196,6 @@ productInventorySchema.methods.addQuantity = function (quantity, purchasePrice, 
     .reduce((sum, entry) => sum + entry.quantity, 0);
 
   this.totalQuantity = totalAdded - totalRemoved;
-
-  const addEntriesWithPrice = this.addHistory
-    .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
-
-  if (addEntriesWithPrice.length > 0) {
-    const totalCost = addEntriesWithPrice.reduce(
-      (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-    );
-    const totalQty = addEntriesWithPrice.reduce(
-      (sum, entry) => sum + entry.quantity, 0
-    );
-    this.averagePurchasePrice = totalCost / totalQty;
-  }
 
   return this.save();
 };

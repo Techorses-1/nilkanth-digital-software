@@ -139,7 +139,7 @@ const Sales = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     // ✅ Filter State
-    const [filterType, setFilterType] = useState("All");
+    const [filterType, setFilterType] = useState("GST");
 
     // ✅ Delete Modal State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -1127,7 +1127,7 @@ const Sales = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
@@ -1433,7 +1433,7 @@ const Sales = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
@@ -1964,9 +1964,9 @@ const Sales = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="sales-module-wrapper">
-                <div className="sales-page-header">
+                {/* <div className="sales-page-header">
                     <h2 className="sales-page-title">Sales Management</h2>
-                </div>
+                </div> */}
 
                 <div className="sales-content-wrapper">
                     {renderTable()}

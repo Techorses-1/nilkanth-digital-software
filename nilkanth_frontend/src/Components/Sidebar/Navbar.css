@@ -190,6 +190,7 @@
   width: calc(100% - 220px);
   left: 220px;
   transition: left .3s ease, width .3s ease;
+ 
 }
 
 #sidebar.hide~#content {

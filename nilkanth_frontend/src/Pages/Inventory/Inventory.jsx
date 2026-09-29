@@ -226,9 +226,12 @@ const Inventory = () => {
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
             .typeError("Quantity must be a number"),
-        purchasePrice: Yup.number()
-            .min(0, "Price cannot be negative")
-            .typeError("Price must be a number"),
+        // Only required for items (not for products)
+        ...(activeTab === "items" ? {
+            purchasePrice: Yup.number()
+                .min(0, "Price cannot be negative")
+                .typeError("Price must be a number"),
+        } : {}),
         date: Yup.date().required("Date is required"),
     });
 
@@ -251,14 +254,19 @@ const Inventory = () => {
                 return;
             }
 
+            // Build base payload
             const payload = {
                 [activeTab === "items" ? "itemId" : "productId"]: values.productId,
                 quantity: Number(values.quantity),
-                purchasePrice: Number(values.purchasePrice) || 0,
                 date: values.date || new Date(),
                 notes: values.notes || '',
                 storeType: storeTab
             };
+
+            // ✅ Only include purchasePrice for ITEMS (not for products)
+            if (activeTab === "items") {
+                payload.purchasePrice = Number(values.purchasePrice) || 0;
+            }
 
             const endpoint = activeTab === "items"
                 ? `${import.meta.env.VITE_API_URL}/item-inventory/add`
@@ -398,14 +406,26 @@ const Inventory = () => {
                     return;
                 }
 
-                const exportData = data.map((inv) => ({
-                    [activeTab === "items" ? "Item Name" : "Product Name"]:
-                        activeTab === "items" ? inv.itemName : inv.productName,
-                    "Store": inv.storeType || storeTab,
-                    "Total Quantity": inv.totalQuantity || 0,
-                    "Average Price": inv.averagePurchasePrice || 0,
-                    "Last Updated": inv.updatedAt ? new Date(inv.updatedAt).toLocaleString() : "N/A",
-                }));
+                // ✅ Build export data - only include Average Price for items
+                const exportData = data.map((inv) => {
+                    const base = {
+                        [activeTab === "items" ? "Item Name" : "Product Name"]:
+                            activeTab === "items" ? inv.itemName : inv.productName,
+                        "Store": inv.storeType || storeTab,
+                        "Total Quantity": inv.totalQuantity || 0,
+                    };
+
+                    // Only items have averagePurchasePrice
+                    if (activeTab === "items") {
+                        base["Average Price"] = inv.averagePurchasePrice || 0;
+                    }
+
+                    base["Last Updated"] = inv.updatedAt
+                        ? new Date(inv.updatedAt).toLocaleString()
+                        : "N/A";
+
+                    return base;
+                });
 
                 const worksheet = XLSX.utils.json_to_sheet(exportData);
                 const workbook = XLSX.utils.book_new();
@@ -450,124 +470,148 @@ const Inventory = () => {
     };
 
     // ============= RENDER ADD MODAL =============
-    const renderAddModal = () => (
-        <div className="inventory-modal-overlay" onClick={() => setShowAddModal(false)}>
-            <div className="inventory-modal-content inventory-modal-small" onClick={(e) => e.stopPropagation()}>
-                <div className="inventory-modal-header">
-                    <h3 className="inventory-modal-title">
-                        <FaPlus style={{ color: '#28a745' }} /> Add Quantity
-                        <span className="inventory-modal-store-badge">{storeTab}</span>
-                    </h3>
-                    <button className="inventory-modal-close" onClick={() => setShowAddModal(false)}>
-                        <FaTimes />
-                    </button>
-                </div>
+    const renderAddModal = () => {
+        // ✅ Only items have purchasePrice field
+        const showPurchasePrice = activeTab === "items";
 
-                <div className="inventory-modal-body">
-                    <Formik
-                        initialValues={{
-                            productId: "",
-                            quantity: "",
-                            purchasePrice: "",
-                            date: new Date().toISOString().split("T")[0],
-                            notes: "",
-                        }}
-                        validationSchema={addValidationSchema}
-                        onSubmit={handleAddQuantity}
-                    >
-                        {({ setFieldValue, values }) => (
-                            <Form className="inventory-form">
-                                <div className="inventory-form-row">
-                                    <div className="inventory-form-field inventory-form-field-full">
-                                        <label className="inventory-form-label">
-                                            {activeTab === "items" ? <FaBoxes /> : <FaBox />}
-                                            {' '}{activeTab === "items" ? "Item" : "Product"} *
-                                        </label>
-                                        <Select
-                                            options={productOptions}
-                                            styles={selectStyles}
-                                            className="inventory-react-select"
-                                            classNamePrefix="inventory-select"
-                                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
-                                            isSearchable
-                                            onChange={(option) => {
-                                                setFieldValue("productId", option ? option.value : "");
-                                            }}
-                                            value={productOptions.find(opt => opt.value === values.productId)}
-                                        />
-                                        <ErrorMessage name="productId" component="div" className="inventory-error" />
-                                    </div>
-                                </div>
+        return (
+            <div className="inventory-modal-overlay" onClick={() => setShowAddModal(false)}>
+                <div className="inventory-modal-content inventory-modal-small" onClick={(e) => e.stopPropagation()}>
+                    <div className="inventory-modal-header">
+                        <h3 className="inventory-modal-title">
+                            <FaPlus style={{ color: '#28a745' }} /> Add Quantity
+                            <span className="inventory-modal-store-badge">{storeTab}</span>
+                        </h3>
+                        <button className="inventory-modal-close" onClick={() => setShowAddModal(false)}>
+                            <FaTimes />
+                        </button>
+                    </div>
 
-                                <div className="inventory-form-row">
-                                    <div className="inventory-form-field">
-                                        <label className="inventory-form-label">
-                                            <FaCalendarAlt /> Date *
-                                        </label>
-                                        <Field
-                                            name="date"
-                                            type="date"
-                                            className="inventory-input-field"
-                                        />
-                                        <ErrorMessage name="date" component="div" className="inventory-error" />
+                    <div className="inventory-modal-body">
+                        <Formik
+                            initialValues={{
+                                productId: "",
+                                quantity: "",
+                                purchasePrice: "",
+                                date: new Date().toISOString().split("T")[0],
+                                notes: "",
+                            }}
+                            validationSchema={addValidationSchema}
+                            onSubmit={handleAddQuantity}
+                        >
+                            {({ setFieldValue, values }) => (
+                                <Form className="inventory-form">
+                                    <div className="inventory-form-row">
+                                        <div className="inventory-form-field inventory-form-field-full">
+                                            <label className="inventory-form-label">
+                                                {activeTab === "items" ? <FaBoxes /> : <FaBox />}
+                                                {' '}{activeTab === "items" ? "Item" : "Product"} *
+                                            </label>
+                                            <Select
+                                                options={productOptions}
+                                                styles={selectStyles}
+                                                className="inventory-react-select"
+                                                classNamePrefix="inventory-select"
+                                                placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                                                isSearchable
+                                                onChange={(option) => {
+                                                    setFieldValue("productId", option ? option.value : "");
+                                                }}
+                                                value={productOptions.find(opt => opt.value === values.productId)}
+                                            />
+                                            <ErrorMessage name="productId" component="div" className="inventory-error" />
+                                        </div>
                                     </div>
 
-                                    <div className="inventory-form-field">
-                                        <label className="inventory-form-label">
-                                            <FaShoppingCart /> Quantity *
-                                        </label>
-                                        <Field
-                                            name="quantity"
-                                            type="number"
-                                            step="0.01"
-                                            min="0.01"
-                                            placeholder="Enter quantity"
-                                            className="inventory-input-field"
-                                        />
-                                        <ErrorMessage name="quantity" component="div" className="inventory-error" />
-                                    </div>
-                                </div>
+                                    <div className="inventory-form-row">
+                                        <div className="inventory-form-field">
+                                            <label className="inventory-form-label">
+                                                <FaCalendarAlt /> Date *
+                                            </label>
+                                            <Field
+                                                name="date"
+                                                type="date"
+                                                className="inventory-input-field"
+                                            />
+                                            <ErrorMessage name="date" component="div" className="inventory-error" />
+                                        </div>
 
-                                <div className="inventory-form-row">
-                                    <div className="inventory-form-field">
-                                        <label className="inventory-form-label">
-                                            <FaRupeeSign /> Purchase Price (Optional)
-                                        </label>
-                                        <Field
-                                            name="purchasePrice"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            placeholder="Enter price"
-                                            className="inventory-input-field"
-                                        />
-                                        <ErrorMessage name="purchasePrice" component="div" className="inventory-error" />
+                                        <div className="inventory-form-field">
+                                            <label className="inventory-form-label">
+                                                <FaShoppingCart /> Quantity *
+                                            </label>
+                                            <Field
+                                                name="quantity"
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                placeholder="Enter quantity"
+                                                className="inventory-input-field"
+                                            />
+                                            <ErrorMessage name="quantity" component="div" className="inventory-error" />
+                                        </div>
                                     </div>
 
-                                    <div className="inventory-form-field">
-                                        <label className="inventory-form-label">
-                                            <FaInfoCircle /> Notes (Optional)
-                                        </label>
-                                        <Field
-                                            name="notes"
-                                            type="text"
-                                            placeholder="Add notes..."
-                                            className="inventory-input-field"
-                                        />
-                                        <ErrorMessage name="notes" component="div" className="inventory-error" />
-                                    </div>
-                                </div>
+                                    {/* ✅ Purchase Price row — ONLY for items */}
+                                    {showPurchasePrice ? (
+                                        <div className="inventory-form-row">
+                                            <div className="inventory-form-field">
+                                                <label className="inventory-form-label">
+                                                    <FaRupeeSign /> Purchase Price (Optional)
+                                                </label>
+                                                <Field
+                                                    name="purchasePrice"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0"
+                                                    placeholder="Enter price"
+                                                    className="inventory-input-field"
+                                                />
+                                                <ErrorMessage name="purchasePrice" component="div" className="inventory-error" />
+                                            </div>
 
-                                <button type="submit" className="inventory-add-btn" disabled={isSubmitting}>
-                                    {isSubmitting ? "Adding..." : "Add Quantity"}
-                                </button>
-                            </Form>
-                        )}
-                    </Formik>
+                                            <div className="inventory-form-field">
+                                                <label className="inventory-form-label">
+                                                    <FaInfoCircle /> Notes (Optional)
+                                                </label>
+                                                <Field
+                                                    name="notes"
+                                                    type="text"
+                                                    placeholder="Add notes..."
+                                                    className="inventory-input-field"
+                                                />
+                                                <ErrorMessage name="notes" component="div" className="inventory-error" />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // ✅ For products — Notes takes full width
+                                        <div className="inventory-form-row">
+                                            <div className="inventory-form-field inventory-form-field-full">
+                                                <label className="inventory-form-label">
+                                                    <FaInfoCircle /> Notes (Optional)
+                                                </label>
+                                                <Field
+                                                    name="notes"
+                                                    type="text"
+                                                    placeholder="Add notes..."
+                                                    className="inventory-input-field"
+                                                />
+                                                <ErrorMessage name="notes" component="div" className="inventory-error" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button type="submit" className="inventory-add-btn" disabled={isSubmitting}>
+                                        {isSubmitting ? "Adding..." : "Add Quantity"}
+                                    </button>
+                                </Form>
+                            )}
+                        </Formik>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     // ============= RENDER REMOVE MODAL =============
     const renderRemoveModal = () => (
@@ -681,6 +725,9 @@ const Inventory = () => {
             ? selectedInventory.itemName
             : selectedInventory.productName;
 
+        // ✅ Only items have a price column in history
+        const showPriceColumn = activeTab === "items";
+
         return (
             <div className="inventory-modal-overlay" onClick={closeHistoryModal}>
                 <div className="inventory-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -710,7 +757,7 @@ const Inventory = () => {
                                             <th>#</th>
                                             <th>Type</th>
                                             <th>Quantity</th>
-                                            <th>Price</th>
+                                            {showPriceColumn && <th>Price</th>}
                                             <th>Store</th>
                                             <th>Admin</th>
                                             <th>Date</th>
@@ -726,11 +773,13 @@ const Inventory = () => {
                                                     </span>
                                                 </td>
                                                 <td>{entry.quantity}</td>
-                                                <td>
-                                                    {entry.type === 'ADD' && entry.price > 0
-                                                        ? `₹${entry.price.toFixed(2)}`
-                                                        : '-'}
-                                                </td>
+                                                {showPriceColumn && (
+                                                    <td>
+                                                        {entry.type === 'ADD' && entry.price > 0
+                                                            ? `₹${entry.price.toFixed(2)}`
+                                                            : '-'}
+                                                    </td>
+                                                )}
                                                 <td>
                                                     <span className="inventory-modal-store-tag">{entry.store || 'N/A'}</span>
                                                 </td>
@@ -763,138 +812,145 @@ const Inventory = () => {
     };
 
     // ============= RENDER TABLE =============
-    const renderTable = () => (
-        <div className="inventory-table-container">
-            <div className="inventory-table-header">
-                <div className="inventory-search-container">
-                    <FaSearch className="inventory-search-icon" />
-                    <input
-                        type="text"
-                        className="inventory-search-input"
-                        placeholder={`Search ${activeTab === "items" ? "Item" : "Product"} Inventory...`}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="inventory-action-buttons">
-                    <button
-                        className="inventory-add-modal-btn"
-                        onClick={() => setShowAddModal(true)}
-                        disabled={isLoading}
-                    >
-                        <FaPlus /> Add
-                    </button>
-                    <button
-                        className="inventory-remove-modal-btn"
-                        onClick={() => setShowRemoveModal(true)}
-                        disabled={isLoading}
-                    >
-                        <FaMinus /> Remove
-                    </button>
-                    <button
-                        className="inventory-export-btn"
-                        onClick={exportToExcel}
-                        disabled={isExporting || isLoading}
-                    >
-                        {isExporting ? (
-                            <span className="inventory-loading-spinner-small"></span>
-                        ) : (
-                            <FaFileExcel />
-                        )}
-                        {isExporting ? "Exporting..." : "Export"}
-                    </button>
-                </div>
-            </div>
+    const renderTable = () => {
+        // ✅ Only items have Avg. Price column
+        const showPriceColumn = activeTab === "items";
 
-            {isLoading ? (
-                <div className="inventory-loading-container">
-                    <div className="inventory-loading-spinner"></div>
-                    <p>Loading inventory...</p>
-                </div>
-            ) : inventoryData.length === 0 ? (
-                <div className="inventory-empty-state">
-                    <FaHistory size={50} color="#ccc" />
-                    <p>No inventory records found for {storeTab} store</p>
-                </div>
-            ) : (
-                <>
-                    <div className="inventory-table-responsive">
-                        <table className="inventory-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>{activeTab === "items" ? "Item" : "Product"}</th>
-                                    <th>Total Quantity</th>
-                                    <th>Avg. Price</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {inventoryData.map((inv, idx) => {
-                                    const serialNo = (pagination.page - 1) * pagination.limit + idx + 1;
-                                    return (
-                                        <tr key={inv.inventoryId} className="inventory-table-row">
-                                            <td>{serialNo}</td>
-                                            <td className="inventory-product-name">
-                                                <strong>
-                                                    {activeTab === "items" ? inv.itemName : inv.productName}
-                                                </strong>
-                                            </td>
-                                            <td>
-                                                <span className="inventory-quantity-badge">{inv.totalQuantity || 0}</span>
-                                            </td>
-                                            <td>
-                                                {inv.averagePurchasePrice > 0
-                                                    ? `₹${inv.averagePurchasePrice.toFixed(2)}`
-                                                    : "N/A"}
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className="inventory-history-btn"
-                                                    onClick={() => openHistoryModal(inv)}
-                                                >
-                                                    <FaEye /> History
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+        return (
+            <div className="inventory-table-container">
+                <div className="inventory-table-header">
+                    <div className="inventory-search-container">
+                        <FaSearch className="inventory-search-icon" />
+                        <input
+                            type="text"
+                            className="inventory-search-input"
+                            placeholder={`Search ${activeTab === "items" ? "Item" : "Product"} Inventory...`}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
+                    <div className="inventory-action-buttons">
+                        <button
+                            className="inventory-add-modal-btn"
+                            onClick={() => setShowAddModal(true)}
+                            disabled={isLoading}
+                        >
+                            <FaPlus /> Add
+                        </button>
+                        <button
+                            className="inventory-remove-modal-btn"
+                            onClick={() => setShowRemoveModal(true)}
+                            disabled={isLoading}
+                        >
+                            <FaMinus /> Remove
+                        </button>
+                        <button
+                            className="inventory-export-btn"
+                            onClick={exportToExcel}
+                            disabled={isExporting || isLoading}
+                        >
+                            {isExporting ? (
+                                <span className="inventory-loading-spinner-small"></span>
+                            ) : (
+                                <FaFileExcel />
+                            )}
+                            {isExporting ? "Exporting..." : "Export"}
+                        </button>
+                    </div>
+                </div>
 
-                    {pagination.totalPages > 1 && (
-                        <div className="inventory-pagination">
-                            <div className="inventory-pagination-info">
-                                Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-                                {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
-                                {pagination.total} entries
-                            </div>
-                            <div className="inventory-pagination-buttons">
-                                <button
-                                    className="inventory-page-btn"
-                                    onClick={prevPage}
-                                    disabled={!pagination.hasPrev || isLoading}
-                                >
-                                    <FaChevronLeft /> Prev
-                                </button>
-                                <span className="inventory-page-info">
-                                    Page {pagination.page} of {pagination.totalPages}
-                                </span>
-                                <button
-                                    className="inventory-page-btn"
-                                    onClick={nextPage}
-                                    disabled={!pagination.hasNext || isLoading}
-                                >
-                                    Next <FaChevronRight />
-                                </button>
-                            </div>
+                {isLoading ? (
+                    <div className="inventory-loading-container">
+                        <div className="inventory-loading-spinner"></div>
+                        <p>Loading inventory...</p>
+                    </div>
+                ) : inventoryData.length === 0 ? (
+                    <div className="inventory-empty-state">
+                        <FaHistory size={50} color="#ccc" />
+                        <p>No inventory records found for {storeTab} store</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="inventory-table-responsive">
+                            <table className="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>{activeTab === "items" ? "Item" : "Product"}</th>
+                                        <th>Total Quantity</th>
+                                        {showPriceColumn && <th>Avg. Price</th>}
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {inventoryData.map((inv, idx) => {
+                                        const serialNo = (pagination.page - 1) * pagination.limit + idx + 1;
+                                        return (
+                                            <tr key={inv.inventoryId} className="inventory-table-row">
+                                                <td>{serialNo}</td>
+                                                <td className="inventory-product-name">
+                                                    <strong>
+                                                        {activeTab === "items" ? inv.itemName : inv.productName}
+                                                    </strong>
+                                                </td>
+                                                <td>
+                                                    <span className="inventory-quantity-badge">{inv.totalQuantity || 0}</span>
+                                                </td>
+                                                {showPriceColumn && (
+                                                    <td>
+                                                        {inv.averagePurchasePrice > 0
+                                                            ? `₹${inv.averagePurchasePrice.toFixed(2)}`
+                                                            : "N/A"}
+                                                    </td>
+                                                )}
+                                                <td>
+                                                    <button
+                                                        className="inventory-history-btn"
+                                                        onClick={() => openHistoryModal(inv)}
+                                                    >
+                                                        <FaEye /> History
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
-                </>
-            )}
-        </div>
-    );
+
+                        {pagination.totalPages > 1 && (
+                            <div className="inventory-pagination">
+                                <div className="inventory-pagination-info">
+                                    Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                                    {Math.min(pagination.page * pagination.limit, pagination.total)} of{' '}
+                                    {pagination.total} entries
+                                </div>
+                                <div className="inventory-pagination-buttons">
+                                    <button
+                                        className="inventory-page-btn"
+                                        onClick={prevPage}
+                                        disabled={!pagination.hasPrev || isLoading}
+                                    >
+                                        <FaChevronLeft /> Prev
+                                    </button>
+                                    <span className="inventory-page-info">
+                                        Page {pagination.page} of {pagination.totalPages}
+                                    </span>
+                                    <button
+                                        className="inventory-page-btn"
+                                        onClick={nextPage}
+                                        disabled={!pagination.hasNext || isLoading}
+                                    >
+                                        Next <FaChevronRight />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        );
+    };
 
     // ============= MAIN RENDER =============
     return (
@@ -902,7 +958,6 @@ const Inventory = () => {
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="inventory-module-wrapper">
                 <div className="inventory-page-header">
-                    <h2 className="inventory-page-title">Inventory Management</h2>
                     <div className="inventory-header-right">
                         <div className="inventory-store-tabs-container">
                             <button

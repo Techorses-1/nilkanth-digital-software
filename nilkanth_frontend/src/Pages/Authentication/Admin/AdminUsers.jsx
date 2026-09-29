@@ -12,7 +12,6 @@ import html2pdf from "html2pdf.js";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../../Components/Sidebar/Navbar";
-import "../../Form/Form.scss";
 import "./AdminUsers.scss";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -28,20 +27,16 @@ const AdminUsers = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Maximum users limit
   const MAX_USERS_LIMIT = 5;
 
-  // Check if user limit is reached
   const isUserLimitReached = useMemo(() => {
     return users.length >= MAX_USERS_LIMIT;
   }, [users.length]);
 
-  // Calculate remaining users
   const remainingUsers = useMemo(() => {
     return Math.max(0, MAX_USERS_LIMIT - users.length);
   }, [users.length]);
 
-  // ✅ ACTUAL PERMISSIONS THAT EXIST IN THE SYSTEM
   const availablePermissions = [
     { id: "customer", name: "Customer" },
     { id: "products", name: "Products" },
@@ -56,7 +51,6 @@ const AdminUsers = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Debounce logic
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm.trim().toLowerCase());
@@ -65,7 +59,6 @@ const AdminUsers = () => {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -90,7 +83,6 @@ const AdminUsers = () => {
 
         const data = await response.json();
 
-        // Sort by creation date (newest first)
         const sortedData = data.sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
@@ -109,7 +101,6 @@ const AdminUsers = () => {
     fetchUsers();
   }, [navigate]);
 
-  // Filtered users
   const filteredUsers = useMemo(() => {
     if (!debouncedSearch) return users;
 
@@ -137,12 +128,10 @@ const AdminUsers = () => {
     setCurrentPage(prev => prev + 1);
   };
 
-  // Handle row selection
   const selectUser = (userId) => {
     setSelectedUser((prev) => (prev === userId ? null : userId));
   };
 
-  // Export single user as PDF
   const exportAsPdf = () => {
     if (!selectedUser) {
       toast.warning("Please select a user first");
@@ -208,7 +197,6 @@ const AdminUsers = () => {
     html2pdf().from(content).set(opt).save();
   };
 
-  // Export all users as Excel
   const exportAllAsExcel = () => {
     const dataToExport = filteredUsers.length > 0 ? filteredUsers : users;
 
@@ -234,7 +222,6 @@ const AdminUsers = () => {
     XLSX.writeFile(workbook, fileName);
   };
 
-  // Form initial values
   const userInitialValues = {
     name: "",
     email: "",
@@ -243,7 +230,6 @@ const AdminUsers = () => {
     permissions: []
   };
 
-  // Validation schema
   const userValidationSchema = Yup.object({
     name: Yup.string()
       .required("Name is required")
@@ -263,7 +249,6 @@ const AdminUsers = () => {
       .min(1, "At least one permission is required")
   });
 
-  // Handle user form submission
   const handleUserSubmit = async (values, { resetForm, setFieldError }) => {
     try {
       if (isUserLimitReached) {
@@ -377,7 +362,6 @@ const AdminUsers = () => {
     }
   };
 
-  // Handle add user button click with validation
   const handleAddUserClick = () => {
     if (isUserLimitReached) {
       toast.error(`Maximum ${MAX_USERS_LIMIT} users reached. Please delete existing users to create new ones.`);
@@ -386,11 +370,10 @@ const AdminUsers = () => {
     setShowForm(!showForm);
   };
 
-  // User limit indicator component
   const UserLimitIndicator = () => (
-    <div className={`user-limit-indicator ${isUserLimitReached ? 'limit-reached' : ''}`}>
-      <div className="limit-info">
-        <FaExclamationTriangle className="limit-icon" />
+    <div className={`admin-user-limit-indicator ${isUserLimitReached ? 'admin-limit-reached' : ''}`}>
+      <div className="admin-limit-info">
+        <FaExclamationTriangle className="admin-limit-icon" />
         <span>
           {isUserLimitReached
             ? `Maximum ${MAX_USERS_LIMIT} users reached`
@@ -398,9 +381,9 @@ const AdminUsers = () => {
           }
         </span>
       </div>
-      <div className="limit-progress">
+      <div className="admin-limit-progress">
         <div
-          className="limit-progress-bar"
+          className="admin-limit-progress-bar"
           style={{ width: `${(users.length / MAX_USERS_LIMIT) * 100}%` }}
         ></div>
       </div>
@@ -523,80 +506,80 @@ const AdminUsers = () => {
     if (!user) return null;
 
     return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <div className="modal-header">
-            <div className="modal-title">
+      <div className="admin-modal-overlay" onClick={onClose}>
+        <div className="admin-modal-content" onClick={e => e.stopPropagation()}>
+          <div className="admin-modal-header">
+            <div className="admin-modal-title">
               {isEditing ? "Edit User" : `User Details: ${user.name}`}
             </div>
-            <button className="modal-close" onClick={onClose}>
+            <button className="admin-modal-close" onClick={onClose}>
               &times;
             </button>
           </div>
 
-          <div className="modal-body">
-            <div className="wo-details-grid">
-              <div className="detail-row">
-                <span className="detail-label">Name *</span>
+          <div className="admin-modal-body">
+            <div className="admin-wo-details-grid">
+              <div className="admin-detail-row">
+                <span className="admin-detail-label">Name *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="admin-edit-field-container">
                     <input
                       type="text"
                       name="name"
                       value={editedUser.name || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.name ? 'error' : ''}`}
+                      className={`admin-edit-input ${errors.name ? 'admin-error' : ''}`}
                     />
-                    {errors.name && <div className="error-message">{errors.name}</div>}
+                    {errors.name && <div className="admin-error-message">{errors.name}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{user.name}</span>
+                  <span className="admin-detail-value">{user.name}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Email *</span>
+              <div className="admin-detail-row">
+                <span className="admin-detail-label">Email *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="admin-edit-field-container">
                     <input
                       type="email"
                       name="email"
                       value={editedUser.email || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.email ? 'error' : ''}`}
+                      className={`admin-edit-input ${errors.email ? 'admin-error' : ''}`}
                     />
-                    {errors.email && <div className="error-message">{errors.email}</div>}
+                    {errors.email && <div className="admin-error-message">{errors.email}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{user.email || 'N/A'}</span>
+                  <span className="admin-detail-value">{user.email || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Phone Number *</span>
+              <div className="admin-detail-row">
+                <span className="admin-detail-label">Phone Number *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
+                  <div className="admin-edit-field-container">
                     <input
                       type="text"
                       name="phone"
                       value={editedUser.phone || ''}
                       onChange={handleInputChange}
-                      className={`edit-input ${errors.phone ? 'error' : ''}`}
+                      className={`admin-edit-input ${errors.phone ? 'admin-error' : ''}`}
                     />
-                    {errors.phone && <div className="error-message">{errors.phone}</div>}
+                    {errors.phone && <div className="admin-error-message">{errors.phone}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">{user.phone || 'N/A'}</span>
+                  <span className="admin-detail-value">{user.phone || 'N/A'}</span>
                 )}
               </div>
 
-              <div className="detail-row">
-                <span className="detail-label">Permissions *</span>
+              <div className="admin-detail-row">
+                <span className="admin-detail-label">Permissions *</span>
                 {isEditing ? (
-                  <div className="edit-field-container">
-                    <div className="permissions-grid-horizontal">
+                  <div className="admin-edit-field-container">
+                    <div className="admin-permissions-grid-horizontal">
                       {availablePermissions.map(permission => (
-                        <label key={permission.id} className="permission-checkbox-horizontal">
+                        <label key={permission.id} className="admin-permission-checkbox-horizontal">
                           <input
                             type="checkbox"
                             checked={editedUser.permissions?.includes(permission.id) || false}
@@ -606,50 +589,50 @@ const AdminUsers = () => {
                         </label>
                       ))}
                     </div>
-                    {errors.permissions && <div className="error-message">{errors.permissions}</div>}
+                    {errors.permissions && <div className="admin-error-message">{errors.permissions}</div>}
                   </div>
                 ) : (
-                  <span className="detail-value">
+                  <span className="admin-detail-value">
                     {user.permissions ? user.permissions.join(', ') : 'No permissions'}
                   </span>
                 )}
               </div>
 
               {isEditing && !isUserAdmin && (
-                <div className="detail-row">
-                  <span className="detail-label">
+                <div className="admin-detail-row">
+                  <span className="admin-detail-label">
                     <FaKey /> Password Update
                   </span>
-                  <div className="edit-field-container">
+                  <div className="admin-edit-field-container">
                     <button
                       type="button"
-                      className={`password-toggle-btn ${showPasswordField ? 'active' : ''}`}
+                      className={`admin-password-toggle-btn ${showPasswordField ? 'admin-active' : ''}`}
                       onClick={togglePasswordField}
                     >
                       <FaKey /> {showPasswordField ? 'Cancel Password Update' : 'Update Password'}
                     </button>
 
                     {showPasswordField && (
-                      <div className="password-field-container">
-                        <div className="password-input-wrapper">
+                      <div className="admin-password-field-container">
+                        <div className="admin-password-input-wrapper">
                           <input
                             type={showNewPassword ? "text" : "password"}
                             name="password"
                             value={editedUser.password || ''}
                             onChange={handleInputChange}
                             placeholder="Enter new password"
-                            className={`edit-input ${errors.password ? 'error' : ''}`}
+                            className={`admin-edit-input ${errors.password ? 'admin-error' : ''}`}
                           />
                           <button
                             type="button"
-                            className="password-visibility-toggle"
+                            className="admin-password-visibility-toggle"
                             onClick={() => setShowNewPassword(!showNewPassword)}
                           >
                             {showNewPassword ? <FaEyeSlash /> : <FaEye />}
                           </button>
                         </div>
-                        {errors.password && <div className="error-message">{errors.password}</div>}
-                        <div className="password-hint">
+                        {errors.password && <div className="admin-error-message">{errors.password}</div>}
+                        <div className="admin-password-hint">
                           Leave empty to keep current password. Minimum 8 characters.
                         </div>
                       </div>
@@ -659,7 +642,7 @@ const AdminUsers = () => {
               )}
 
               {isEditing && isUserAdmin && (
-                <div className="detail-row">
+                <div className="admin-detail-row">
                   <div className="admin-note">
                     <FaExclamationTriangle />
                     Password update is not available for admin users.
@@ -667,28 +650,28 @@ const AdminUsers = () => {
                 </div>
               )}
 
-              <div className="detail-row">
-                <span className="detail-label">Created At:</span>
-                <span className="detail-value">
+              <div className="admin-detail-row">
+                <span className="admin-detail-label">Created At:</span>
+                <span className="admin-detail-value">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="modal-footer">
-            <button className="export-btn" onClick={onExport}>
+          <div className="admin-modal-footer">
+            <button className="admin-export-btn" onClick={onExport}>
               <FaFileExport /> Export as PDF
             </button>
             <button
-              className={`update-btn ${isEditing ? 'save-btn' : ''}`}
+              className={`admin-update-btn ${isEditing ? 'admin-save-btn' : ''}`}
               onClick={isEditing ? handleSave : () => setIsEditing(true)}
             >
               {isEditing ? <FaSave /> : <FaEdit />}
               {isEditing ? "Save Changes" : "Update"}
             </button>
             <button
-              className="delete-btn"
+              className="admin-delete-btn"
               onClick={() => setShowDeleteConfirm(true)}
             >
               <FaTrash /> Delete
@@ -697,19 +680,19 @@ const AdminUsers = () => {
         </div>
 
         {showDeleteConfirm && (
-          <div className="confirm-dialog-overlay">
-            <div className="confirm-dialog">
+          <div className="admin-confirm-dialog-overlay">
+            <div className="admin-confirm-dialog">
               <h3>Confirm Deletion</h3>
               <p>Are you sure you want to delete {user.name}? This action cannot be undone.</p>
-              <div className="confirm-buttons">
+              <div className="admin-confirm-buttons">
                 <button
-                  className="confirm-cancel"
+                  className="admin-confirm-cancel"
                   onClick={() => setShowDeleteConfirm(false)}
                 >
                   Cancel
                 </button>
                 <button
-                  className="confirm-delete"
+                  className="admin-confirm-delete"
                   onClick={() => {
                     onDelete(user.userId);
                     setShowDeleteConfirm(false);
@@ -728,11 +711,11 @@ const AdminUsers = () => {
   return (
     <Navbar>
       <ToastContainer position="top-center" autoClose={3000} />
-      <div className="main">
-        <div className="page-header">
-          <div className="right-section">
-            <div className="search-container">
-              <FaSearch className="search-icon" />
+      <div className="admin-main">
+        <div className="admin-page-header">
+          <div className="admin-right-section">
+            <div className="admin-search-container">
+              <FaSearch className="admin-search-icon" />
               <input
                 type="text"
                 placeholder="Search Users..."
@@ -740,33 +723,32 @@ const AdminUsers = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="action-buttons-group">
-              <button className="export-all-btn" onClick={exportAllAsExcel}>
+            <div className="admin-action-buttons-group">
+              <button className="admin-export-all-btn" onClick={exportAllAsExcel}>
                 <FaFileExcel /> Export All
               </button>
               <button
-                className={`add-btn ${isUserLimitReached ? 'disabled' : ''}`}
+                className={`admin-add-btn ${isUserLimitReached ? 'admin-disabled' : ''}`}
                 onClick={handleAddUserClick}
                 disabled={isUserLimitReached}
                 title={isUserLimitReached ? `Maximum ${MAX_USERS_LIMIT} users allowed` : "Add new user"}
               >
                 <FaPlus />
                 {showForm ? "Close" : "Add User"}
-                {isUserLimitReached && <FaExclamationTriangle className="warning-icon" />}
+                {isUserLimitReached && <FaExclamationTriangle className="admin-warning-icon" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* User Limit Indicator */}
         <UserLimitIndicator />
 
         {showForm && (
-          <div className="form-container premium">
+          <div className="admin-form-container admin-premium">
             <h2>Add User</h2>
 
             {remainingUsers <= 2 && (
-              <div className="limit-warning">
+              <div className="admin-limit-warning">
                 <FaExclamationTriangle />
                 {isUserLimitReached
                   ? `You have reached the maximum limit of ${MAX_USERS_LIMIT} users.`
@@ -782,56 +764,56 @@ const AdminUsers = () => {
             >
               {({ values, setFieldValue, isSubmitting }) => (
                 <Form>
-                  <div className="form-row">
-                    <div className="form-field">
+                  <div className="admin-form-row">
+                    <div className="admin-form-field">
                       <label><FaUser /> Name *</label>
                       <Field name="name" type="text" />
-                      <ErrorMessage name="name" component="div" className="error" />
+                      <ErrorMessage name="name" component="div" className="admin-error" />
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-field">
+                  <div className="admin-form-row">
+                    <div className="admin-form-field">
                       <label><FaEnvelope /> Email *</label>
                       <Field name="email" type="email" />
-                      <ErrorMessage name="email" component="div" className="error" />
+                      <ErrorMessage name="email" component="div" className="admin-error" />
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-field">
+                  <div className="admin-form-row">
+                    <div className="admin-form-field">
                       <label><FaPhone /> Phone Number *</label>
                       <Field name="phone" type="text" />
-                      <ErrorMessage name="phone" component="div" className="error" />
+                      <ErrorMessage name="phone" component="div" className="admin-error" />
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-field">
+                  <div className="admin-form-row">
+                    <div className="admin-form-field">
                       <label><FaLock /> Password *</label>
-                      <div className="password-input-container">
+                      <div className="admin-password-input-container">
                         <Field
                           name="password"
                           type={showPassword ? "text" : "password"}
                         />
                         <button
                           type="button"
-                          className="password-toggle"
+                          className="admin-password-toggle"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? <FaEyeSlash /> : <FaEye />}
                         </button>
                       </div>
-                      <ErrorMessage name="password" component="div" className="error" />
+                      <ErrorMessage name="password" component="div" className="admin-error" />
                     </div>
                   </div>
 
-                  <div className="form-row">
-                    <div className="form-field">
+                  <div className="admin-form-row">
+                    <div className="admin-form-field">
                       <label>Permissions *</label>
-                      <div className="permissions-grid">
+                      <div className="admin-permissions-grid">
                         {availablePermissions.map(permission => (
-                          <label key={permission.id} className="permission-checkbox">
+                          <label key={permission.id} className="admin-permission-checkbox">
                             <Field
                               type="checkbox"
                               name="permissions"
@@ -849,14 +831,14 @@ const AdminUsers = () => {
                           </label>
                         ))}
                       </div>
-                      <ErrorMessage name="permissions" component="div" className="error" />
+                      <ErrorMessage name="permissions" component="div" className="admin-error" />
                     </div>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isUserLimitReached || isSubmitting}
-                    className={isUserLimitReached ? 'disabled' : ''}
+                    className={isUserLimitReached ? 'admin-disabled' : ''}
                   >
                     {isUserLimitReached ? 'Limit Reached' : 'Create User'}
                   </button>
@@ -866,10 +848,10 @@ const AdminUsers = () => {
           </div>
         )}
 
-        <div className="data-table">
+        <div className="admin-data-table">
           {isLoading ? (
-            <div className="loading-container">
-              <div className="loading-spinner large"></div>
+            <div className="admin-loading-container">
+              <div className="admin-loading-spinner admin-large"></div>
               <p>Loading users...</p>
             </div>
           ) : (
@@ -888,7 +870,7 @@ const AdminUsers = () => {
                     <tr
                       key={user.userId || index}
                       className={
-                        selectedUser === user.userId ? "selected" : ""
+                        selectedUser === user.userId ? "admin-selected" : ""
                       }
                       onClick={() => selectUser(user.userId)}
                     >
@@ -902,8 +884,8 @@ const AdminUsers = () => {
               </table>
 
               {hasMoreUsers && (
-                <div className="load-more-container">
-                  <button className="load-more-btn" onClick={loadMoreUsers}>
+                <div className="admin-load-more-container">
+                  <button className="admin-load-more-btn" onClick={loadMoreUsers}>
                     Load More
                   </button>
                 </div>

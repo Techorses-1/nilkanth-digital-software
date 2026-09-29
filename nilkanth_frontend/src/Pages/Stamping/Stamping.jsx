@@ -123,7 +123,7 @@ const Stamping = () => {
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [filterType, setFilterType] = useState("All");
+    const [filterType, setFilterType] = useState("GST");
 
     // ============= DELETE MODAL =============
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -1311,7 +1311,7 @@ const Stamping = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Capacity</th>
                                         <th>Price</th>
@@ -1723,7 +1723,7 @@ const Stamping = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
                                         <th>Qty</th>
@@ -2229,9 +2229,9 @@ const Stamping = () => {
         <Navbar>
             <ToastContainer position="top-center" autoClose={3000} />
             <div className="stamping-module-wrapper">
-                <div className="stamping-page-header">
+                {/* <div className="stamping-page-header">
                     <h2 className="stamping-page-title">Stamping Management</h2>
-                </div>
+                </div> */}
 
                 <div className="stamping-content-wrapper">
                     {renderTable()}
