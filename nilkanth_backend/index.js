@@ -47,6 +47,8 @@ const customerHistoryRoutes = require('./routes/customerHistoryRoutes');
 const amcRoutes = require('./routes/amcRoutes');
 const startAmcStatusCron = require('./cron/amcStatusCron');
 
+const dashboardRoutes = require('./routes/dashboardRoutes');
+
 // ============= ROUTE MIDDLEWARES =============
 // Old routes
 app.use('/customer', customerRoutes);
@@ -71,6 +73,7 @@ app.use('/stamping', stampingRoutes);
 
 app.use('/customer-history', customerHistoryRoutes);
 
+app.use('/dashboard', dashboardRoutes);
 // AMC routes
 app.use('/amc', amcRoutes);
 

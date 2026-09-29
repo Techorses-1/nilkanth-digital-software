@@ -19,6 +19,7 @@ import Repairing from "../Pages/Repairing/Repairing";
 import AMC from "../Pages/AMC/AMC";
 import Stamping from "../Pages/Stamping/Stamping";
 import CustomerHistory from "../Pages/CustomerHistory/CustomerHistory";
+import Dashboard from "../Pages/Dashboard/Dashboard";
 
 
 
@@ -41,6 +42,13 @@ const Router = () => {
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="invoice">  
                   <Sales />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="dashboard">  
+                  <Dashboard />
                 </PermissionRoute>
               </ProtectedRoute>
             } />
