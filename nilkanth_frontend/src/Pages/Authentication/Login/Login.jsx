@@ -6,11 +6,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Login.scss";
-// import logo from "../../../Assets/logo/bg_logo.png"; 
-// import logo from "../../../Assets/logo/th_logo.png"; 
 import logo from "../../../Assets/logo/newlogo.png"
-
-// import logo from "../../../Assets/logo/th.png";  
 import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
@@ -61,7 +57,8 @@ const Login = () => {
             <h1 className="welcome-title">Welcome Back!</h1>
             <div className="divider" />
             <p className="welcome-desc">
-From idea to invoice — streamline every step of your business. Log in to keep your operations smooth and success effortless.. </p>
+              From idea to invoice — streamline every step of your business. Log in to keep your operations smooth and success effortless.
+            </p>
             {localStorage.getItem("token") && (
               <div className="left-footer-home">
                 <p>Want to return back?</p>
@@ -71,14 +68,25 @@ From idea to invoice — streamline every step of your business. Log in to keep 
               </div>
             )}
           </div>
+
+          {/* ✅ Design & Developed by Techorses credit line */}
+          <div className="left-credit">
+            Design &amp; Developed by{" "}
+            <a
+              href="https://techorses.com"
+              target="_blank"
+              rel="noreferrer"
+              className="left-credit-link"
+            >
+              Techorses
+            </a>
+          </div>
         </div>
 
         {/* RIGHT: decorative background panel + glass form on top */}
         <div className="login-right">
-          {/* decorative rectangle behind the glass card */}
           <div className="form-bg" aria-hidden="true" />
 
-          {/* the translucent glass card with the actual form */}
           <div className="glass-card">
             <h2 className="login-title">Sign in</h2>
             <p className="login-subtitle">Enter your credentials below</p>
@@ -134,11 +142,6 @@ From idea to invoice — streamline every step of your business. Log in to keep 
                 {isSubmitting ? "Logging in..." : "Submit"}
               </button>
             </form>
-
-             {/* <div className="switch-auth">
-              Don't have an account?
-              <button onClick={handleSwitchToRegister} className="switch-button">Register here</button>
-            </div> */}
           </div>
         </div>
       </div>

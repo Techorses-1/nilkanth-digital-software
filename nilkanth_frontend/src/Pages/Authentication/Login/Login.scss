@@ -2,9 +2,7 @@
 
 :root {
   --accent-1: #4a6cf7;
-  /* primary blue */
   --accent-2: #7b9dfc;
-  /* lighter blue */
   --muted: #666;
   --card-white: rgba(255, 255, 255, 0.72);
   --card-border: rgba(255, 255, 255, 0.6);
@@ -18,22 +16,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
+  min-height: 100vh;
   padding: 24px;
   font-family: "Poppins", sans-serif;
-
-  /* replace old gradient with same as .form-bg */
   background: linear-gradient(135deg,
       rgba(122, 95, 255, 0.10),
       rgba(74, 108, 247, 0.08));
 }
 
-/* wrapper that holds left + right panels */
 .login-wrapper {
   display: flex;
   width: 100%;
   max-width: 1100px;
-  min-height: 640px;
+  min-height: 600px;
   border-radius: 18px;
   overflow: hidden;
   position: relative;
@@ -43,18 +38,17 @@
 /* ------------------- LEFT PANEL ------------------- */
 .login-left {
   flex: 1;
-  // background: linear-gradient(180deg, #f3f8ff 0%, #ffffff 100%); 
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background: linear-gradient(180deg, #ffffffaa 0%, #ffffffaa 100%);
-
   align-items: center;
-  padding: 64px;
+  padding: 64px 64px 30px;
   position: relative;
 
-  /* subtle decorative pattern (light abstract shapes using pseudo elements) */
   &::before {
     content: "";
     position: absolute;
@@ -72,6 +66,7 @@
     position: relative;
     z-index: 2;
     max-width: 420px;
+    width: 100%;
   }
 
   .logo-placeholder {
@@ -89,13 +84,10 @@
 
   .left-logo {
     width: 200px;
-    /* adjust size as you want */
     height: auto;
     border-radius: 8px;
-    /* keep rounded corners like placeholder */
-    margin-bottom: 10px; 
+    margin-bottom: 10px;
     object-fit: contain;
-    // padding: 1px;
     background: transparent;
   }
 
@@ -121,7 +113,6 @@
     line-height: 1.6;
   }
 
-
   .left-footer-home {
     margin-top: 28px;
     padding: 12px 16px;
@@ -143,7 +134,6 @@
     font-weight: 500;
     color: #0f172a;
     flex-shrink: 0;
-    /* don’t shrink text */
   }
 
   .home-button {
@@ -163,6 +153,29 @@
     box-shadow: 0 8px 20px rgba(74, 108, 247, 0.15);
   }
 
+  .left-credit {
+    position: relative;
+    z-index: 2;
+    margin-top: 24px;
+    width: 100%;
+    /* ← add this */
+    font-size: 13px;
+    color: #8a93a6;
+    text-align: left;
+    letter-spacing: 0.2px;
+
+    .left-credit-link {
+      color: var(--accent-1);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--accent-2);
+        text-decoration: underline;
+      }
+    }
+  }
 }
 
 /* ------------------- RIGHT PANEL ------------------- */
@@ -174,39 +187,31 @@
   justify-content: center;
   position: relative;
   background: rgba(255, 255, 255, 0.2);
-  /* translucent */
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-left: 1px solid rgba(255, 255, 255, 0.3);
   background: linear-gradient(180deg, #ffffffaa 0%, #ffffffaa 100%);
-
 }
 
-/* decorative colored rectangle that sits behind the glass card */
 .form-bg {
   position: absolute;
   right: 56px;
-  /* adjust to control horizontal offset */
   top: 50%;
   transform: translateY(-50%) rotate(-2deg);
   width: 420px;
   height: 420px;
   border-radius: 12px;
   z-index: 1;
-  /* soft pastel gradient — shows behind the glass to mimic the reference image effect */
   background: linear-gradient(135deg, rgba(122, 95, 255, 0.10), rgba(74, 108, 247, 0.08));
   box-shadow: 0 18px 40px rgba(74, 108, 247, 0.06), inset 0 -6px 20px rgba(255, 255, 255, 0.02);
-  /* optional gentle blur to soften the block */
   filter: blur(0.6px);
   pointer-events: none;
 }
 
-/* glass card (actual form) sits above the form-bg */
 .glass-card {
   width: 360px;
   max-width: calc(100% - 40px);
   background: var(--card-white);
-  /* semi-transparent white */
   border-radius: 14px;
   padding: 34px;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
@@ -216,7 +221,6 @@
   position: relative;
 }
 
-/* Titles inside the card */
 .login-title {
   font-size: 28px;
   font-weight: 700;
@@ -232,7 +236,6 @@
   margin-bottom: 22px;
 }
 
-/* form layout */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -295,14 +298,12 @@
   border-radius: 6px;
 }
 
-/* error message and small text */
 .error-message {
   color: #ff4d4f;
   font-size: 12px;
   margin-top: 4px;
 }
 
-/* submit button uses accent gradient */
 .submit-button {
   margin-top: 6px;
   background: linear-gradient(90deg, #ff9f43, #ff6b6b);
@@ -325,7 +326,6 @@
   box-shadow: 0 12px 28px rgba(255, 107, 107, 0.12);
 }
 
-/* switch auth text */
 .switch-auth {
   margin-top: 16px;
   text-align: center;
@@ -342,7 +342,7 @@
   cursor: pointer;
 }
 
-/* ------------------- RESPONSIVE: mobile-only (hide left and form background) ------------------- */
+/* ------------------- RESPONSIVE ------------------- */
 @media (max-width: 768px) {
   .login-wrapper {
     flex-direction: column;
@@ -356,7 +356,6 @@
     display: none;
   }
 
-  /* hide the welcome text on mobile as requested */
   .login-right {
     padding: 28px;
   }
@@ -365,7 +364,6 @@
     display: none;
   }
 
-  /* remove decorative rectangle on mobile to keep it clean */
   .glass-card {
     width: 100%;
     padding: 20px;
@@ -377,7 +375,6 @@
   }
 }
 
-/* small phones */
 @media (max-width: 400px) {
   .login-container {
     padding: 12px;
