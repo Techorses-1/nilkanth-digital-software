@@ -1,1 +1,1612 @@
 
+// ==================== THEME TOKENS ====================
+$primary-dark: #2d2f87;
+$primary: #3f3f91;
+$primary-light: #6a6ac5;
+$accent: #7366ff;
+$accent-light: #948cff;
+$success: #28a745;
+$success-dark: #218838;
+$danger: #dc3545;
+$danger-dark: #c82333;
+$warning: #f39c12;
+$warning-dark: #b9770e;
+$info: #17a2b8;
+$blue: #007bff;
+$text-main: #2b2b3a;
+$text-muted: #666;
+$border-soft: #e6e8f0;
+$bg-soft: #f7f8fc;
+
+@keyframes stamping-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes stamping-slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes stamping-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// ==================== PAGE WRAPPER + HEADER ====================
+.stamping-module-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4px 30px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: $text-main;
+}
+
+.stamping-page-header {
+  margin: 0 0 22px;
+  padding: 22px 28px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid $border-soft;
+  box-shadow: 0 4px 18px rgba(63, 63, 145, 0.08);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, $accent, $primary-light);
+  }
+
+  .stamping-page-title {
+    margin: 0;
+    padding-left: 6px;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: $primary-dark;
+  }
+}
+
+.stamping-content-wrapper {
+  width: 100%;
+}
+
+// ==================== TABLE CONTAINER ====================
+.stamping-table-container {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid $border-soft;
+  box-shadow: 0 4px 18px rgba(63, 63, 145, 0.08);
+  padding: 22px;
+}
+
+.stamping-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stamping-search-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.stamping-search-container {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+
+  .stamping-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    color: $accent;
+    font-size: 15px;
+  }
+
+  .stamping-search-input {
+    width: 100%;
+    padding: 11px 14px 11px 42px;
+    border: 1px solid $border-soft;
+    border-radius: 50px;
+    background: $bg-soft;
+    font-size: 14.5px;
+    color: #333;
+    transition: 0.25s;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    &::placeholder { color: #9a9aab; }
+
+    &:focus {
+      outline: none;
+      background: #fff;
+      border-color: $accent;
+      box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.15);
+    }
+  }
+}
+
+.stamping-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .stamping-filter-icon {
+    color: $accent;
+    font-size: 15px;
+  }
+
+  .stamping-filter-select {
+    min-width: 170px;
+  }
+}
+
+.stamping-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+    transition: all 0.25s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  .stamping-create-btn { background: linear-gradient(135deg, $accent, $accent-light); }
+  .stamping-pdf-export-btn { background: linear-gradient(135deg, $danger, #f0605f); }
+  .stamping-export-btn { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+}
+
+.stamping-loading-spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: stamping-spin 0.8s linear infinite;
+}
+
+// ==================== LOADING / EMPTY ====================
+.stamping-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 50px 20px;
+  color: $text-muted;
+
+  p { margin: 0; font-size: 14px; }
+}
+
+.stamping-loading-spinner {
+  width: 38px;
+  height: 38px;
+  border: 4px solid rgba(115, 102, 255, 0.18);
+  border-top-color: $accent;
+  border-radius: 50%;
+  animation: stamping-spin 0.8s linear infinite;
+}
+
+.stamping-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 50px 20px;
+  background: $bg-soft;
+  border: 1px dashed $border-soft;
+  border-radius: 12px;
+
+  p { margin: 0; color: #999; font-style: italic; font-size: 14px; }
+}
+
+// ==================== MAIN TABLE ====================
+.stamping-table-responsive {
+  overflow-x: auto;
+  border: 1px solid $border-soft;
+  border-radius: 12px;
+}
+
+.stamping-table {
+  width: 100%;
+  min-width: 1020px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead tr th:first-child { border-top-left-radius: 11px; }
+  thead tr th:last-child { border-top-right-radius: 11px; }
+
+  th,
+  td {
+    padding: 13px 14px;
+    text-align: left;
+    font-size: 13.5px;
+    color: $text-main;
+    white-space: nowrap;
+  }
+
+  th {
+    background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+    color: $primary;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid $border-soft;
+  }
+
+  .stamping-table-row {
+    border-bottom: 1px solid #f0f1f7;
+    transition: background-color 0.15s;
+
+    &:nth-child(even) { background: #fbfbfe; }
+    &:hover { background: #eef0ff; }
+  }
+
+  tbody tr td { border-bottom: 1px solid #f0f1f7; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .stamping-number strong { color: $primary-dark; }
+}
+
+.stamping-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+
+  &.stamping-status-paid { background: #e6f7ec; color: $success-dark; }
+  &.stamping-status-pending { background: #fff4e0; color: $warning-dark; }
+}
+
+.stamping-total-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #f0eeff;
+  color: $primary-dark;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.stamping-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  button {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { transform: translateY(-2px); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  .stamping-view-btn { background: #e6f1ff; color: $blue; &:hover:not(:disabled) { background: $blue; color: #fff; } }
+  .stamping-edit-btn { background: #fff4e0; color: $warning-dark; &:hover:not(:disabled) { background: $warning; color: #fff; } }
+  .stamping-delete-btn { background: #fdecec; color: $danger; &:hover:not(:disabled) { background: $danger; color: #fff; } }
+  .stamping-pdf-row-btn { background: #ffece8; color: #d9482b; &:hover:not(:disabled) { background: #d9482b; color: #fff; } }
+}
+
+// ==================== PAGINATION ====================
+.stamping-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 18px;
+
+  .stamping-pagination-info { font-size: 13px; color: $text-muted; }
+
+  .stamping-pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stamping-page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border: 1.5px solid $accent;
+    border-radius: 30px;
+    background: #fff;
+    color: $accent;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover:not(:disabled) { background: $accent; color: #fff; }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+  }
+
+  .stamping-page-info { font-size: 13px; font-weight: 700; color: $primary-dark; }
+}
+
+// ==================== FORM CONTAINER ====================
+.stamping-form-container {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 26px 28px;
+  background: linear-gradient(150deg, #ffffff 0%, #f4f4fd 55%, #ececfa 100%);
+  border: 1px solid $border-soft;
+  border-radius: 18px;
+  box-shadow: 0 10px 35px rgba(63, 63, 145, 0.1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(90deg, $accent, $primary-light, $accent-light);
+  }
+}
+
+.stamping-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid $border-soft;
+
+  .stamping-form-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: $primary-dark;
+  }
+
+  .stamping-form-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #f0f0f7;
+    color: $text-muted;
+    cursor: pointer;
+    transition: 0.2s;
+    flex-shrink: 0;
+
+    &:hover { background: $danger; color: #fff; }
+  }
+}
+
+// Toggle section
+.stamping-toggle-section {
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-radius: 12px;
+
+  .stamping-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 32px;
+  }
+
+  .stamping-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stamping-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $primary;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .stamping-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border: 1.5px solid $border-soft;
+    border-radius: 30px;
+    background: $bg-soft;
+    color: $text-muted;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    svg { font-size: 17px; }
+
+    &:hover { border-color: $accent; color: $accent; }
+
+    &.active {
+      background: linear-gradient(135deg, $accent, $accent-light);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(115, 102, 255, 0.3);
+    }
+  }
+}
+
+// Sections
+.stamping-section {
+  margin-bottom: 16px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-radius: 12px;
+}
+
+.stamping-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid $border-soft;
+  font-size: 15px;
+  font-weight: 800;
+  color: $primary-dark;
+}
+
+.stamping-loading-inline {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-muted;
+}
+
+.stamping-form-row {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.stamping-form-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  &.stamping-form-field-full {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}
+
+.stamping-form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #4a4a5e;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+
+  svg { color: $accent; font-size: 12.5px; }
+}
+
+.stamping-input-field,
+.stamping-textarea-field {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #dcdce8;
+  border-radius: 8px;
+  background: #fff;
+  color: $text-main;
+  font-size: 14.5px;
+  font-family: inherit;
+  transition: 0.25s;
+
+  &::placeholder { color: #b3b3c2; }
+
+  &:focus {
+    outline: none;
+    border-color: $accent;
+    background: #fbfbff;
+    box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.14);
+  }
+
+  &[readonly],
+  &:disabled {
+    background: $bg-soft;
+    color: #55556a;
+    cursor: not-allowed;
+
+    &:focus { border-color: #dcdce8; box-shadow: none; }
+  }
+}
+
+.stamping-textarea-field {
+  resize: vertical;
+  min-height: 64px;
+}
+
+.stamping-customer-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed $border-soft;
+}
+
+.stamping-product-row {
+  display: flex;
+  gap: 16px;
+
+  .stamping-product-select { min-width: 0; }
+}
+
+// ==================== REACT-SELECT OVERRIDES ====================
+.stamping-react-select,
+.stamping-filter-select {
+  width: 100%;
+
+  .stamping-select__control,
+  .stamping-filter__control {
+    min-height: 44px;
+    border: 1.5px solid #dcdce8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: none;
+    transition: 0.25s;
+
+    &:hover { border-color: #c3c3d8; }
+  }
+
+  .stamping-select__control--is-focused,
+  .stamping-filter__control--is-focused {
+    border-color: $accent;
+    box-shadow: 0 0 0 4px rgba(115, 102, 255, 0.14);
+
+    &:hover { border-color: $accent; }
+  }
+
+  .stamping-select__control--is-disabled {
+    background: $bg-soft;
+    cursor: not-allowed;
+  }
+
+  .stamping-select__value-container,
+  .stamping-filter__value-container { padding: 2px 12px; }
+
+  .stamping-select__single-value,
+  .stamping-filter__single-value {
+    color: $text-main;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+
+  .stamping-select__placeholder,
+  .stamping-filter__placeholder {
+    color: #b3b3c2;
+    font-size: 14px;
+  }
+
+  .stamping-select__indicator,
+  .stamping-filter__indicator { color: $accent; }
+
+  .stamping-select__indicator-separator,
+  .stamping-filter__indicator-separator { background: #e3e3ee; }
+
+  .stamping-select__menu,
+  .stamping-filter__menu {
+    margin-top: 6px;
+    border: 1px solid $border-soft;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(63, 63, 145, 0.18);
+    z-index: 1200;
+  }
+
+  .stamping-select__option,
+  .stamping-filter__option {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .stamping-select__option--is-selected,
+  .stamping-filter__option--is-selected {
+    background: rgba(115, 102, 255, 0.14);
+    color: $primary-dark;
+    font-weight: 700;
+  }
+}
+
+// ==================== PREVIOUS STAMPED UNITS PANEL ====================
+.stamping-previous-section {
+  margin-bottom: 16px;
+  padding: 18px;
+  background: #eef4ff;
+  border: 1px solid #d6e4ff;
+  border-radius: 12px;
+
+  .stamping-section-title { border-bottom-color: #cfe0ff; }
+}
+
+.stamping-previous-empty {
+  margin: 0;
+  padding: 18px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  font-size: 13.5px;
+  background: #fff;
+  border: 1px dashed $border-soft;
+  border-radius: 10px;
+}
+
+.stamping-previous-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.stamping-previous-card {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-left: 4px solid $accent;
+  border-radius: 10px;
+  transition: 0.2s;
+
+  &:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06); }
+
+  &.stamping-previous-added {
+    border-left-color: $success;
+    background: #f6fbf7;
+  }
+
+  .stamping-previous-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .stamping-previous-product {
+    font-weight: 700;
+    color: $primary-dark;
+    font-size: 14px;
+  }
+
+  .stamping-previous-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #e6f7ec;
+    color: $success-dark;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .stamping-previous-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 12.5px;
+  }
+
+  .stamping-previous-label { color: $text-muted; }
+  .stamping-previous-value { color: $text-main; font-weight: 600; text-align: right; }
+
+  .stamping-previous-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed $border-soft;
+  }
+
+  .stamping-previous-add-btn,
+  .stamping-previous-history-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .stamping-previous-add-btn {
+    background: linear-gradient(135deg, $accent, $accent-light);
+    color: #fff;
+
+    &:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(115, 102, 255, 0.3); }
+  }
+
+  .stamping-previous-history-btn {
+    background: #eceef5;
+    color: #444;
+
+    &:hover { background: #dfe1eb; }
+  }
+}
+
+// ==================== LINE ITEMS TABLE ====================
+.stamping-items-table-wrap {
+  overflow-x: auto;
+  border: 1px solid $border-soft;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.stamping-items-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    padding: 12px 12px;
+    background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+    color: $primary;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    border-bottom: 2px solid $border-soft;
+  }
+
+  td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    font-size: 13.5px;
+    color: $text-main;
+    border-bottom: 1px solid #f0f1f7;
+  }
+
+  tbody tr:hover { background: #fafaff; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .stamping-item-name {
+    font-weight: 700;
+    color: $primary-dark;
+    min-width: 160px;
+  }
+
+  .stamping-item-input {
+    width: 90px;
+    padding: 8px 10px;
+    border: 1.5px solid #dcdce8;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: $text-main;
+    transition: 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $accent;
+      box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.14);
+    }
+  }
+
+  td:nth-child(3) .stamping-item-input { width: 170px; }
+  td:nth-child(4) .stamping-item-input { width: 100px; }
+  td:nth-child(5) .stamping-item-input { width: 100px; }
+
+  .stamping-item-final {
+    font-weight: 800;
+    color: $primary-dark;
+    white-space: nowrap;
+  }
+
+  .stamping-item-remove {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: #fee;
+    color: $danger;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover { background: $danger; color: #fff; }
+  }
+}
+
+// ==================== UNIQUE NUMBERS SECTION ====================
+.stamping-unique-section {
+  margin-bottom: 16px;
+  padding: 18px;
+  background: #fff9ec;
+  border: 1px solid #ffe4a8;
+  border-radius: 12px;
+
+  .stamping-section-title { border-bottom-color: #ffe4a8; }
+}
+
+.stamping-unique-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stamping-unique-product {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+}
+
+.stamping-unique-product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stamping-unique-product-name {
+  font-weight: 700;
+  color: $primary-dark;
+  font-size: 14px;
+}
+
+.stamping-unique-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 2px dashed $accent;
+  border-radius: 20px;
+  background: #fff;
+  color: $accent;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover { background: $accent; color: #fff; border-style: solid; }
+}
+
+.stamping-unique-numbers-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stamping-unique-number-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: $bg-soft;
+  border: 1px solid $border-soft;
+  border-radius: 8px;
+}
+
+.stamping-unique-input {
+  width: 130px;
+  padding: 7px 10px;
+  border: 1.5px solid #dcdce8;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  color: $text-main;
+  transition: 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: $accent;
+    box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.14);
+  }
+}
+
+.stamping-unique-remove-btn {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: #fee;
+  color: $danger;
+  cursor: pointer;
+  font-size: 11px;
+  transition: 0.2s;
+
+  &:hover { background: $danger; color: #fff; }
+}
+
+// Unique number pill in the view modal's items table
+.stamping-unique-tag {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f0eeff;
+  color: $primary-dark;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+// ==================== SUMMARY ====================
+.stamping-summary-column {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-left: 4px solid $accent;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(63, 63, 145, 0.08);
+
+  .stamping-summary-title {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid $border-soft;
+    font-size: 15px;
+    font-weight: 800;
+    color: $primary-dark;
+  }
+
+  .stamping-summary-items { margin-bottom: 16px; }
+
+  .stamping-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+    color: $text-main;
+
+    &.stamping-summary-discount { color: $danger-dark; }
+
+    &.stamping-summary-grand {
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: #f0eeff;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      color: $primary-dark;
+    }
+  }
+
+  .stamping-submit-btn { width: 100%; justify-content: center; }
+}
+
+.stamping-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, $accent, $accent-light);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(115, 102, 255, 0.35);
+  transition: all 0.25s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(115, 102, 255, 0.45);
+  }
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+}
+
+// ==================== MODALS (view / unit history) ====================
+.stamping-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(30, 27, 60, 0.55);
+  backdrop-filter: blur(2px);
+  animation: stamping-fadeIn 0.25s ease-out;
+}
+
+.stamping-modal-content {
+  width: 92%;
+  max-width: 980px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(30, 27, 60, 0.35);
+  animation: stamping-slideUp 0.25s ease-out;
+}
+
+.stamping-modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 26px;
+  background: linear-gradient(135deg, #fbfbff, #f2f2fb);
+  border-bottom: 1px solid $border-soft;
+  border-radius: 16px 16px 0 0;
+
+  .stamping-modal-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    color: $primary-dark;
+
+    svg { color: $accent; }
+  }
+
+  .stamping-modal-close {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #f0f0f7;
+    color: $text-muted;
+    cursor: pointer;
+    transition: 0.2s;
+    flex-shrink: 0;
+
+    &:hover { background: $danger; color: #fff; }
+  }
+}
+
+.stamping-modal-body { padding: 24px 26px; }
+
+.stamping-modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 26px;
+  background: #fff;
+  border-top: 1px solid $border-soft;
+  border-radius: 0 0 16px 16px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) { transform: translateY(-1px); }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  .stamping-pdf-btn { background: linear-gradient(135deg, $danger, #f0605f); color: #fff; }
+  .stamping-modal-close-btn { background: #eceef5; color: #444; &:hover:not(:disabled) { background: #dfe1eb; } }
+}
+
+// ---------- View modal content ----------
+.stamping-view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.stamping-view-item {
+  padding: 12px 14px;
+  background: $bg-soft;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+  transition: 0.2s;
+
+  &:hover { border-color: #d6d8ee; }
+
+  &.stamping-view-item-full { grid-column: 1 / -1; }
+
+  .stamping-view-label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: $primary;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .stamping-view-value {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: $text-main;
+    word-break: break-word;
+  }
+}
+
+.stamping-view-subtitle {
+  margin: 26px 0 12px;
+  padding-bottom: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: $primary-dark;
+  border-bottom: 2px solid $border-soft;
+}
+
+.stamping-view-table-wrap {
+  overflow-x: auto;
+  border: 1px solid $border-soft;
+  border-radius: 10px;
+}
+
+.stamping-view-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  th {
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #f5f6fd, #eef0fb);
+    color: $primary;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: left;
+    border-bottom: 2px solid $border-soft;
+  }
+
+  td {
+    padding: 10px 12px;
+    font-size: 13.5px;
+    color: $text-main;
+    border-bottom: 1px solid #f0f1f7;
+  }
+
+  tbody tr:nth-child(even) { background: #fbfbfe; }
+  tbody tr:hover { background: #f0f0ff; }
+  tbody tr:last-child td { border-bottom: none; }
+}
+
+.stamping-view-summary {
+  width: 100%;
+  max-width: 360px;
+  margin: 18px 0 0 auto;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid $border-soft;
+  border-left: 4px solid $accent;
+  border-radius: 10px;
+
+  .stamping-view-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    color: $text-main;
+
+    &.stamping-view-grand {
+      margin-top: 6px;
+      padding: 10px 12px;
+      background: #f0eeff;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 800;
+      color: $primary-dark;
+    }
+  }
+}
+
+// ==================== DELETE MODAL ====================
+.stamping-delete-modal {
+  width: 92%;
+  max-width: 420px;
+  padding: 28px 26px;
+  background: #fff;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: stamping-slideUp 0.25s ease-out;
+
+  .stamping-delete-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fdecec;
+    color: $danger;
+    font-size: 28px;
+  }
+
+  .stamping-delete-modal-title {
+    margin: 0 0 8px;
+    font-size: 19px;
+    font-weight: 800;
+    color: $primary-dark;
+  }
+
+  .stamping-delete-modal-text {
+    margin: 0 0 18px;
+    font-size: 13.5px;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .stamping-delete-modal-info {
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    background: $bg-soft;
+    border: 1px solid $border-soft;
+    border-radius: 10px;
+    text-align: left;
+  }
+
+  .stamping-delete-modal-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 5px 0;
+    font-size: 13.5px;
+  }
+
+  .stamping-delete-modal-label { color: $text-muted; font-weight: 600; }
+  .stamping-delete-modal-value { color: $text-main; font-weight: 700; text-align: right; }
+
+  .stamping-delete-modal-buttons {
+    display: flex;
+    gap: 10px;
+
+    button {
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+
+    .stamping-delete-modal-cancel {
+      background: #e9ecef;
+      color: #333;
+
+      &:hover:not(:disabled) { background: #dee2e6; }
+    }
+
+    .stamping-delete-modal-confirm {
+      background: linear-gradient(135deg, $danger, #f0605f);
+      color: #fff;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(220, 53, 69, 0.35);
+      }
+    }
+  }
+}
+
+// ==================== PDF EXPORT PROGRESS ====================
+.stamping-pdf-progress-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(30, 27, 60, 0.7);
+  backdrop-filter: blur(3px);
+  animation: stamping-fadeIn 0.2s ease-out;
+}
+
+.stamping-pdf-progress-modal {
+  width: 92%;
+  max-width: 420px;
+  padding: 30px 28px;
+  background: #fff;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+  .stamping-pdf-progress-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f0eeff;
+    color: $accent;
+    font-size: 28px;
+  }
+
+  .stamping-pdf-progress-title {
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 800;
+    color: $primary-dark;
+  }
+
+  .stamping-pdf-progress-status {
+    margin: 0 0 16px;
+    font-size: 13.5px;
+    color: $text-muted;
+    font-weight: 600;
+  }
+
+  .stamping-pdf-progress-bar-container {
+    height: 10px;
+    overflow: hidden;
+    background: #eceef5;
+    border-radius: 10px;
+  }
+
+  .stamping-pdf-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, $accent, $accent-light);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+  }
+
+  .stamping-pdf-progress-percentage {
+    margin: 8px 0 14px;
+    font-size: 14px;
+    font-weight: 800;
+    color: $primary-dark;
+  }
+
+  .stamping-pdf-progress-spinner {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 14px;
+    border: 3px solid rgba(115, 102, 255, 0.18);
+    border-top-color: $accent;
+    border-radius: 50%;
+    animation: stamping-spin 0.8s linear infinite;
+  }
+
+  .stamping-pdf-progress-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+  }
+}
+
+// ==================== TABLET (769px – 1024px) ====================
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .stamping-page-header { padding: 18px 22px; }
+
+  .stamping-table-container { padding: 18px; }
+
+  .stamping-search-container { width: 240px; }
+
+  .stamping-action-buttons button {
+    padding: 10px 14px;
+    font-size: 12.5px;
+  }
+
+  .stamping-form-container { padding: 22px 20px; }
+
+  .stamping-form-row {
+    flex-wrap: wrap;
+
+    .stamping-form-field { flex: 1 1 45%; }
+  }
+
+  .stamping-view-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .stamping-previous-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .stamping-modal-content { width: 94%; }
+}
+
+// ==================== MOBILE (≤768px) ====================
+@media screen and (max-width: 768px) {
+  .stamping-page-header {
+    padding: 16px 18px;
+
+    .stamping-page-title { font-size: 21px; }
+  }
+
+  .stamping-table-container { padding: 14px; }
+
+  .stamping-table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stamping-search-filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stamping-search-container { width: 100%; }
+
+  .stamping-filter-container {
+    width: 100%;
+
+    .stamping-filter-select { flex: 1; min-width: 0; }
+  }
+
+  .stamping-action-buttons {
+    width: 100%;
+
+    button {
+      flex: 1;
+      justify-content: center;
+      padding: 11px 12px;
+    }
+  }
+
+  .stamping-form-container { padding: 18px 14px; }
+
+  .stamping-form-header .stamping-form-title { font-size: 17px; }
+
+  .stamping-toggle-section {
+    padding: 12px 14px;
+
+    .stamping-toggle-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  }
+
+  .stamping-section,
+  .stamping-previous-section,
+  .stamping-unique-section { padding: 14px; }
+
+  .stamping-form-row {
+    flex-direction: column;
+    gap: 14px;
+
+    // beats the inline flex: 7 / flex: 3 set in the JSX for customer + stamp date
+    .stamping-form-field {
+      flex: none !important;
+      width: 100%;
+    }
+  }
+
+  .stamping-previous-grid { grid-template-columns: 1fr; }
+
+  .stamping-unique-numbers-row { flex-direction: column; align-items: stretch; }
+
+  .stamping-unique-input { width: 100%; }
+
+  .stamping-unique-product-header { flex-wrap: wrap; gap: 8px; }
+
+  .stamping-summary-column { max-width: 100%; }
+
+  .stamping-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+
+    .stamping-pagination-buttons { justify-content: space-between; }
+  }
+
+  .stamping-modal-content { width: 96%; max-height: 88vh; }
+
+  .stamping-modal-header,
+  .stamping-modal-footer { padding: 14px 16px; }
+
+  .stamping-modal-body { padding: 16px; }
+
+  .stamping-modal-footer button {
+    flex: 1;
+    justify-content: center;
+    padding: 11px 12px;
+  }
+
+  .stamping-view-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stamping-view-summary { max-width: 100%; }
+
+  .stamping-delete-modal { padding: 22px 18px; }
+
+  .stamping-delete-modal .stamping-delete-modal-buttons { flex-direction: column; }
+}
+
+@media screen and (max-width: 480px) {
+  .stamping-action-buttons { flex-direction: column; }
+
+  .stamping-pagination .stamping-pagination-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

@@ -620,7 +620,8 @@ const AMC = () => {
                 },
                 margin: [0, 0, 20, 0],
                 pagebreak: {
-                    mode: ['css', 'legacy']
+                    mode: ['css', 'legacy'],
+                    avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
                 }
             };
 
@@ -725,7 +726,8 @@ const AMC = () => {
                         },
                         margin: [0, 0, 20, 0],
                         pagebreak: {
-                            mode: ['css', 'legacy']
+                            mode: ['css', 'legacy'],
+                            avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
                         }
                     };
 

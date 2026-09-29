@@ -587,7 +587,10 @@ const Stamping = () => {
                 html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
                 jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                 margin: [0, 0, 20, 0],
-                pagebreak: { mode: ['css', 'legacy'] }
+                pagebreak: {
+                    mode: ['css', 'legacy'],
+                    avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
+                }
             };
 
             await html2pdf().set(opt).from(element).save();
@@ -676,7 +679,10 @@ const Stamping = () => {
                         html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
                         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
                         margin: [0, 0, 20, 0],
-                        pagebreak: { mode: ['css', 'legacy'] }
+                        pagebreak: {
+                            mode: ['css', 'legacy'],
+                            avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
+                        }
                     };
 
                     const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');

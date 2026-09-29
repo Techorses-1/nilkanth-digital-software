@@ -41,6 +41,7 @@ const productPurchaseRoutes = require('./routes/productPurchaseRoutes');
 const quotationRoutes = require('./routes/quotationRoutes');
 const repairingRoutes = require('./routes/repairingRoutes');
 const stampingRoutes = require('./routes/stampingRoutes');
+const customerHistoryRoutes = require('./routes/customerHistoryRoutes');
 
 // ===== AMC ROUTES  =====
 const amcRoutes = require('./routes/amcRoutes');
@@ -67,6 +68,8 @@ app.use('/quotation', quotationRoutes);
 app.use('/repairing', repairingRoutes);
 
 app.use('/stamping', stampingRoutes);
+
+app.use('/customer-history', customerHistoryRoutes);
 
 // AMC routes
 app.use('/amc', amcRoutes);

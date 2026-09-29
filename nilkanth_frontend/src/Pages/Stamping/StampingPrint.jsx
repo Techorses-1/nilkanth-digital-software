@@ -346,7 +346,7 @@ Subject to Vadodara Jurisdiction only.`;
                                         </tr>
                                     )}
                                     {/* Unique Numbers row */}
-                                    {item.uniqueNumbers && item.uniqueNumbers.filter(u => u.number).length > 0 && (
+                                    {/* {item.uniqueNumbers && item.uniqueNumbers.filter(u => u.number).length > 0 && (
                                         <tr className="item-unique-row">
                                             <td colSpan="7" className="item-unique-cell">
                                                 <strong>Unique Numbers:</strong>{' '}
@@ -359,7 +359,7 @@ Subject to Vadodara Jurisdiction only.`;
                                                     ))}
                                             </td>
                                         </tr>
-                                    )}
+                                    )} */}
                                 </React.Fragment>
                             ))}
                         </tbody>
