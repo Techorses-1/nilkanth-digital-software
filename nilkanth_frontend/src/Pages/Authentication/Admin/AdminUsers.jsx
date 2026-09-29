@@ -38,12 +38,15 @@ const AdminUsers = () => {
   }, [users.length]);
 
   const availablePermissions = [
+    { id: "invoice", name: "Sales / Invoice" },
     { id: "customer", name: "Customer" },
     { id: "products", name: "Products" },
-    { id: "invoice", name: "Sales / Invoice" },
     { id: "inventory", name: "Inventory" },
-    { id: "purchase", name: "Purchase" },
-    { id: "vendor", name: "Vendor" },
+    { id: "quotation", name: "Quotation" },
+    { id: "repairing", name: "Repairing" },
+    { id: "amc", name: "AMC" },
+    { id: "stamping", name: "Stamping" },
+    { id: "history", name: "Customer History" },
     { id: "admin", name: "Admin" },
   ];
 

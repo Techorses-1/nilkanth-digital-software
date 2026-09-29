@@ -4,13 +4,13 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 // Icon imports
 import { BiLogOut, BiLogIn } from "react-icons/bi";
 import { TbUsers } from "react-icons/tb";
-import {  PiShoppingCart } from "react-icons/pi";
+import { PiShoppingCart } from "react-icons/pi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import { FiUser } from "react-icons/fi";
-import {  MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
-import {  FaTools } from "react-icons/fa";
-import {  RiFilePaper2Line } from "react-icons/ri";
+import { MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
+import { FaTools } from "react-icons/fa";
+import { RiFilePaper2Line } from "react-icons/ri";
 import { TbCertificate } from "react-icons/tb";
 import { FaClipboardList, FaStamp } from "react-icons/fa";
 
@@ -133,25 +133,11 @@ const Navbar = ({
       path: "/customer",
       permission: "customer"
     },
-    // { icon: <FaTruck />, title: "Vendor", path: "/vendor", permission: "customer" },
     {
       icon: <PiShoppingCart />,
       title: "Products",
       path: "/items",
       permission: "products"
-    },
-    // { icon: <FaStore />, title: "Purchase", path: "/purchase", permission: "purchase" },
-    {
-      icon: <MdInventory />,
-      title: "Inventory",
-      path: "/inventory",
-      permission: "inventory"
-    },
-    {
-      icon: <RiFilePaper2Line />,
-      title: "Quotation",
-      path: "/quotation",
-      permission: "admin"
     },
     {
       icon: <FaTools />,
@@ -171,6 +157,19 @@ const Navbar = ({
       path: "/stamping",
       permission: "admin"
     },
+    {
+      icon: <RiFilePaper2Line />,
+      title: "Quotation",
+      path: "/quotation",
+      permission: "admin"
+    },
+    {
+      icon: <MdInventory />,
+      title: "Inventory",
+      path: "/inventory",
+      permission: "inventory"
+    },
+
     {
       icon: <FaClipboardList />,
       title: "History",
