@@ -92,7 +92,7 @@ startAmcStatusCron();
 
 // Basic Route
 app.get('/', (req, res) => {
-  res.send('Nilkanth Digital Inventory Backend Running !');
+  res.send('New Nilkanth Digital Inventory Backend Running !');
 });
 
 // Server
