@@ -14,7 +14,7 @@ import { RiFilePaper2Line } from "react-icons/ri";
 import { TbCertificate } from "react-icons/tb";
 import { FaClipboardList, FaStamp } from "react-icons/fa";
 
-import logo from "../../Assets/logo/logo.png";
+import logo from "../../Assets/logo/newlogo.png";
 import "./Navbar.css";
 
 const Navbar = ({
