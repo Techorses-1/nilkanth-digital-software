@@ -166,7 +166,7 @@ const Quotation = () => {
             const headers = getAuthHeaders();
 
             const [customersRes, productsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/customer/get-customers`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/customer/get-customers?limit=1000`, headers),
                 axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
             ]);
 
@@ -255,12 +255,12 @@ const Quotation = () => {
         const product = products.find(p => p.productId === option?.value);
         if (!product) return;
 
-        const exists = lineItems.some(item => item.productId === product.productId);
-        if (exists) {
-            toast.warning("Product already added");
-            setSelectedProduct(null);
-            return;
-        }
+        // const exists = lineItems.some(item => item.productId === product.productId);
+        // if (exists) {
+        //     toast.warning("Product already added");
+        //     setSelectedProduct(null);
+        //     return;
+        // }
 
         const newItem = {
             productId: product.productId,
@@ -842,7 +842,7 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Qty</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
@@ -1081,7 +1081,7 @@ const Quotation = () => {
                                     <tr>
                                         <th>#</th>
                                         <th>Product</th>
-                                        <th>Invoice Desc</th>
+                                        <th>Product Desc</th>
                                         <th>Unit</th>
                                         <th>Capacity</th>
                                         <th>HSN</th>
