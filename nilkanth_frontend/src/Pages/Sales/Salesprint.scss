@@ -15,13 +15,13 @@ $primary-blue-light: #e9eefb;
   box-sizing: border-box;
   position: relative;
 
+  // ✅ No min-height / padding-bottom / forced break here anymore —
+  // JSX decides where the gallery starts
   .invoice-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    min-height: 100%;
     position: relative;
-    padding-bottom: 25px;
   }
 
   // ===== SHREE GANESHAY NAMAH (page 1 only, normal flow so it can
@@ -426,16 +426,69 @@ $primary-blue-light: #e9eefb;
     }
   }
 
-  // ===== DECLARATION & TERMS =====
-  .declaration-terms-section {
-    display: flex;
-    gap: 20px;
+  // ===== TERMS (2 COLUMNS) + DECLARATION WRAPPER =====
+  // ✅ Protected from page split — entire block moves together to the next page
+  .terms-declaration-wrapper {
+    page-break-inside: avoid;
+    break-inside: avoid;
     margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
-    .declaration-section,
+    // Terms section
     .terms-section {
-      flex: 1;
+      h3 {
+        font-size: 11px;
+        font-weight: 700;
+        color: $primary-blue;
+        margin: 0 0 6px 0;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid $primary-blue;
+        padding-bottom: 3px;
+        text-align: left;
+      }
 
+      // ✅ Two-column layout
+      .terms-two-column {
+        display: flex;
+        gap: 20px;
+
+        // NOTE: native <ul> "list-style: disc" bullets are unreliable with
+        // html2canvas (the marker box often doesn't get captured), so
+        // bullets are drawn manually with ::before instead — this always
+        // renders correctly in the generated PDF.
+        .terms-col {
+          flex: 1;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+
+          li {
+            position: relative;
+            padding-left: 14px;
+            margin-bottom: 4px;
+            font-size: 9.5px;
+            line-height: 1.3;
+            color: #333;
+
+            &::before {
+              content: "\2022";
+              position: absolute;
+              left: 0;
+              top: 0;
+              color: $primary-blue;
+              font-weight: 700;
+              font-size: 12px;
+              line-height: 1.3;
+            }
+          }
+        }
+      }
+    }
+
+    // Declaration — full width below
+    .declaration-section {
       h3 {
         font-size: 11px;
         font-weight: 700;
@@ -454,40 +507,11 @@ $primary-blue-light: #e9eefb;
         color: #333;
         text-align: justify;
       }
-
-      // NOTE: native <ul> "list-style: disc" bullets are unreliable with
-      // html2canvas (the marker box often doesn't get captured), so
-      // bullets are drawn manually with ::before instead — this always
-      // renders correctly in the generated PDF.
-      ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-
-        li {
-          position: relative;
-          padding-left: 14px;
-          margin-bottom: 4px;
-          font-size: 9.5px;
-          line-height: 1.3;
-          color: #333;
-
-          &::before {
-            content: "\2022";
-            position: absolute;
-            left: 0;
-            top: 0;
-            color: $primary-blue;
-            font-weight: 700;
-            font-size: 12px;
-            line-height: 1.3;
-          }
-        }
-      }
     }
   }
 
   // ===== FOOTER =====
+  // ✅ Protected from page split
   .invoice-footer {
     display: flex;
     justify-content: space-between;
@@ -495,6 +519,8 @@ $primary-blue-light: #e9eefb;
     margin-top: 6px;
     padding-top: 8px;
     border-top: 2px solid $primary-blue;
+    page-break-inside: avoid;
+    break-inside: avoid;
 
     .footer-left {
       p {
@@ -540,6 +566,11 @@ $primary-blue-light: #e9eefb;
     padding: 14px 18px;
     text-align: center;
     margin-bottom: 14px;
+    // ✅ banner never stays alone at bottom of a page — it moves with the first row
+    page-break-after: avoid;
+    break-after: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
 
     h2 {
       margin: 0;
@@ -556,16 +587,26 @@ $primary-blue-light: #e9eefb;
     }
   }
 
-  // ===== PAGE 2: PRODUCT GALLERY (8 category cards, 3 / 3 / 2) =====
-  // NOTE: ganesh-line removed from this page (page 1 only) — padding-top
-  // brought back down to a small value since we're no longer
-  // compensating for that extra line of text.
+  // ===== PRODUCT GALLERY (3 / 3 / 3) =====
+  // ✅ padding-top gives breathing space at the top of every gallery page
+  // ✅ box-decoration-break: clone repeats that padding on every page the gallery continues to
   .product-gallery-page {
-    page-break-before: always;
-    break-before: page;
     position: relative;
-    padding-top: 4px;
     padding-top: 10mm;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+
+    // Invoice fits on page 1 -> gallery starts on page 2
+    &.gallery-new-page {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    // Invoice spills to page 2 -> gallery starts right below it (no forced break)
+    &.gallery-flow {
+      page-break-before: auto;
+      break-before: auto;
+    }
 
     .gallery-grid {
       display: grid;
@@ -782,14 +823,14 @@ $primary-blue-light: #e9eefb;
 @media print {
   #sales-pdf {
     width: 100%;
-    height: 100%;
+    height: auto;
     margin: 0;
     padding: 12mm 15mm;
     box-shadow: none;
 
     .invoice-container {
       min-height: auto;
-      padding-bottom: 25px;
+      padding-bottom: 0;
     }
 
     .items-table {
@@ -801,23 +842,30 @@ $primary-blue-light: #e9eefb;
       }
     }
 
-    .declaration-terms-section,
+    // ✅ Protected sections — move whole section to next page if cut
+    .terms-declaration-wrapper,
     .invoice-footer,
     .totals-row,
     .bank-details,
     .amount-in-words,
     .calculation-section {
       page-break-inside: avoid;
+      break-inside: avoid;
       page-break-before: auto;
     }
 
-    .product-gallery-page,
+    .product-gallery-page {
+      .gallery-card {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+
     .hero-grid-page,
     .polaroid-page {
       page-break-before: always;
       break-before: page;
 
-      .gallery-card,
       .small-card,
       .polaroid-card,
       .hero-image-wrap {

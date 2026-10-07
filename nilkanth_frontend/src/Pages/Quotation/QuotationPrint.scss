@@ -14,16 +14,15 @@ $primary-blue-light: #e9eefb;
     box-sizing: border-box;
     position: relative;
 
+    // ✅ No forced break here anymore — JSX decides where the gallery starts
     .quotation-container {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        min-height: 100%;
         position: relative;
-        padding-bottom: 25px;
     }
 
-    // ===== SHREE GANESHAY NAMAH (page 1 only) =====
+    // ===== SHREE GANESHAY NAMAH =====
     .ganesh-line {
         margin: 0 0 2px 0;
         text-align: center;
@@ -133,8 +132,6 @@ $primary-blue-light: #e9eefb;
         border-bottom: 2px solid $primary-blue;
         margin: 3px 0 10px 0;
     }
-
-    // ✅ REMOVED: .quotation-title-banner
 
     // ===== INFO SECTION =====
     .info-section {
@@ -304,7 +301,6 @@ $primary-blue-light: #e9eefb;
                 background: $primary-blue-light;
             }
 
-            // ===== ITEM DESCRIPTION ROW (Full Width) =====
             .item-description-row {
                 .item-description-cell {
                     text-align: left !important;
@@ -399,7 +395,7 @@ $primary-blue-light: #e9eefb;
         }
     }
 
-    // ===== CALCULATIONS (Only Total) =====
+    // ===== CALCULATIONS =====
     .calculation-section {
         page-break-inside: avoid;
         break-inside: avoid;
@@ -428,13 +424,12 @@ $primary-blue-light: #e9eefb;
                     color: #222;
                 }
 
-                // ✅ Only TOTAL row (no subtotal, no discount)
                 &.grand-total {
 
                     .calc-label,
                     .calc-value {
                         font-weight: 600;
-                        font-size: 15px;
+                        font-size: 13px;
                         color: $primary-blue;
                     }
                 }
@@ -442,16 +437,66 @@ $primary-blue-light: #e9eefb;
         }
     }
 
-    // ===== DECLARATION & TERMS =====
-    .declaration-terms-section {
-        display: flex;
-        gap: 20px;
+    // ===== TERMS + DECLARATION WRAPPER =====
+    // ✅ Protected from page split — entire block moves together
+    .terms-declaration-wrapper {
+        page-break-inside: avoid;
+        break-inside: avoid;
         margin-bottom: 8px;
+        margin-top: -20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
 
-        .declaration-section,
+        // Terms section
         .terms-section {
-            flex: 1;
+            h3 {
+                font-size: 11px;
+                font-weight: 700;
+                color: $primary-blue;
+                margin: 0 0 6px 0;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid $primary-blue;
+                padding-bottom: 3px;
+                text-align: left;
+            }
 
+            // ✅ Two-column layout
+            .terms-two-column {
+                display: flex;
+                gap: 20px;
+
+                .terms-col {
+                    flex: 1;
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+
+                    li {
+                        position: relative;
+                        padding-left: 14px;
+                        margin-bottom: 4px;
+                        font-size: 9.5px;
+                        line-height: 1.3;
+                        color: #333;
+
+                        &::before {
+                            content: "\2022";
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            color: $primary-blue;
+                            font-weight: 700;
+                            font-size: 12px;
+                            line-height: 1.3;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Declaration — full width below
+        .declaration-section {
             h3 {
                 font-size: 11px;
                 font-weight: 700;
@@ -470,43 +515,21 @@ $primary-blue-light: #e9eefb;
                 color: #333;
                 text-align: justify;
             }
-
-            ul {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-
-                li {
-                    position: relative;
-                    padding-left: 14px;
-                    margin-bottom: 4px;
-                    font-size: 9.5px;
-                    line-height: 1.3;
-                    color: #333;
-
-                    &::before {
-                        content: "\2022";
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        color: $primary-blue;
-                        font-weight: 700;
-                        font-size: 12px;
-                        line-height: 1.3;
-                    }
-                }
-            }
         }
     }
 
     // ===== FOOTER =====
+    // ✅ Protected from page split
     .quotation-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 6px;
-        padding-top: 8px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding-top: 5px;
         border-top: 2px solid $primary-blue;
+        page-break-inside: avoid;
+        break-inside: avoid;
 
         .footer-left {
             p {
@@ -552,6 +575,11 @@ $primary-blue-light: #e9eefb;
         padding: 14px 18px;
         text-align: center;
         margin-bottom: 14px;
+        // ✅ banner never stays alone at bottom of a page — it moves with the first row
+        page-break-after: avoid;
+        break-after: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
 
         h2 {
             margin: 0;
@@ -568,12 +596,26 @@ $primary-blue-light: #e9eefb;
         }
     }
 
-    // ===== PAGE 2: PRODUCT GALLERY =====
+    // ===== PRODUCT GALLERY =====
+    // ✅ padding-top gives breathing space at the top of every gallery page
+    // ✅ box-decoration-break: clone repeats that padding on every page the gallery continues to
     .product-gallery-page {
-        page-break-before: always;
-        break-before: page;
         position: relative;
         padding-top: 10mm;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+
+        // Quotation fits on page 1 -> gallery starts on page 2
+        &.gallery-new-page {
+            page-break-before: always;
+            break-before: page;
+        }
+
+        // Quotation spills to page 2 -> gallery starts right below it (no forced break)
+        &.gallery-flow {
+            page-break-before: auto;
+            break-before: auto;
+        }
 
         .gallery-grid {
             display: grid;
@@ -638,14 +680,14 @@ $primary-blue-light: #e9eefb;
 @media print {
     #quotation-pdf {
         width: 100%;
-        height: 100%;
+        height: auto; // ✅ FIX: was 100% — can force an extra page
         margin: 0;
         padding: 12mm 15mm;
         box-shadow: none;
 
         .quotation-container {
             min-height: auto;
-            padding-bottom: 25px;
+            padding-bottom: 0;
         }
 
         .items-table {
@@ -657,20 +699,19 @@ $primary-blue-light: #e9eefb;
             }
         }
 
-        .declaration-terms-section,
+        // ✅ Protected sections — move whole section to next page if cut
+        .terms-declaration-wrapper,
         .quotation-footer,
         .totals-row,
         .bank-details,
         .amount-in-words,
         .calculation-section {
             page-break-inside: avoid;
+            break-inside: avoid;
             page-break-before: auto;
         }
 
         .product-gallery-page {
-            page-break-before: always;
-            break-before: page;
-
             .gallery-card {
                 page-break-inside: avoid;
                 break-inside: avoid;

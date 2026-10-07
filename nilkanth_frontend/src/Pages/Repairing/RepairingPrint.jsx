@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useLayoutEffect } from "react";
 import "./RepairingPrint.scss";
 import logo1 from "../../Assets/logo/logo.jpeg";
 import authorized from "../../Assets/pdf/auth.png";
@@ -28,7 +28,44 @@ import heading6 from "../../Assets/pdf/h4.png";
 import heading5 from "../../Assets/pdf/h5.png";
 import heading4 from "../../Assets/pdf/h6.png";
 
+// ===== PAGE FIT SETTINGS =====
+// A4 = 297mm tall. Usable height on page 1 = 297 - top padding (12mm) - bottom space (12mm) - safety.
+// If the repairing invoice is taller than this, it spills to page 2 and the gallery flows right below it.
+// If gallery starts too early / too late, only change this number.
+const MM_TO_PX = 96 / 25.4;
+const FIRST_PAGE_CONTENT_MM = 270;
+
 const RepairingPrint = ({ repairing }) => {
+    // ===== Gallery placement logic =====
+    const containerRef = useRef(null);
+    const [galleryOnNewPage, setGalleryOnNewPage] = useState(true);
+
+    useLayoutEffect(() => {
+        const el = containerRef.current;
+        if (!el) return undefined;
+
+        const checkFit = () => {
+            const heightMm = el.offsetHeight / MM_TO_PX;
+            setGalleryOnNewPage(heightMm <= FIRST_PAGE_CONTENT_MM);
+        };
+
+        checkFit();
+
+        let observer;
+        if (typeof ResizeObserver !== "undefined") {
+            observer = new ResizeObserver(checkFit);
+            observer.observe(el);
+        }
+        window.addEventListener("load", checkFit);
+        window.addEventListener("beforeprint", checkFit);
+
+        return () => {
+            if (observer) observer.disconnect();
+            window.removeEventListener("load", checkFit);
+            window.removeEventListener("beforeprint", checkFit);
+        };
+    }, [repairing]);
+
     if (!repairing) return null;
 
     const {
@@ -189,29 +226,38 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
         product7, product8, product9, product10, product11, product12
     ];
 
-    const galleryImages = allProductImages.slice(0, 8);
+    const galleryImages = allProductImages.slice(0, 9);
 
     const galleryLabels = [
 
-    "WEIGH BRIDGE",
-    "PLATFORM SCALES",
-    "INDUSTRIAL SCALES",
+        "WEIGH BRIDGE",
+        "PLATFORM SCALES",
+        "INDUSTRIAL SCALES",
 
-    "HANGING SCALES",
-    "TABLE TOP SCALES",
-    "BABY SCALES",
+        "HANGING SCALES",
+        "TABLE TOP SCALES",
+        "BABY SCALES",
 
-    "JEWELLERY SCALES",
-    "FLP SCALES",
-    "PIECE COUNTING SCALES",
-  ];
+        "JEWELLERY SCALES",
+        "FLP SCALES",
+        "PIECE COUNTING SCALES",
+    ];
 
     const heroImage = width;
     const heroCaption = (items && items[0]?.productName) || "Featured Product";
 
+    // ✅ Split terms into 2 columns (same terms, just split in half)
+    const allTerms = termsAndConditions
+        .split("\n")
+        .map((t) => t.trim())
+        .filter(Boolean);
+    const midIndex = Math.ceil(allTerms.length / 2);
+    const leftTerms = allTerms.slice(0, midIndex);
+    const rightTerms = allTerms.slice(midIndex);
+
     return (
         <div id="repairing-pdf">
-            <div className="repairing-container">
+            <div className="repairing-container" ref={containerRef}>
 
                 {/* ===== SHREE GANESHAY NAMAH ===== */}
                 <p className="ganesh-line">|| શ્રી ગણેશાય નમઃ ||</p>
@@ -430,26 +476,35 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
                     </div>
                 </div>
 
-                {/* ===== DECLARATION + REPAIR NOTES (LEFT) & TERMS (RIGHT) ===== */}
-                <div className="declaration-terms-section">
+                {/* ===== TERMS (2 COLUMNS) + DECLARATION (Protected from page split) ===== */}
+                <div className="terms-declaration-wrapper">
+                    {/* Terms — 2 columns */}
+                    <div className="terms-section">
+                        <h3>TERMS &amp; CONDITIONS</h3>
+                        <div className="terms-two-column">
+                            <ul className="terms-col">
+                                {leftTerms.map((term, i) => (
+                                    <li key={i}>{term}</li>
+                                ))}
+                            </ul>
+                            <ul className="terms-col">
+                                {rightTerms.map((term, i) => (
+                                    <li key={i}>{term}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Declaration — full width below */}
                     <div className="declaration-left">
                         <div className="declaration-section">
                             <h3>DECLARATION</h3>
                             <p>{declaration}</p>
                         </div>
-                        
-                    </div>
-                    <div className="terms-section">
-                        <h3>TERMS &amp; CONDITIONS</h3>
-                        <ul>
-                            {termsAndConditions.split('\n').map((term, index) => (
-                                term.trim() && <li key={index}>{term.trim()}</li>
-                            ))}
-                        </ul>
                     </div>
                 </div>
 
-                {/* ===== FOOTER ===== */}
+                {/* ===== FOOTER (Protected from page split) ===== */}
                 <div className="repairing-footer">
                     <div className="footer-left">
                         <p>Subject To Vadodara Jurisdiction</p>
@@ -464,8 +519,13 @@ For repairing, if we visit your site, charges will be taken accordingly.`;
 
             </div>
 
-            {/* ===== PAGE 2: PRODUCT GALLERY ===== */}
-            <div className="product-gallery-page">
+            {/* ===== PRODUCT GALLERY =====
+                - Repairing invoice fits on page 1  -> gallery starts on page 2 (gallery-new-page)
+                - Repairing invoice spills to page 2 -> gallery starts right below it (gallery-flow) */}
+            <div
+                className={`product-gallery-page ${galleryOnNewPage ? "gallery-new-page" : "gallery-flow"
+                    }`}
+            >
                 <div className="gallery-banner">
                     <h2>OUR PRODUCT RANGE</h2>
                     <p>A glimpse of the products &amp; equipment we deal in</p>
