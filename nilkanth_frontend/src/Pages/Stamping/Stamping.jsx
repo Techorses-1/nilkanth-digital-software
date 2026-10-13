@@ -569,28 +569,66 @@ const Stamping = () => {
 
     const totals = calculateTotals();
 
-    // ============= SINGLE PDF =============
     const generatePDF = async (stamping, openWhatsApp = false) => {
         if (isGeneratingPDF) return;
         setIsGeneratingPDF(true);
 
         try {
             setStampingForPrint(stamping);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
 
             const element = document.getElementById("stamping-pdf");
             if (!element) throw new Error("PDF element not found");
 
+            // Wait for fonts so mobile measures the same height as desktop
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
+            // Wait for all images (logo, signature, product images) to finish loading
+            await Promise.all(
+                Array.from(element.querySelectorAll("img")).map((img) =>
+                    img.complete
+                        ? Promise.resolve()
+                        : new Promise((res) => {
+                            img.onload = res;
+                            img.onerror = res;
+                        })
+                )
+            );
+
+            // Let the layout settle (the gallery-new-page check runs in useLayoutEffect)
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
             const opt = {
                 filename: `${stamping.stampingNumber}_${(stamping.customerName || "customer").replace(/\s+/g, "_")}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
+                html2canvas: {
+                    scale: isMobile ? 1.5 : 2, // lower scale on phones to avoid canvas memory limits
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true,
+                    windowWidth: 794, // 210mm in px, so phones render at the same width as desktop
+                    scrollX: 0,
+                    scrollY: 0,
+                },
                 jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-                margin: [0, 0, 20, 0],
+                margin: [0, 0, 20, 0], // unchanged
                 pagebreak: {
-                    mode: ['css', 'legacy'],
-                    avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
-                }
+                    mode: ["css", "legacy"],
+                    before: ".gallery-new-page",
+                    avoid: [
+                        ".terms-declaration-wrapper",
+                        ".stamping-footer",
+                        ".totals-row",
+                        ".stamping-title-banner",
+                        ".gallery-banner",
+                        ".gallery-card",
+                        "tr",
+                    ],
+                },
             };
 
             await html2pdf().set(opt).from(element).save();
@@ -601,10 +639,12 @@ const Stamping = () => {
                 const phone = stamping.customerPhone.replace(/\D/g, "");
                 if (phone) {
                     const message = `Hello ${stamping.customerName || ""}, your STAMPING RECEIPT (No: ${stamping.stampingNumber}) has been generated.`;
-                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+                    window.open(
+                        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+                        "_blank"
+                    );
                 }
             }
-
         } catch (error) {
             console.error("PDF generation error:", error);
             toast.error("Failed to generate PDF");

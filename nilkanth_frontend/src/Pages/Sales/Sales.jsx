@@ -433,62 +433,76 @@ const Sales = () => {
 
         try {
             setSaleForPrint(sale);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
 
             const element = document.getElementById("sales-pdf");
             if (!element) {
                 throw new Error("PDF element not found");
             }
 
+            // Wait for fonts so mobile measures the same height as desktop
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
+            // Wait for all images (logo, signature, product images) to finish loading
+            await Promise.all(
+                Array.from(element.querySelectorAll("img")).map((img) =>
+                    img.complete
+                        ? Promise.resolve()
+                        : new Promise((res) => {
+                            img.onload = res;
+                            img.onerror = res;
+                        })
+                )
+            );
+
+            // Let the layout settle (the gallery-new-page check runs in useLayoutEffect)
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
             const opt = {
                 filename: `${sale.invoiceNumber}_${(sale.customerName || "customer").replace(/\s+/g, "_")}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
-                    scale: 2,
+                    scale: isMobile ? 1.5 : 2, // lower scale on phones to avoid canvas memory limits
                     useCORS: true,
                     logging: false,
-                    letterRendering: true
+                    letterRendering: true,
+                    windowWidth: 794, // 210mm in px, so phones render at the same width as desktop
+                    scrollX: 0,
+                    scrollY: 0,
                 },
                 jsPDF: {
                     unit: "mm",
                     format: "a4",
-                    orientation: "portrait"
+                    orientation: "portrait",
                 },
-                margin: [0, 0, 20, 0],
+                margin: [0, 0, 20, 0], // unchanged
                 pagebreak: {
-                    mode: ['css', 'legacy'],
-                    avoid: ['.avoid-break', '.stamping-footer', '.declaration-terms-section', '.totals-row']
-                }
+                    mode: ["css", "legacy"],
+                    before: ".gallery-new-page",
+                    avoid: [
+                        ".terms-declaration-wrapper",
+                        ".invoice-footer",
+                        ".totals-row",
+                        ".gallery-banner",
+                        ".gallery-card",
+                        "tr",
+                    ],
+                },
             };
 
             await html2pdf()
                 .set(opt)
                 .from(element)
                 .toPdf()
-                .get('pdf')
+                .get("pdf")
                 .then((pdf) => {
-                    const totalPages = pdf.internal.getNumberOfPages();
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const pageHeight = pdf.internal.pageSize.getHeight();
-                    const websiteUrl = "https://www.techorses.com";
-                    const label = "Developed by ";
-                    const linkText = "Techorses";
-
-                    // ✅ COMMENTED OUT - "Developed by Techorses" footer
-                    // for (let i = 1; i <= totalPages; i++) {
-                    //     pdf.setPage(i);
-                    //     pdf.setFontSize(8);
-                    //     const labelWidth = pdf.getTextWidth(label);
-                    //     const linkWidth = pdf.getTextWidth(linkText);
-                    //     const totalWidth = labelWidth + linkWidth;
-                    //     const rightEdge = pageWidth - 15;
-                    //     const startX = rightEdge - totalWidth;
-                    //     const y = pageHeight - 10;
-                    //     pdf.setTextColor(150);
-                    //     pdf.text(label, startX, y);
-                    //     pdf.setTextColor(0, 0, 255);
-                    //     pdf.textWithLink(linkText, startX + labelWidth, y, { url: websiteUrl });
-                    // }
+                    // "Developed by Techorses" footer is intentionally disabled (kept as before).
+                    // const totalPages = pdf.internal.getNumberOfPages();
+                    // for (let i = 1; i <= totalPages; i++) { ... }
                 })
                 .save();
 
@@ -498,10 +512,12 @@ const Sales = () => {
                 const phone = sale.customerPhone.replace(/\D/g, "");
                 if (phone) {
                     const message = `Hello ${sale.customerName || ""}, your invoice (No: ${sale.invoiceNumber}) has been generated.`;
-                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+                    window.open(
+                        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+                        "_blank"
+                    );
                 }
             }
-
         } catch (error) {
             console.error("PDF generation error:", error);
             toast.error("Failed to generate PDF");
