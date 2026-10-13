@@ -678,6 +678,20 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
   }
+
+  // ✅ NEW: Read-only Total (with GST) styling
+  &.inventory-input-readonly {
+    background-color: #f5f7fa;
+    color: #3f3f91;
+    font-weight: 700;
+    cursor: not-allowed;
+    border-color: #e0e0e0;
+
+    &:focus {
+      border-color: #e0e0e0;
+      box-shadow: none;
+    }
+  }
 }
 
 .inventory-error {
@@ -812,6 +826,12 @@
     &:hover {
       background-color: #f8f8ff;
     }
+  }
+
+  // ✅ NEW: Total (with GST) cell styling
+  .inventory-modal-total-cell {
+    font-weight: 700;
+    color: #2d2f87;
   }
 }
 

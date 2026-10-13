@@ -55,8 +55,24 @@ const itemInventorySchema = new mongoose.Schema({
             required: true,
             min: 0.01
         },
-        purchasePrice: {
+        // ✅ NEW: Subtotal excluding GST (flat amount for this entry)
+        subtotalExclGst: {
             type: Number,
+            required: true,
+            default: 0,
+            min: 0
+        },
+        // ✅ NEW: GST amount (flat, decimals allowed)
+        gst: {
+            type: Number,
+            required: true,
+            default: 0,
+            min: 0
+        },
+        // ✅ NEW: Total with GST = subtotalExclGst + gst
+        totalWithGst: {
+            type: Number,
+            required: true,
             default: 0,
             min: 0
         },
@@ -143,14 +159,7 @@ const itemInventorySchema = new mongoose.Schema({
         deletedAt: {
             type: Date
         }
-    }],
-
-    // ===== AVERAGE PURCHASE PRICE (calculated) =====
-    averagePurchasePrice: {
-        type: Number,
-        default: 0,
-        min: 0
-    }
+    }]
 
 }, {
     timestamps: true,
@@ -163,7 +172,7 @@ itemInventorySchema.index({ itemName: 1 });
 itemInventorySchema.index({ 'addHistory.date': -1 });
 itemInventorySchema.index({ 'removeHistory.date': -1 });
 
-// ===== PRE-SAVE HOOK =====
+// ===== PRE-SAVE HOOK (only total quantity calc now) =====
 itemInventorySchema.pre('save', function (next) {
     const totalAdded = this.addHistory
         .filter(entry => !entry.isDeleted)
@@ -174,21 +183,6 @@ itemInventorySchema.pre('save', function (next) {
         .reduce((sum, entry) => sum + entry.quantity, 0);
 
     this.totalQuantity = totalAdded - totalRemoved;
-
-    const addEntriesWithPrice = this.addHistory
-        .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
-
-    if (addEntriesWithPrice.length > 0) {
-        const totalCost = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-        );
-        const totalQty = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + entry.quantity, 0
-        );
-        this.averagePurchasePrice = totalCost / totalQty;
-    } else {
-        this.averagePurchasePrice = 0;
-    }
 
     next();
 });
@@ -203,10 +197,24 @@ itemInventorySchema.virtual('activeRemoveHistory').get(function () {
 });
 
 // ===== METHOD: Add quantity =====
-itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, addedBy, addedById, date, notes) {
+itemInventorySchema.methods.addQuantity = function (
+    quantity,
+    subtotalExclGst,
+    gst,
+    addedBy,
+    addedById,
+    date,
+    notes
+) {
+    const subtotal = Number(subtotalExclGst) || 0;
+    const gstAmount = Number(gst) || 0;
+    const totalWithGst = subtotal + gstAmount;
+
     this.addHistory.push({
         quantity: Number(quantity),
-        purchasePrice: Number(purchasePrice) || 0,
+        subtotalExclGst: subtotal,
+        gst: gstAmount,
+        totalWithGst: totalWithGst,
         date: date || new Date(),
         addedBy: addedBy,
         addedById: addedById,
@@ -223,19 +231,6 @@ itemInventorySchema.methods.addQuantity = function (quantity, purchasePrice, add
         .reduce((sum, entry) => sum + entry.quantity, 0);
 
     this.totalQuantity = totalAdded - totalRemoved;
-
-    const addEntriesWithPrice = this.addHistory
-        .filter(entry => !entry.isDeleted && entry.purchasePrice > 0);
-
-    if (addEntriesWithPrice.length > 0) {
-        const totalCost = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + (entry.purchasePrice * entry.quantity), 0
-        );
-        const totalQty = addEntriesWithPrice.reduce(
-            (sum, entry) => sum + entry.quantity, 0
-        );
-        this.averagePurchasePrice = totalCost / totalQty;
-    }
 
     return this.save();
 };

@@ -20,6 +20,7 @@ import AMC from "../Pages/AMC/AMC";
 import Stamping from "../Pages/Stamping/Stamping";
 import CustomerHistory from "../Pages/CustomerHistory/CustomerHistory";
 import Dashboard from "../Pages/Dashboard/Dashboard";
+import GstReport from "../Pages/GstReport/GstReport";
 
 
 
@@ -144,6 +145,14 @@ const Router = () => {
               <ProtectedRoute>
                 <PermissionRoute requiredPermission="report">
                   <CustomerHistory />
+                </PermissionRoute>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/gst-info" element={
+              <ProtectedRoute>
+                <PermissionRoute requiredPermission="admin">
+                  <GstReport />
                 </PermissionRoute>
               </ProtectedRoute>
             } />

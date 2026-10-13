@@ -8,7 +8,7 @@ import { PiShoppingCart } from "react-icons/pi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import { FiUser } from "react-icons/fi";
-import { MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
+import { MdInventory, MdAdminPanelSettings, MdReceiptLong  } from "react-icons/md";
 import { FaTools, FaChartLine } from "react-icons/fa";
 import { RiFilePaper2Line } from "react-icons/ri";
 import { TbCertificate } from "react-icons/tb";
@@ -109,6 +109,8 @@ const Navbar = ({
         return 'AMC Management';
       case '/stamping':
         return 'Stamping Management';
+      case '/gst-info':
+        return 'GST Management';
       case '/history':
         return 'Customer History';
       default:
@@ -175,6 +177,12 @@ const Navbar = ({
       title: "Inventory",
       path: "/inventory",
       permission: "inventory"
+    },
+    {
+      icon: <MdReceiptLong  />,
+      title: "Gst Info",
+      path: "/gst-info",
+      permission: "admin"
     },
 
     {

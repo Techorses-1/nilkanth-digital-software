@@ -155,7 +155,15 @@ router.get("/export", async (req, res) => {
 // =============================================
 router.post("/add", async (req, res) => {
     try {
-        const { itemId, quantity, purchasePrice, date, notes, storeType } = req.body;
+        const {
+            itemId,
+            quantity,
+            subtotalExclGst,
+            gst,
+            date,
+            notes,
+            storeType
+        } = req.body;
 
         if (!itemId) {
             return res.status(400).json({
@@ -167,6 +175,18 @@ router.post("/add", async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "Valid quantity is required"
+            });
+        }
+        if (subtotalExclGst === undefined || subtotalExclGst === null || subtotalExclGst === '') {
+            return res.status(400).json({
+                success: false,
+                message: "Subtotal (excl. GST) is required"
+            });
+        }
+        if (gst === undefined || gst === null || gst === '') {
+            return res.status(400).json({
+                success: false,
+                message: "GST is required"
             });
         }
         if (!storeType) {
@@ -223,7 +243,8 @@ router.post("/add", async (req, res) => {
 
         await inventory.addQuantity(
             Number(quantity),
-            Number(purchasePrice) || 0,
+            Number(subtotalExclGst),
+            Number(gst),
             user.name,
             user.userId,
             date || new Date(),
@@ -497,7 +518,9 @@ router.get("/get-history/:itemId", async (req, res) => {
                 ...entry.toObject(),
                 type: 'ADD',
                 admin: entry.addedBy,
-                price: entry.purchasePrice || 0,
+                subtotalExclGst: entry.subtotalExclGst || 0,
+                gst: entry.gst || 0,
+                totalWithGst: entry.totalWithGst || 0,
                 store: entry.entryStoreType || inventory.storeType
             }));
 
@@ -507,7 +530,9 @@ router.get("/get-history/:itemId", async (req, res) => {
                 ...entry.toObject(),
                 type: 'REMOVE',
                 admin: entry.removedBy,
-                price: 0,
+                subtotalExclGst: 0,
+                gst: 0,
+                totalWithGst: 0,
                 store: entry.entryStoreType || inventory.storeType
             }));
 
@@ -521,7 +546,6 @@ router.get("/get-history/:itemId", async (req, res) => {
                 itemName: inventory.itemName,
                 storeType: inventory.storeType,
                 totalQuantity: inventory.totalQuantity,
-                averagePurchasePrice: inventory.averagePurchasePrice,
                 history: allHistory
             }
         });

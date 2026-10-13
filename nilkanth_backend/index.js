@@ -48,6 +48,8 @@ const amcRoutes = require('./routes/amcRoutes');
 const startAmcStatusCron = require('./cron/amcStatusCron');
 
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const gstReportRoutes = require("./routes/gstReport");
+
 
 // ============= ROUTE MIDDLEWARES =============
 // Old routes
@@ -76,6 +78,8 @@ app.use('/customer-history', customerHistoryRoutes);
 app.use('/dashboard', dashboardRoutes);
 // AMC routes
 app.use('/amc', amcRoutes);
+app.use("/gst-report", gstReportRoutes);
+
 
 
 // ============= CRON JOB (Keep as is) =============

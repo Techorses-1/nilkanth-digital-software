@@ -226,11 +226,16 @@ const Inventory = () => {
             .required("Quantity is required")
             .min(0.01, "Quantity must be greater than 0")
             .typeError("Quantity must be a number"),
-        // Only required for items (not for products)
+        // ✅ NEW: For items only — subtotalExclGst and gst required, 0 allowed
         ...(activeTab === "items" ? {
-            purchasePrice: Yup.number()
-                .min(0, "Price cannot be negative")
-                .typeError("Price must be a number"),
+            subtotalExclGst: Yup.number()
+                .required("Subtotal (excl. GST) is required")
+                .min(0, "Subtotal cannot be negative")
+                .typeError("Subtotal must be a number"),
+            gst: Yup.number()
+                .required("GST is required")
+                .min(0, "GST cannot be negative")
+                .typeError("GST must be a number"),
         } : {}),
         date: Yup.date().required("Date is required"),
     });
@@ -245,7 +250,7 @@ const Inventory = () => {
     });
 
     // ============= HANDLE ADD QUANTITY =============
-    const handleAddQuantity = async (values, { resetForm, setFieldError }) => {
+    const handleAddQuantity = async (values, { resetForm }) => {
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('token');
@@ -263,9 +268,10 @@ const Inventory = () => {
                 storeType: storeTab
             };
 
-            // ✅ Only include purchasePrice for ITEMS (not for products)
+            // ✅ Only include subtotalExclGst & gst for ITEMS (not for products)
             if (activeTab === "items") {
-                payload.purchasePrice = Number(values.purchasePrice) || 0;
+                payload.subtotalExclGst = Number(values.subtotalExclGst) || 0;
+                payload.gst = Number(values.gst) || 0;
             }
 
             const endpoint = activeTab === "items"
@@ -289,7 +295,7 @@ const Inventory = () => {
     };
 
     // ============= HANDLE REMOVE QUANTITY =============
-    const handleRemoveQuantity = async (values, { resetForm, setFieldError }) => {
+    const handleRemoveQuantity = async (values, { resetForm }) => {
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('token');
@@ -406,7 +412,7 @@ const Inventory = () => {
                     return;
                 }
 
-                // ✅ Build export data - only include Average Price for items
+                // ✅ Build export data — averagePurchasePrice removed for items
                 const exportData = data.map((inv) => {
                     const base = {
                         [activeTab === "items" ? "Item Name" : "Product Name"]:
@@ -414,11 +420,6 @@ const Inventory = () => {
                         "Store": inv.storeType || storeTab,
                         "Total Quantity": inv.totalQuantity || 0,
                     };
-
-                    // Only items have averagePurchasePrice
-                    if (activeTab === "items") {
-                        base["Average Price"] = inv.averagePurchasePrice || 0;
-                    }
 
                     base["Last Updated"] = inv.updatedAt
                         ? new Date(inv.updatedAt).toLocaleString()
@@ -450,11 +451,15 @@ const Inventory = () => {
         }
     };
 
-    // ============= FORMAT DATE =============
     const formatDate = (date) => {
-        if (!date) return "N/A";
-        return new Date(date).toLocaleString();
-    };
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+};
 
     // ============= PAGINATION HANDLERS =============
     const nextPage = () => {
@@ -471,8 +476,8 @@ const Inventory = () => {
 
     // ============= RENDER ADD MODAL =============
     const renderAddModal = () => {
-        // ✅ Only items have purchasePrice field
-        const showPurchasePrice = activeTab === "items";
+        // ✅ Only items have subtotalExclGst, gst, totalWithGst
+        const showPricingFields = activeTab === "items";
 
         return (
             <div className="inventory-modal-overlay" onClick={() => setShowAddModal(false)}>
@@ -492,99 +497,125 @@ const Inventory = () => {
                             initialValues={{
                                 productId: "",
                                 quantity: "",
-                                purchasePrice: "",
+                                subtotalExclGst: "",
+                                gst: "",
                                 date: new Date().toISOString().split("T")[0],
                                 notes: "",
                             }}
                             validationSchema={addValidationSchema}
                             onSubmit={handleAddQuantity}
                         >
-                            {({ setFieldValue, values }) => (
-                                <Form className="inventory-form">
-                                    <div className="inventory-form-row">
-                                        <div className="inventory-form-field inventory-form-field-full">
-                                            <label className="inventory-form-label">
-                                                {activeTab === "items" ? <FaBoxes /> : <FaBox />}
-                                                {' '}{activeTab === "items" ? "Item" : "Product"} *
-                                            </label>
-                                            <Select
-                                                options={productOptions}
-                                                styles={selectStyles}
-                                                className="inventory-react-select"
-                                                classNamePrefix="inventory-select"
-                                                placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
-                                                isSearchable
-                                                onChange={(option) => {
-                                                    setFieldValue("productId", option ? option.value : "");
-                                                }}
-                                                value={productOptions.find(opt => opt.value === values.productId)}
-                                            />
-                                            <ErrorMessage name="productId" component="div" className="inventory-error" />
-                                        </div>
-                                    </div>
+                            {({ setFieldValue, values }) => {
+                                // ✅ Auto compute Total (with GST) — read only
+                                const computedTotal =
+                                    (Number(values.subtotalExclGst) || 0) +
+                                    (Number(values.gst) || 0);
 
-                                    <div className="inventory-form-row">
-                                        <div className="inventory-form-field">
-                                            <label className="inventory-form-label">
-                                                <FaCalendarAlt /> Date *
-                                            </label>
-                                            <Field
-                                                name="date"
-                                                type="date"
-                                                className="inventory-input-field"
-                                            />
-                                            <ErrorMessage name="date" component="div" className="inventory-error" />
+                                return (
+                                    <Form className="inventory-form">
+                                        <div className="inventory-form-row">
+                                            <div className="inventory-form-field inventory-form-field-full">
+                                                <label className="inventory-form-label">
+                                                    {activeTab === "items" ? <FaBoxes /> : <FaBox />}
+                                                    {' '}{activeTab === "items" ? "Item" : "Product"} *
+                                                </label>
+                                                <Select
+                                                    options={productOptions}
+                                                    styles={selectStyles}
+                                                    className="inventory-react-select"
+                                                    classNamePrefix="inventory-select"
+                                                    placeholder={`Search ${activeTab === "items" ? "Item" : "Product"}...`}
+                                                    isSearchable
+                                                    onChange={(option) => {
+                                                        setFieldValue("productId", option ? option.value : "");
+                                                    }}
+                                                    value={productOptions.find(opt => opt.value === values.productId)}
+                                                />
+                                                <ErrorMessage name="productId" component="div" className="inventory-error" />
+                                            </div>
                                         </div>
 
-                                        <div className="inventory-form-field">
-                                            <label className="inventory-form-label">
-                                                <FaShoppingCart /> Quantity *
-                                            </label>
-                                            <Field
-                                                name="quantity"
-                                                type="number"
-                                                step="0.01"
-                                                min="0.01"
-                                                placeholder="Enter quantity"
-                                                className="inventory-input-field"
-                                            />
-                                            <ErrorMessage name="quantity" component="div" className="inventory-error" />
-                                        </div>
-                                    </div>
-
-                                    {/* ✅ Purchase Price row — ONLY for items */}
-                                    {showPurchasePrice ? (
                                         <div className="inventory-form-row">
                                             <div className="inventory-form-field">
                                                 <label className="inventory-form-label">
-                                                    <FaRupeeSign /> Purchase Price (Optional)
+                                                    <FaCalendarAlt /> Date *
                                                 </label>
                                                 <Field
-                                                    name="purchasePrice"
-                                                    type="number"
-                                                    step="0.01"
-                                                    min="0"
-                                                    placeholder="Enter price"
+                                                    name="date"
+                                                    type="date"
                                                     className="inventory-input-field"
                                                 />
-                                                <ErrorMessage name="purchasePrice" component="div" className="inventory-error" />
+                                                <ErrorMessage name="date" component="div" className="inventory-error" />
                                             </div>
 
                                             <div className="inventory-form-field">
                                                 <label className="inventory-form-label">
-                                                    <FaInfoCircle /> Notes (Optional)
+                                                    <FaShoppingCart /> Quantity *
                                                 </label>
                                                 <Field
-                                                    name="notes"
-                                                    type="text"
-                                                    placeholder="Add notes..."
+                                                    name="quantity"
+                                                    type="number"
+                                                    step="0.01"
+                                                    min="0.01"
+                                                    placeholder="Enter quantity"
                                                     className="inventory-input-field"
                                                 />
-                                                <ErrorMessage name="notes" component="div" className="inventory-error" />
+                                                <ErrorMessage name="quantity" component="div" className="inventory-error" />
                                             </div>
                                         </div>
-                                    ) : (
-                                        // ✅ For products — Notes takes full width
+
+                                        {/* ✅ Pricing row — ONLY for items */}
+                                        {showPricingFields && (
+                                            <>
+                                                <div className="inventory-form-row">
+                                                    <div className="inventory-form-field">
+                                                        <label className="inventory-form-label">
+                                                            <FaRupeeSign /> Subtotal (excl. GST) *
+                                                        </label>
+                                                        <Field
+                                                            name="subtotalExclGst"
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            placeholder="Enter subtotal"
+                                                            className="inventory-input-field"
+                                                        />
+                                                        <ErrorMessage name="subtotalExclGst" component="div" className="inventory-error" />
+                                                    </div>
+
+                                                    <div className="inventory-form-field">
+                                                        <label className="inventory-form-label">
+                                                            <FaRupeeSign /> GST *
+                                                        </label>
+                                                        <Field
+                                                            name="gst"
+                                                            type="number"
+                                                            step="0.01"
+                                                            min="0"
+                                                            placeholder="Enter GST amount"
+                                                            className="inventory-input-field"
+                                                        />
+                                                        <ErrorMessage name="gst" component="div" className="inventory-error" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="inventory-form-row">
+                                                    <div className="inventory-form-field inventory-form-field-full">
+                                                        <label className="inventory-form-label">
+                                                            <FaRupeeSign /> Total (with GST)
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className="inventory-input-field inventory-input-readonly"
+                                                            value={`₹ ${computedTotal.toFixed(2)}`}
+                                                            readOnly
+                                                            tabIndex={-1}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
                                         <div className="inventory-form-row">
                                             <div className="inventory-form-field inventory-form-field-full">
                                                 <label className="inventory-form-label">
@@ -599,13 +630,13 @@ const Inventory = () => {
                                                 <ErrorMessage name="notes" component="div" className="inventory-error" />
                                             </div>
                                         </div>
-                                    )}
 
-                                    <button type="submit" className="inventory-add-btn" disabled={isSubmitting}>
-                                        {isSubmitting ? "Adding..." : "Add Quantity"}
-                                    </button>
-                                </Form>
-                            )}
+                                        <button type="submit" className="inventory-add-btn" disabled={isSubmitting}>
+                                            {isSubmitting ? "Adding..." : "Add Quantity"}
+                                        </button>
+                                    </Form>
+                                );
+                            }}
                         </Formik>
                     </div>
                 </div>
@@ -725,8 +756,8 @@ const Inventory = () => {
             ? selectedInventory.itemName
             : selectedInventory.productName;
 
-        // ✅ Only items have a price column in history
-        const showPriceColumn = activeTab === "items";
+        // ✅ Only items show Subtotal / GST / Total columns
+        const showPricingColumns = activeTab === "items";
 
         return (
             <div className="inventory-modal-overlay" onClick={closeHistoryModal}>
@@ -757,7 +788,13 @@ const Inventory = () => {
                                             <th>#</th>
                                             <th>Type</th>
                                             <th>Quantity</th>
-                                            {showPriceColumn && <th>Price</th>}
+                                            {showPricingColumns && (
+                                                <>
+                                                    <th>Subtotal (excl. GST)</th>
+                                                    <th>GST</th>
+                                                    <th>Total (with GST)</th>
+                                                </>
+                                            )}
                                             <th>Store</th>
                                             <th>Admin</th>
                                             <th>Date</th>
@@ -773,12 +810,24 @@ const Inventory = () => {
                                                     </span>
                                                 </td>
                                                 <td>{entry.quantity}</td>
-                                                {showPriceColumn && (
-                                                    <td>
-                                                        {entry.type === 'ADD' && entry.price > 0
-                                                            ? `₹${entry.price.toFixed(2)}`
-                                                            : '-'}
-                                                    </td>
+                                                {showPricingColumns && (
+                                                    <>
+                                                        <td>
+                                                            {entry.type === 'ADD'
+                                                                ? `₹${(entry.subtotalExclGst || 0).toFixed(2)}`
+                                                                : '-'}
+                                                        </td>
+                                                        <td>
+                                                            {entry.type === 'ADD'
+                                                                ? `₹${(entry.gst || 0).toFixed(2)}`
+                                                                : '-'}
+                                                        </td>
+                                                        <td className="inventory-modal-total-cell">
+                                                            {entry.type === 'ADD'
+                                                                ? `₹${(entry.totalWithGst || 0).toFixed(2)}`
+                                                                : '-'}
+                                                        </td>
+                                                    </>
                                                 )}
                                                 <td>
                                                     <span className="inventory-modal-store-tag">{entry.store || 'N/A'}</span>
@@ -813,9 +862,6 @@ const Inventory = () => {
 
     // ============= RENDER TABLE =============
     const renderTable = () => {
-        // ✅ Only items have Avg. Price column
-        const showPriceColumn = activeTab === "items";
-
         return (
             <div className="inventory-table-container">
                 <div className="inventory-table-header">
@@ -878,7 +924,6 @@ const Inventory = () => {
                                         <th>#</th>
                                         <th>{activeTab === "items" ? "Item" : "Product"}</th>
                                         <th>Total Quantity</th>
-                                        {showPriceColumn && <th>Avg. Price</th>}
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -896,13 +941,6 @@ const Inventory = () => {
                                                 <td>
                                                     <span className="inventory-quantity-badge">{inv.totalQuantity || 0}</span>
                                                 </td>
-                                                {showPriceColumn && (
-                                                    <td>
-                                                        {inv.averagePurchasePrice > 0
-                                                            ? `₹${inv.averagePurchasePrice.toFixed(2)}`
-                                                            : "N/A"}
-                                                    </td>
-                                                )}
                                                 <td>
                                                     <button
                                                         className="inventory-history-btn"
