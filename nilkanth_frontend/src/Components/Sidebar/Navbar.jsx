@@ -191,12 +191,12 @@ const Navbar = ({
       path: "/history",
       permission: "admin"
     },
-    {
-      icon: <MdAdminPanelSettings />,
-      title: "Admin",
-      path: "/admin",
-      permission: "admin"
-    },
+    // {
+    //   icon: <MdAdminPanelSettings />,
+    //   title: "Admin",
+    //   path: "/admin",
+    //   permission: "admin"
+    // },
   ];
 
   // Filter menu items based on user permissions
