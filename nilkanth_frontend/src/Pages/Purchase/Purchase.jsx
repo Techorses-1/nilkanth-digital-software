@@ -140,7 +140,7 @@ const Purchase = () => {
             const headers = getAuthHeaders();
 
             const [productsRes, vendorsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products?limit=1000`, headers),
                 axios.get(`${import.meta.env.VITE_API_URL}/vendors/get-vendors`, headers),
             ]);
 

@@ -167,7 +167,7 @@ const Quotation = () => {
 
             const [customersRes, productsRes] = await Promise.all([
                 axios.get(`${import.meta.env.VITE_API_URL}/customer/get-customers?limit=1000`, headers),
-                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products?limit=1000`, headers),
             ]);
 
             const customersData = customersRes.data?.data || customersRes.data || [];

@@ -127,8 +127,8 @@ const Inventory = () => {
             const headers = getAuthHeaders();
 
             const [itemsRes, productsRes] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/items/get-items`, headers),
-                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/items/get-items?limit=1000`, headers),
+                axios.get(`${import.meta.env.VITE_API_URL}/products-master/get-products?limit=1000`, headers),
             ]);
 
             const itemsData = itemsRes.data?.data || itemsRes.data || [];
