@@ -331,43 +331,75 @@ const Quotation = () => {
     const totals = calculateTotals();
 
     // ============= SINGLE PDF GENERATION =============
+    // ============= SINGLE PDF GENERATION =============
     const generatePDF = async (quotation, openWhatsApp = true) => {
         if (isGeneratingPDF) return;
         setIsGeneratingPDF(true);
 
         try {
             setQuotationForPrint(quotation);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
 
             const element = document.getElementById("quotation-pdf");
             if (!element) {
                 throw new Error("PDF element not found");
             }
 
+            // Wait for fonts so mobile measures the same height as desktop
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
+            // Wait for all images (logo, signature, product images) to finish loading
+            await Promise.all(
+                Array.from(element.querySelectorAll("img")).map((img) =>
+                    img.complete
+                        ? Promise.resolve()
+                        : new Promise((res) => {
+                            img.onload = res;
+                            img.onerror = res;
+                        })
+                )
+            );
+
+            // Let the layout settle (the gallery-new-page check runs in useLayoutEffect)
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
             const opt = {
                 filename: `${quotation.quotationNumber}_${(quotation.customerName || "customer").replace(/\s+/g, "_")}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: {
-                    scale: 2,
+                    scale: isMobile ? 1.5 : 2, // lower scale on phones to avoid canvas memory limits
                     useCORS: true,
                     logging: false,
-                    letterRendering: true
+                    letterRendering: true,
+                    windowWidth: 794, // 210mm in px, so mobile renders at desktop width
+                    scrollX: 0,
+                    scrollY: 0,
                 },
                 jsPDF: {
                     unit: "mm",
                     format: "a4",
-                    orientation: "portrait"
+                    orientation: "portrait",
                 },
-                margin: [0, 0, 20, 0],
+                margin: [0, 0, 20, 0], // unchanged
                 pagebreak: {
-                    mode: ['css', 'legacy']
-                }
+                    mode: ["css", "legacy"],
+                    before: ".gallery-new-page",
+                    avoid: [
+                        ".terms-declaration-wrapper",
+                        ".quotation-footer",
+                        ".totals-row",
+                        ".gallery-banner",
+                        ".gallery-card",
+                        "tr",
+                    ],
+                },
             };
 
-            await html2pdf()
-                .set(opt)
-                .from(element)
-                .save();
+            await html2pdf().set(opt).from(element).save();
 
             toast.success("PDF generated successfully!");
 
@@ -375,10 +407,12 @@ const Quotation = () => {
                 const phone = quotation.customerPhone.replace(/\D/g, "");
                 if (phone) {
                     const message = `Hello ${quotation.customerName || ""}, your quotation (No: ${quotation.quotationNumber}) has been generated.`;
-                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+                    window.open(
+                        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+                        "_blank"
+                    );
                 }
             }
-
         } catch (error) {
             console.error("PDF generation error:", error);
             toast.error("Failed to generate PDF");
