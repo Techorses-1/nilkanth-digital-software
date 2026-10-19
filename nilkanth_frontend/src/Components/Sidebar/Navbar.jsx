@@ -8,7 +8,7 @@ import { PiShoppingCart } from "react-icons/pi";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { RxCross1 } from "react-icons/rx";
 import { FiUser } from "react-icons/fi";
-import { MdInventory, MdAdminPanelSettings, MdReceiptLong  } from "react-icons/md";
+import { MdInventory, MdAdminPanelSettings, MdReceiptLong } from "react-icons/md";
 import { FaTools, FaChartLine } from "react-icons/fa";
 import { RiFilePaper2Line } from "react-icons/ri";
 import { TbCertificate } from "react-icons/tb";
@@ -179,7 +179,7 @@ const Navbar = ({
       permission: "inventory"
     },
     {
-      icon: <MdReceiptLong  />,
+      icon: <MdReceiptLong />,
       title: "Gst Info",
       path: "/gst-info",
       permission: "admin"

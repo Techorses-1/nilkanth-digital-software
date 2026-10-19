@@ -192,7 +192,7 @@ const quotationSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-quotationSchema.index({ quotationNumber: 1 });
+// ✅ Removed quotationNumber — unique:true already creates it
 quotationSchema.index({ customerId: 1 });
 quotationSchema.index({ customerName: 1 });
 quotationSchema.index({ quotationDate: -1 });

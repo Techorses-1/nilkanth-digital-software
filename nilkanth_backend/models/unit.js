@@ -23,8 +23,7 @@ const unitSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Index for better query performance
-unitSchema.index({ unitName: 1 });
+// ✅ Removed duplicate index — unique:true already creates it
 
 const Unit = mongoose.models.Unit || mongoose.model('Unit', unitSchema);
 module.exports = Unit;

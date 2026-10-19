@@ -16,10 +16,10 @@ const amcSchema = new mongoose.Schema({
     // ===== RENEWAL LINK =====
     renewalOf: {
         type: String,
-        default: null,  // amcId of previous AMC (null if first AMC)
+        default: null,
     },
 
-    renewalOfNumber: {        // ← NEW
+    renewalOfNumber: {
         type: String,
         default: null,
     },
@@ -164,7 +164,7 @@ const amcSchema = new mongoose.Schema({
         required: true
     },
 
-    // ===== SERVICE HISTORY (array of visits) =====
+    // ===== SERVICE HISTORY =====
     serviceHistory: [{
         serviceId: {
             type: String,
@@ -308,7 +308,7 @@ const amcSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-amcSchema.index({ amcNumber: 1 });
+// ✅ Removed amcNumber — unique:true already creates it
 amcSchema.index({ renewalOf: 1 });
 amcSchema.index({ customerId: 1 });
 amcSchema.index({ customerName: 1 });
@@ -350,7 +350,6 @@ amcSchema.methods.recalculateTotals = function () {
     this.subtotal = subtotal;
     this.totalDiscount = totalDiscount;
 
-    // If Non-GST mode, no tax
     if (!this.isGstMode) {
         this.totalTax = 0;
         this.taxBreakdown = { cgst: 0, sgst: 0, igst: 0, gst: 0 };
@@ -358,7 +357,6 @@ amcSchema.methods.recalculateTotals = function () {
         return this;
     }
 
-    // GST Mode - Calculate tax
     const taxableAmount = this.subtotal - this.totalDiscount;
     const taxRate = this.taxSlab / 100;
 
@@ -390,7 +388,6 @@ amcSchema.methods.calculateEndDate = function () {
     if (!this.startDate || !this.durationYears) return this.endDate;
     const end = new Date(this.startDate);
     end.setFullYear(end.getFullYear() + this.durationYears);
-    // Subtract 1 day so 1 Jan 2026 → 31 Dec 2026 (not 1 Jan 2027)
     end.setDate(end.getDate() - 1);
     this.endDate = end;
     return this;

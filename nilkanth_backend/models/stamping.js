@@ -127,7 +127,6 @@ const stampingSchema = new mongoose.Schema({
             min: 0
         },
 
-        // ===== UNIQUE NUMBERS (required here — one per unit) =====
         uniqueNumbers: [{
             number: {
                 type: String,
@@ -244,7 +243,7 @@ const stampingSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-stampingSchema.index({ stampingNumber: 1 });
+// ✅ Removed stampingNumber — unique:true already creates it
 stampingSchema.index({ customerId: 1 });
 stampingSchema.index({ customerName: 1 });
 stampingSchema.index({ stampDate: -1 });
@@ -280,7 +279,6 @@ stampingSchema.methods.recalculateTotals = function () {
     this.subtotal = subtotal;
     this.totalDiscount = totalDiscount;
 
-    // If Non-GST mode, no tax
     if (!this.isGstMode) {
         this.totalTax = 0;
         this.taxBreakdown = { cgst: 0, sgst: 0, igst: 0, gst: 0 };
@@ -288,7 +286,6 @@ stampingSchema.methods.recalculateTotals = function () {
         return this;
     }
 
-    // GST Mode - Calculate tax
     const taxableAmount = this.subtotal - this.totalDiscount;
     const taxRate = this.taxSlab / 100;
 

@@ -202,7 +202,7 @@ const repairingSchema = new mongoose.Schema({
         gst: { type: Number, default: 0 }
     },
 
-    // ===== REPAIR NOTES (Replaces Notes) =====
+    // ===== REPAIR NOTES =====
     repairNotes: {
         type: String,
         trim: true,
@@ -232,7 +232,7 @@ const repairingSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-repairingSchema.index({ repairingNumber: 1 });
+// ✅ Removed repairingNumber — unique:true already creates it
 repairingSchema.index({ customerId: 1 });
 repairingSchema.index({ customerName: 1 });
 repairingSchema.index({ repairingDate: -1 });
@@ -266,7 +266,6 @@ repairingSchema.methods.recalculateTotals = function () {
     this.subtotal = subtotal;
     this.totalDiscount = totalDiscount;
 
-    // Non-GST → No tax
     if (!this.isGstMode) {
         this.totalTax = 0;
         this.taxBreakdown = { cgst: 0, sgst: 0, igst: 0, gst: 0 };
@@ -274,7 +273,6 @@ repairingSchema.methods.recalculateTotals = function () {
         return this;
     }
 
-    // GST Mode
     const taxableAmount = this.subtotal - this.totalDiscount;
     const taxRate = this.taxSlab / 100;
 

@@ -28,8 +28,8 @@ const productSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-productSchema.index({ productName: 1 });
+// ✅ Removed duplicate productName index — unique:true already creates it
+// HSN index kept (not unique)
 productSchema.index({ hsnCode: 1 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);

@@ -35,9 +35,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Create indexes for better performance
-userSchema.index({ email: 1 });
-userSchema.index({ userId: 1 });
+// ✅ Removed duplicate index declarations — unique:true already creates them
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;

@@ -5,6 +5,8 @@ const Customer = require("../models/customer");
 const Product = require("../models/product");
 const Item = require("../models/item");
 const AMC = require("../models/amc");
+const Repairing = require("../models/repairing");
+const Stamping = require("../models/stamping");
 const StampingUnit = require("../models/stampingUnit");
 
 // =============================================
@@ -12,7 +14,6 @@ const StampingUnit = require("../models/stampingUnit");
 // =============================================
 const getISTNow = () => {
     const now = new Date();
-    // IST = UTC + 5:30
     const istOffset = 5.5 * 60 * 60 * 1000;
     return new Date(now.getTime() + istOffset);
 };
@@ -25,7 +26,6 @@ const getStartOfTodayIST = () => {
     const istOffset = 5.5 * 60 * 60 * 1000;
     const istNow = new Date(now.getTime() + istOffset);
     istNow.setUTCHours(0, 0, 0, 0);
-    // Convert back to UTC
     return new Date(istNow.getTime() - istOffset);
 };
 
@@ -59,13 +59,12 @@ const getFiscalYearRangeIST = () => {
     const istNow = new Date(now.getTime() + istOffset);
 
     const year = istNow.getUTCFullYear();
-    const month = istNow.getUTCMonth(); // 0-based
+    const month = istNow.getUTCMonth();
 
-    // If current month < April (index 3), fiscal year started last year
     const fiscalStartYear = month >= 3 ? year : year - 1;
 
-    const start = new Date(Date.UTC(fiscalStartYear, 3, 1, 0, 0, 0)); // 1 April
-    const end = new Date(Date.UTC(fiscalStartYear + 1, 3, 1, 0, 0, 0)); // 1 April next year
+    const start = new Date(Date.UTC(fiscalStartYear, 3, 1, 0, 0, 0));
+    const end = new Date(Date.UTC(fiscalStartYear + 1, 3, 1, 0, 0, 0));
 
     return {
         start: new Date(start.getTime() - istOffset),
@@ -106,136 +105,139 @@ const buildStoreFilter = (storeType) => {
 };
 
 // =============================================
+// HELPER: Module config — date field + items key
+// =============================================
+const getModuleConfig = (moduleName) => {
+    switch (moduleName) {
+        case 'AMC':
+            return {
+                Model: AMC,
+                dateField: 'createdAt',      // AMC uses createdAt (payment received on creation)
+                itemsKey: 'products',
+                numberField: 'amcNumber',
+                idField: 'amcId',
+                hasChallan: false,
+                hasStatusFilter: false,      // count all AMC statuses in stats (simple & consistent)
+                selectFields: 'amcId amcNumber customerName grandTotal createdAt paymentStatus isGstMode status storeType'
+            };
+        case 'Repairing':
+            return {
+                Model: Repairing,
+                dateField: 'repairingDate',
+                itemsKey: 'items',
+                numberField: 'repairingNumber',
+                idField: 'repairingId',
+                hasChallan: false,
+                hasStatusFilter: false,
+                selectFields: 'repairingId repairingNumber customerName grandTotal repairingDate paymentStatus isGstMode status storeType'
+            };
+        case 'Stamping':
+            return {
+                Model: Stamping,
+                dateField: 'stampDate',
+                itemsKey: 'products',
+                numberField: 'stampingNumber',
+                idField: 'stampingId',
+                hasChallan: false,
+                hasStatusFilter: false,
+                selectFields: 'stampingId stampingNumber customerName grandTotal stampDate paymentStatus isGstMode storeType'
+            };
+        case 'Sales':
+        default:
+            return {
+                Model: Sales,
+                dateField: 'saleDate',
+                itemsKey: 'items',
+                numberField: 'invoiceNumber',
+                idField: 'saleId',
+                hasChallan: true,
+                hasStatusFilter: false,
+                selectFields: 'saleId invoiceNumber customerName grandTotal saleDate paymentStatus isChallan isGstMode status storeType'
+            };
+    }
+};
+
+// =============================================
 // GET /api/dashboard/get-dashboard
+// Query params:
+//   - storeType: All | Vadodara | Padra
+//   - module:    Sales | AMC | Repairing | Stamping   (default: Sales)
 // =============================================
 router.get("/get-dashboard", async (req, res) => {
     try {
         const storeType = req.query.storeType || 'All';
+        const moduleName = req.query.module || 'Sales';
         const storeFilter = buildStoreFilter(storeType);
 
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
 
-        // Today, Month, Year, Rolling 12mo ranges (all in UTC form)
+        // Date ranges
         const todayStart = getStartOfTodayIST();
         const monthRange = getMonthRangeIST();
         const yearRange = getFiscalYearRangeIST();
         const rollingRange = getLast12MonthsRangeIST();
 
-        // For AMC / stamping due soon (next 30 days in IST)
+        // 30-day window for AMC + stamping due alerts
         const thirtyDaysFromNowIST = new Date(now.getTime() + istOffset + 30 * 24 * 60 * 60 * 1000);
         const thirtyDaysFromNowUTC = new Date(thirtyDaysFromNowIST.getTime() - istOffset);
 
-        // ===== PARALLEL QUERIES =====
-        const [
-            // Today sales
-            todaySalesCount,
-            todaySalesAgg,
+        const cfg = getModuleConfig(moduleName);
+        const { Model, dateField, itemsKey, selectFields } = cfg;
 
-            // Month sales
-            monthSalesCount,
-            monthSalesAgg,
-
-            // Year sales
-            yearSalesCount,
-            yearSalesAgg,
-
-            // Master counts
-            totalCustomers,
-            totalProducts,
-            totalItems,
-
-            // Active AMCs count
-            activeAmcsCount,
-
-            // Charts — sales last 12 months (aggregation)
-            salesLast12MonthsAgg,
-
-            // Top 5 products (this fiscal year)
-            topProductsAgg,
-
-            // Sales type split (all time, or this year? — using this year)
-            salesByTypeAgg,
-
-            // Payment split (this year)
-            salesByPaymentAgg,
-
-            // Alerts — pending payments
-            pendingPaymentsList,
-
-            // Alerts — AMC renewals due (will post-filter for no child)
-            amcRenewalsDueList,
-
-            // Alerts — stampings due
-            stampingsDueList,
-
-            // Recent sales
-            recentSalesList
-        ] = await Promise.all([
-            // Today sales count
-            Sales.countDocuments({
-                ...storeFilter,
-                saleDate: { $gte: todayStart }
-            }),
-
-            // Today sales total
-            Sales.aggregate([
-                { $match: { ...storeFilter, saleDate: { $gte: todayStart } } },
-                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
-            ]),
-
-            // Month sales count
-            Sales.countDocuments({
-                ...storeFilter,
-                saleDate: { $gte: monthRange.start, $lt: monthRange.end }
-            }),
-
-            // Month sales total
-            Sales.aggregate([
-                { $match: { ...storeFilter, saleDate: { $gte: monthRange.start, $lt: monthRange.end } } },
-                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
-            ]),
-
-            // Year (fiscal) sales count
-            Sales.countDocuments({
-                ...storeFilter,
-                saleDate: { $gte: yearRange.start, $lt: yearRange.end }
-            }),
-
-            // Year sales total
-            Sales.aggregate([
-                { $match: { ...storeFilter, saleDate: { $gte: yearRange.start, $lt: yearRange.end } } },
-                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
-            ]),
-
-            // Total customers
+        // ===== SHARED STATS (always same — master counts) =====
+        const sharedPromises = [
             Customer.countDocuments({}),
-
-            // Total products
             Product.countDocuments({}),
-
-            // Total items
             Item.countDocuments({}),
+            AMC.countDocuments({ ...storeFilter, status: 'Active' }),
+        ];
 
-            // Active AMCs count
-            AMC.countDocuments({
+        // ===== MODULE-SPECIFIC STATS + CHARTS =====
+        const modulePromises = [
+            // Today count
+            Model.countDocuments({
                 ...storeFilter,
-                status: 'Active'
+                [dateField]: { $gte: todayStart }
             }),
-
-            // Sales last 12 months
-            Sales.aggregate([
+            // Today total
+            Model.aggregate([
+                { $match: { ...storeFilter, [dateField]: { $gte: todayStart } } },
+                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
+            ]),
+            // Month count
+            Model.countDocuments({
+                ...storeFilter,
+                [dateField]: { $gte: monthRange.start, $lt: monthRange.end }
+            }),
+            // Month total
+            Model.aggregate([
+                { $match: { ...storeFilter, [dateField]: { $gte: monthRange.start, $lt: monthRange.end } } },
+                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
+            ]),
+            // Year count
+            Model.countDocuments({
+                ...storeFilter,
+                [dateField]: { $gte: yearRange.start, $lt: yearRange.end }
+            }),
+            // Year total
+            Model.aggregate([
+                { $match: { ...storeFilter, [dateField]: { $gte: yearRange.start, $lt: yearRange.end } } },
+                { $group: { _id: null, total: { $sum: "$grandTotal" } } }
+            ]),
+            // Last 12 months trend
+            Model.aggregate([
                 {
                     $match: {
                         ...storeFilter,
-                        saleDate: { $gte: rollingRange.start, $lt: rollingRange.end }
+                        [dateField]: { $gte: rollingRange.start, $lt: rollingRange.end }
                     }
                 },
                 {
                     $group: {
                         _id: {
-                            year: { $year: { $add: ["$saleDate", istOffset] } },
-                            month: { $month: { $add: ["$saleDate", istOffset] } }
+                            year: { $year: { $add: [`$${dateField}`, istOffset] } },
+                            month: { $month: { $add: [`$${dateField}`, istOffset] } }
                         },
                         total: { $sum: "$grandTotal" },
                         count: { $sum: 1 }
@@ -243,94 +245,128 @@ router.get("/get-dashboard", async (req, res) => {
                 },
                 { $sort: { "_id.year": 1, "_id.month": 1 } }
             ]),
-
             // Top 5 products (this fiscal year)
-            Sales.aggregate([
+            Model.aggregate([
                 {
                     $match: {
                         ...storeFilter,
-                        saleDate: { $gte: yearRange.start, $lt: yearRange.end }
+                        [dateField]: { $gte: yearRange.start, $lt: yearRange.end }
                     }
                 },
-                { $unwind: "$items" },
+                { $unwind: `$${itemsKey}` },
                 {
                     $group: {
-                        _id: "$items.productId",
-                        productName: { $first: "$items.productName" },
-                        totalQty: { $sum: "$items.quantity" },
-                        totalRevenue: { $sum: "$items.finalPrice" }
+                        _id: `$${itemsKey}.productId`,
+                        productName: { $first: `$${itemsKey}.productName` },
+                        totalQty: { $sum: `$${itemsKey}.quantity` },
+                        totalRevenue: { $sum: `$${itemsKey}.finalPrice` }
                     }
                 },
                 { $sort: { totalQty: -1 } },
                 { $limit: 5 }
             ]),
-
-            // Sales by type (this fiscal year)
-            Sales.aggregate([
+            // Type split (this fiscal year) — GST / Non-GST (+ Challan for sales)
+            cfg.hasChallan
+                ? Model.aggregate([
+                    {
+                        $match: {
+                            ...storeFilter,
+                            [dateField]: { $gte: yearRange.start, $lt: yearRange.end }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            gst: {
+                                $sum: {
+                                    $cond: [
+                                        { $and: [{ $eq: ["$isChallan", false] }, { $eq: ["$isGstMode", true] }] },
+                                        1, 0
+                                    ]
+                                }
+                            },
+                            nonGst: {
+                                $sum: {
+                                    $cond: [
+                                        { $and: [{ $eq: ["$isChallan", false] }, { $eq: ["$isGstMode", false] }] },
+                                        1, 0
+                                    ]
+                                }
+                            },
+                            challan: {
+                                $sum: { $cond: [{ $eq: ["$isChallan", true] }, 1, 0] }
+                            }
+                        }
+                    }
+                ])
+                : Model.aggregate([
+                    {
+                        $match: {
+                            ...storeFilter,
+                            [dateField]: { $gte: yearRange.start, $lt: yearRange.end }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            gst: {
+                                $sum: { $cond: [{ $eq: ["$isGstMode", true] }, 1, 0] }
+                            },
+                            nonGst: {
+                                $sum: { $cond: [{ $eq: ["$isGstMode", false] }, 1, 0] }
+                            }
+                        }
+                    }
+                ]),
+            // Payment split (this fiscal year)
+            Model.aggregate([
                 {
                     $match: {
                         ...storeFilter,
-                        saleDate: { $gte: yearRange.start, $lt: yearRange.end }
+                        [dateField]: { $gte: yearRange.start, $lt: yearRange.end }
                     }
                 },
                 {
                     $group: {
                         _id: null,
-                        gst: {
-                            $sum: {
-                                $cond: [
-                                    { $and: [{ $eq: ["$isChallan", false] }, { $eq: ["$isGstMode", true] }] },
-                                    1, 0
-                                ]
-                            }
-                        },
-                        nonGst: {
-                            $sum: {
-                                $cond: [
-                                    { $and: [{ $eq: ["$isChallan", false] }, { $eq: ["$isGstMode", false] }] },
-                                    1, 0
-                                ]
-                            }
-                        },
-                        challan: {
-                            $sum: { $cond: [{ $eq: ["$isChallan", true] }, 1, 0] }
-                        }
+                        paid: { $sum: { $cond: [{ $eq: ["$paymentStatus", "Paid"] }, 1, 0] } },
+                        pending: { $sum: { $cond: [{ $eq: ["$paymentStatus", "Pending"] }, 1, 0] } }
                     }
                 }
             ]),
+            // Recent records (limit 6)
+            Model.find({ ...storeFilter })
+                .sort({ [dateField]: -1, createdAt: -1 })
+                .limit(6)
+                .select(selectFields)
+                .lean(),
+        ];
 
-            // Sales by payment (this fiscal year)
-            Sales.aggregate([
-                {
-                    $match: {
-                        ...storeFilter,
-                        saleDate: { $gte: yearRange.start, $lt: yearRange.end }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null,
-                        paid: {
-                            $sum: { $cond: [{ $eq: ["$paymentStatus", "Paid"] }, 1, 0] }
-                        },
-                        pending: {
-                            $sum: { $cond: [{ $eq: ["$paymentStatus", "Pending"] }, 1, 0] }
-                        }
-                    }
-                }
-            ]),
-
-            // Pending payments list (limit 6)
-            Sales.find({
-                ...storeFilter,
-                paymentStatus: 'Pending'
-            })
+        // ===== ALERTS (always shown, common across toggles) =====
+        const alertPromises = [
+            // Pending payments — combined from Sales + AMC + Repairing + Stamping
+            Sales.find({ ...storeFilter, paymentStatus: 'Pending' })
                 .sort({ saleDate: -1 })
                 .limit(6)
                 .select('saleId invoiceNumber customerName grandTotal saleDate')
                 .lean(),
+            AMC.find({ ...storeFilter, paymentStatus: 'Pending' })
+                .sort({ createdAt: -1 })
+                .limit(6)
+                .select('amcId amcNumber customerName grandTotal createdAt')
+                .lean(),
+            Repairing.find({ ...storeFilter, paymentStatus: 'Pending' })
+                .sort({ repairingDate: -1 })
+                .limit(6)
+                .select('repairingId repairingNumber customerName grandTotal repairingDate')
+                .lean(),
+            Stamping.find({ ...storeFilter, paymentStatus: 'Pending' })
+                .sort({ stampDate: -1 })
+                .limit(6)
+                .select('stampingId stampingNumber customerName grandTotal stampDate')
+                .lean(),
 
-            // AMC renewals due (limit 20, will filter to 6 after checking children)
+            // AMC renewals due (Active, endDate within 30 days)
             AMC.find({
                 ...storeFilter,
                 status: 'Active',
@@ -341,7 +377,7 @@ router.get("/get-dashboard", async (req, res) => {
                 .select('amcId amcNumber customerName endDate storeType')
                 .lean(),
 
-            // Stampings due (limit 6)
+            // Stampings due
             StampingUnit.find({
                 ...storeFilter,
                 nextDueDate: { $gte: now, $lte: thirtyDaysFromNowUTC }
@@ -350,22 +386,92 @@ router.get("/get-dashboard", async (req, res) => {
                 .limit(6)
                 .select('unitId uniqueNumber productName customerName nextDueDate storeType')
                 .lean(),
+        ];
 
-            // Recent sales (limit 6)
-            Sales.find({ ...storeFilter })
-                .sort({ saleDate: -1, createdAt: -1 })
-                .limit(6)
-                .select('saleId invoiceNumber customerName grandTotal saleDate paymentStatus isChallan isGstMode')
-                .lean()
+        // ===== RUN ALL IN PARALLEL =====
+        const [
+            sharedResults,
+            moduleResults,
+            alertResults
+        ] = await Promise.all([
+            Promise.all(sharedPromises),
+            Promise.all(modulePromises),
+            Promise.all(alertPromises),
         ]);
 
-        // ===== POST-FILTER: AMC renewals — remove those that already have a child AMC =====
+        const [
+            totalCustomers,
+            totalProducts,
+            totalItems,
+            activeAmcsCount
+        ] = sharedResults;
+
+        const [
+            todayCount,
+            todayAgg,
+            monthCount,
+            monthAgg,
+            yearCount,
+            yearAgg,
+            trendAgg,
+            topProductsAgg,
+            typeAgg,
+            paymentAgg,
+            recentList,
+        ] = moduleResults;
+
+        const [
+            pendingSales,
+            pendingAmc,
+            pendingRepairing,
+            pendingStamping,
+            amcRenewalsDueList,
+            stampingsDueList,
+        ] = alertResults;
+
+        // ===== BUILD PENDING PAYMENTS — combined with module tag =====
+        const pendingPaymentsRaw = [
+            ...pendingSales.map(s => ({
+                module: 'Sales',
+                id: s.saleId,
+                number: s.invoiceNumber,
+                customerName: s.customerName,
+                grandTotal: s.grandTotal,
+                date: s.saleDate,
+            })),
+            ...pendingAmc.map(a => ({
+                module: 'AMC',
+                id: a.amcId,
+                number: a.amcNumber,
+                customerName: a.customerName,
+                grandTotal: a.grandTotal,
+                date: a.createdAt,
+            })),
+            ...pendingRepairing.map(r => ({
+                module: 'Repairing',
+                id: r.repairingId,
+                number: r.repairingNumber,
+                customerName: r.customerName,
+                grandTotal: r.grandTotal,
+                date: r.repairingDate,
+            })),
+            ...pendingStamping.map(st => ({
+                module: 'Stamping',
+                id: st.stampingId,
+                number: st.stampingNumber,
+                customerName: st.customerName,
+                grandTotal: st.grandTotal,
+                date: st.stampDate,
+            })),
+        ]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 6);
+
+        // ===== AMC RENEWALS — post-filter out those already renewed =====
         let amcRenewalsDue = [];
         if (amcRenewalsDueList.length > 0) {
             const amcIds = amcRenewalsDueList.map(a => a.amcId);
-            const childRenewals = await AMC.find({
-                renewalOf: { $in: amcIds }
-            })
+            const childRenewals = await AMC.find({ renewalOf: { $in: amcIds } })
                 .select('renewalOf')
                 .lean();
 
@@ -386,17 +492,17 @@ router.get("/get-dashboard", async (req, res) => {
 
         // ===== BUILD STATS =====
         const stats = {
-            todaySales: {
-                count: todaySalesCount,
-                total: todaySalesAgg[0]?.total || 0
+            todayModule: {
+                count: todayCount,
+                total: todayAgg[0]?.total || 0
             },
-            monthSales: {
-                count: monthSalesCount,
-                total: monthSalesAgg[0]?.total || 0
+            monthModule: {
+                count: monthCount,
+                total: monthAgg[0]?.total || 0
             },
-            yearSales: {
-                count: yearSalesCount,
-                total: yearSalesAgg[0]?.total || 0
+            yearModule: {
+                count: yearCount,
+                total: yearAgg[0]?.total || 0
             },
             totalCustomers,
             totalProducts,
@@ -404,16 +510,14 @@ router.get("/get-dashboard", async (req, res) => {
             activeAmcs: activeAmcsCount
         };
 
-        // ===== BUILD CHARTS =====
-
-        // 1. Sales last 12 months — pad missing months with 0
+        // ===== BUILD TREND — pad missing months =====
         const monthsMap = {};
-        salesLast12MonthsAgg.forEach(m => {
+        trendAgg.forEach(m => {
             const key = `${m._id.year}-${String(m._id.month).padStart(2, '0')}`;
             monthsMap[key] = { total: m.total, count: m.count };
         });
 
-        const salesLast12Months = [];
+        const trendLast12Months = [];
         const cursor = new Date(rollingRange.start.getTime() + istOffset);
         cursor.setUTCDate(1);
         cursor.setUTCHours(0, 0, 0, 0);
@@ -424,7 +528,7 @@ router.get("/get-dashboard", async (req, res) => {
             const key = `${y}-${String(m).padStart(2, '0')}`;
             const label = cursor.toLocaleString('en-IN', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
-            salesLast12Months.push({
+            trendLast12Months.push({
                 month: label,
                 year: y,
                 monthNumber: m,
@@ -435,7 +539,7 @@ router.get("/get-dashboard", async (req, res) => {
             cursor.setUTCMonth(cursor.getUTCMonth() + 1);
         }
 
-        // 2. Top products
+        // ===== TOP PRODUCTS =====
         const topProducts = topProductsAgg.map(p => ({
             productId: p._id,
             productName: p.productName,
@@ -443,37 +547,31 @@ router.get("/get-dashboard", async (req, res) => {
             totalRevenue: p.totalRevenue
         }));
 
-        // 3. Sales by type
-        const salesByTypeRaw = salesByTypeAgg[0] || { gst: 0, nonGst: 0, challan: 0 };
+        // ===== TYPE SPLIT =====
+        const typeRaw = typeAgg[0] || {};
         const salesByType = {
-            gst: salesByTypeRaw.gst || 0,
-            nonGst: salesByTypeRaw.nonGst || 0,
-            challan: salesByTypeRaw.challan || 0
+            gst: typeRaw.gst || 0,
+            nonGst: typeRaw.nonGst || 0,
+            challan: cfg.hasChallan ? (typeRaw.challan || 0) : 0
         };
 
-        // 4. Sales by payment
-        const salesByPaymentRaw = salesByPaymentAgg[0] || { paid: 0, pending: 0 };
+        // ===== PAYMENT SPLIT =====
+        const paymentRaw = paymentAgg[0] || { paid: 0, pending: 0 };
         const salesByPayment = {
-            paid: salesByPaymentRaw.paid || 0,
-            pending: salesByPaymentRaw.pending || 0
+            paid: paymentRaw.paid || 0,
+            pending: paymentRaw.pending || 0
         };
 
         const charts = {
-            salesLast12Months,
+            salesLast12Months: trendLast12Months,
             topProducts,
             salesByType,
             salesByPayment
         };
 
-        // ===== BUILD ALERTS =====
+        // ===== ALERTS =====
         const alerts = {
-            pendingPayments: pendingPaymentsList.map(s => ({
-                saleId: s.saleId,
-                invoiceNumber: s.invoiceNumber,
-                customerName: s.customerName,
-                grandTotal: s.grandTotal,
-                saleDate: s.saleDate
-            })),
+            pendingPayments: pendingPaymentsRaw,
             amcRenewalsDue,
             stampingsDue: stampingsDueList.map(u => ({
                 unitId: u.unitId,
@@ -486,25 +584,32 @@ router.get("/get-dashboard", async (req, res) => {
             }))
         };
 
-        // ===== BUILD RECENT SALES =====
-        const recentSales = recentSalesList.map(s => ({
-            saleId: s.saleId,
-            invoiceNumber: s.invoiceNumber,
-            customerName: s.customerName,
-            grandTotal: s.grandTotal,
-            saleDate: s.saleDate,
-            paymentStatus: s.paymentStatus,
-            isChallan: s.isChallan,
-            isGstMode: s.isGstMode
-        }));
+        // ===== RECENT RECORDS (for selected module) =====
+        const recentRecords = recentList.map(r => {
+            const base = {
+                id: r[cfg.idField],
+                number: r[cfg.numberField],
+                customerName: r.customerName,
+                grandTotal: r.grandTotal,
+                date: r[dateField],
+                paymentStatus: r.paymentStatus,
+                isGstMode: r.isGstMode,
+                module: moduleName,
+            };
+            if (cfg.hasChallan) {
+                base.isChallan = r.isChallan;
+            }
+            return base;
+        });
 
         res.status(200).json({
             success: true,
             data: {
+                module: moduleName,
                 stats,
                 charts,
                 alerts,
-                recentSales,
+                recentRecords,
                 storeType
             }
         });

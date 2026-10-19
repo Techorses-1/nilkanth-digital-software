@@ -59,6 +59,14 @@ const STORE_FILTER_OPTIONS = [
     { value: "Padra", label: "Padra" }
 ];
 
+// ===== Module Toggle Options =====
+const MODULE_OPTIONS = [
+    { value: "Sales", label: "Sales", icon: FaFileInvoice },
+    { value: "AMC", label: "AMC", icon: FaSyncAlt },
+    { value: "Repairing", label: "Repairing", icon: FaTools },
+    { value: "Stamping", label: "Stamping", icon: FaStamp }
+];
+
 // ===== React-Select Styles =====
 const selectStyles = {
     control: (base) => ({
@@ -117,6 +125,17 @@ const formatCurrencyFull = (val) => {
     return `₹${Number(val).toFixed(2)}`;
 };
 
+// ===== Module badge color =====
+const getModuleBadgeClass = (module) => {
+    switch (module) {
+        case 'Sales': return 'db-module-badge-sales';
+        case 'AMC': return 'db-module-badge-amc';
+        case 'Repairing': return 'db-module-badge-repairing';
+        case 'Stamping': return 'db-module-badge-stamping';
+        default: return '';
+    }
+};
+
 const Dashboard = () => {
     const navigate = useNavigate();
 
@@ -124,11 +143,12 @@ const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [storeType, setStoreType] = useState("All");
+    const [activeModule, setActiveModule] = useState("Sales");
 
     // ============= FETCH =============
     useEffect(() => {
         fetchDashboard();
-    }, [storeType]);
+    }, [storeType, activeModule]);
 
     const fetchDashboard = async () => {
         setIsLoading(true);
@@ -138,7 +158,7 @@ const Dashboard = () => {
                 `${import.meta.env.VITE_API_URL}/dashboard/get-dashboard`,
                 {
                     ...headers,
-                    params: { storeType }
+                    params: { storeType, module: activeModule }
                 }
             );
 
@@ -191,7 +211,17 @@ const Dashboard = () => {
         );
     }
 
-    const { stats, charts, alerts, recentSales } = dashboardData;
+    const { stats, charts, alerts, recentRecords } = dashboardData;
+
+    // ===== Module label helpers =====
+    const moduleLabel = activeModule;
+    const moduleInvoiceWord = activeModule === 'Sales' ? 'invoices'
+        : activeModule === 'AMC' ? 'AMCs'
+            : activeModule === 'Repairing' ? 'repairings'
+                : 'stampings';
+
+    // ===== Decide whether to show Challan slice =====
+    const showChallan = activeModule === 'Sales';
 
     // ============= MAIN RENDER =============
     return (
@@ -226,18 +256,36 @@ const Dashboard = () => {
                     </div>
                 </div>
 
+                {/* ===== MODULE TOGGLE ===== */}
+                <div className="db-module-toggle">
+                    {MODULE_OPTIONS.map((mod) => {
+                        const Icon = mod.icon;
+                        const isActive = activeModule === mod.value;
+                        return (
+                            <button
+                                key={mod.value}
+                                className={`db-module-toggle-btn ${isActive ? 'db-module-toggle-active' : ''}`}
+                                onClick={() => setActiveModule(mod.value)}
+                            >
+                                <Icon />
+                                <span>{mod.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {/* ===== ROW 1: STAT CARDS ===== */}
                 <div className="db-stats-grid">
-                    {/* Today's Sales */}
+                    {/* Today */}
                     <div className="db-stat-card db-stat-primary">
                         <div className="db-stat-icon">
                             <FaCalendarAlt />
                         </div>
                         <div className="db-stat-content">
-                            <span className="db-stat-label">Today's Sales</span>
-                            <span className="db-stat-value">{formatCurrency(stats.todaySales.total)}</span>
+                            <span className="db-stat-label">Today's {moduleLabel}</span>
+                            <span className="db-stat-value">{formatCurrency(stats.todayModule.total)}</span>
                             <span className="db-stat-sub">
-                                <FaFileInvoice /> {stats.todaySales.count} invoices
+                                <FaFileInvoice /> {stats.todayModule.count} {moduleInvoiceWord}
                             </span>
                         </div>
                     </div>
@@ -249,9 +297,9 @@ const Dashboard = () => {
                         </div>
                         <div className="db-stat-content">
                             <span className="db-stat-label">This Month</span>
-                            <span className="db-stat-value">{formatCurrency(stats.monthSales.total)}</span>
+                            <span className="db-stat-value">{formatCurrency(stats.monthModule.total)}</span>
                             <span className="db-stat-sub">
-                                <FaFileInvoice /> {stats.monthSales.count} invoices
+                                <FaFileInvoice /> {stats.monthModule.count} {moduleInvoiceWord}
                             </span>
                         </div>
                     </div>
@@ -263,9 +311,9 @@ const Dashboard = () => {
                         </div>
                         <div className="db-stat-content">
                             <span className="db-stat-label">This Fiscal Year</span>
-                            <span className="db-stat-value">{formatCurrency(stats.yearSales.total)}</span>
+                            <span className="db-stat-value">{formatCurrency(stats.yearModule.total)}</span>
                             <span className="db-stat-sub">
-                                <FaFileInvoice /> {stats.yearSales.count} invoices
+                                <FaFileInvoice /> {stats.yearModule.count} {moduleInvoiceWord}
                             </span>
                         </div>
                     </div>
@@ -321,11 +369,11 @@ const Dashboard = () => {
 
                 {/* ===== ROW 2: CHARTS ===== */}
                 <div className="db-charts-grid">
-                    {/* Sales Last 12 Months */}
+                    {/* Last 12 Months trend */}
                     <div className="db-chart-card db-chart-wide">
                         <div className="db-chart-header">
                             <h3 className="db-chart-title">
-                                <FaChartLine /> Sales — Last 12 Months
+                                <FaChartLine /> {moduleLabel} — Last 12 Months
                             </h3>
                         </div>
                         <div className="db-chart-body">
@@ -355,12 +403,12 @@ const Dashboard = () => {
                     <div className="db-chart-card db-chart-wide">
                         <div className="db-chart-header">
                             <h3 className="db-chart-title">
-                                <FaChartBar /> Top 5 Products (This Year)
+                                <FaChartBar /> Top 5 Products — {moduleLabel} (This Year)
                             </h3>
                         </div>
                         <div className="db-chart-body">
                             {charts.topProducts.length === 0 ? (
-                                <div className="db-chart-empty">No products sold yet this year</div>
+                                <div className="db-chart-empty">No products in {moduleLabel} yet this year</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height={280}>
                                     <BarChart
@@ -377,7 +425,7 @@ const Dashboard = () => {
                                             tick={{ fontSize: 11 }}
                                         />
                                         <Tooltip
-                                            formatter={(value) => [value, 'Qty Sold']}
+                                            formatter={(value) => [value, 'Qty']}
                                             contentStyle={{ borderRadius: '8px', border: '1px solid #eee' }}
                                         />
                                         <Bar dataKey="totalQty" fill={CHART_COLORS.primary} radius={[0, 6, 6, 0]} />
@@ -387,47 +435,59 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Sales by Type */}
+                    {/* By Type */}
                     <div className="db-chart-card db-chart-small">
                         <div className="db-chart-header">
                             <h3 className="db-chart-title">
-                                <FaChartPie /> Sales by Type
+                                <FaChartPie /> {moduleLabel} by Type
                             </h3>
                         </div>
                         <div className="db-chart-body">
-                            {(charts.salesByType.gst + charts.salesByType.nonGst + charts.salesByType.challan) === 0 ? (
-                                <div className="db-chart-empty">No sales this year</div>
-                            ) : (
-                                <ResponsiveContainer width="100%" height={250}>
-                                    <PieChart>
-                                        <Pie
-                                            data={[
-                                                { name: 'GST', value: charts.salesByType.gst },
-                                                { name: 'Non-GST', value: charts.salesByType.nonGst },
-                                                { name: 'Challan', value: charts.salesByType.challan }
-                                            ]}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={45}
-                                            outerRadius={80}
-                                            paddingAngle={3}
-                                            label={({ name, value }) => `${name}: ${value}`}
-                                            labelLine={{ stroke: '#ccc' }}
-                                        >
-                                            {PIE_COLORS_TYPE.map((color, index) => (
-                                                <Cell key={`cell-${index}`} fill={color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #eee' }} />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            )}
+                            {(() => {
+                                const total = showChallan
+                                    ? charts.salesByType.gst + charts.salesByType.nonGst + charts.salesByType.challan
+                                    : charts.salesByType.gst + charts.salesByType.nonGst;
+                                if (total === 0) {
+                                    return <div className="db-chart-empty">No {moduleLabel} this year</div>;
+                                }
+                                const pieData = showChallan
+                                    ? [
+                                        { name: 'GST', value: charts.salesByType.gst },
+                                        { name: 'Non-GST', value: charts.salesByType.nonGst },
+                                        { name: 'Challan', value: charts.salesByType.challan }
+                                    ]
+                                    : [
+                                        { name: 'GST', value: charts.salesByType.gst },
+                                        { name: 'Non-GST', value: charts.salesByType.nonGst }
+                                    ];
+                                return (
+                                    <ResponsiveContainer width="100%" height={250}>
+                                        <PieChart>
+                                            <Pie
+                                                data={pieData}
+                                                dataKey="value"
+                                                nameKey="name"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={45}
+                                                outerRadius={80}
+                                                paddingAngle={3}
+                                                label={({ name, value }) => `${name}: ${value}`}
+                                                labelLine={{ stroke: '#ccc' }}
+                                            >
+                                                {pieData.map((_, index) => (
+                                                    <Cell key={`cell-${index}`} fill={PIE_COLORS_TYPE[index % PIE_COLORS_TYPE.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #eee' }} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                );
+                            })()}
                         </div>
                     </div>
 
-                    {/* Sales by Payment */}
+                    {/* Payment Status */}
                     <div className="db-chart-card db-chart-small">
                         <div className="db-chart-header">
                             <h3 className="db-chart-title">
@@ -436,7 +496,7 @@ const Dashboard = () => {
                         </div>
                         <div className="db-chart-body">
                             {(charts.salesByPayment.paid + charts.salesByPayment.pending) === 0 ? (
-                                <div className="db-chart-empty">No sales this year</div>
+                                <div className="db-chart-empty">No {moduleLabel} this year</div>
                             ) : (
                                 <ResponsiveContainer width="100%" height={250}>
                                     <PieChart>
@@ -469,7 +529,7 @@ const Dashboard = () => {
 
                 {/* ===== ROW 3: ALERTS ===== */}
                 <div className="db-alerts-grid">
-                    {/* Pending Payments */}
+                    {/* Pending Payments — combined all modules */}
                     <div className="db-alert-card db-alert-danger">
                         <div className="db-alert-header">
                             <h3 className="db-alert-title">
@@ -487,10 +547,13 @@ const Dashboard = () => {
                             ) : (
                                 <ul className="db-alert-list">
                                     {alerts.pendingPayments.map((item) => (
-                                        <li key={item.saleId} className="db-alert-item">
+                                        <li key={`${item.module}-${item.id}`} className="db-alert-item">
                                             <div className="db-alert-item-row">
                                                 <span className="db-alert-item-title">
-                                                    {item.invoiceNumber}
+                                                    <span className={`db-module-badge ${getModuleBadgeClass(item.module)}`}>
+                                                        {item.module}
+                                                    </span>
+                                                    {item.number}
                                                 </span>
                                                 <span className="db-alert-item-amount">
                                                     {formatCurrencyFull(item.grandTotal)}
@@ -498,7 +561,7 @@ const Dashboard = () => {
                                             </div>
                                             <div className="db-alert-item-sub">
                                                 <span>{item.customerName}</span>
-                                                <span>{formatDate(item.saleDate)}</span>
+                                                <span>{formatDate(item.date)}</span>
                                             </div>
                                         </li>
                                     ))}
@@ -507,7 +570,7 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* AMC Renewals Due */}
+                    {/* AMC Renewals Due — unchanged */}
                     <div className="db-alert-card db-alert-warning">
                         <div className="db-alert-header">
                             <h3 className="db-alert-title">
@@ -545,7 +608,7 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Stampings Due */}
+                    {/* Stampings Due — unchanged */}
                     <div className="db-alert-card db-alert-info">
                         <div className="db-alert-header">
                             <h3 className="db-alert-title">
@@ -588,29 +651,37 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* ===== ROW 4: RECENT SALES ===== */}
+                {/* ===== ROW 4: RECENT RECORDS ===== */}
                 <div className="db-recent-card">
                     <div className="db-recent-header">
                         <h3 className="db-recent-title">
-                            <FaFileInvoice /> Recent Sales
+                            <FaFileInvoice /> Recent {moduleLabel}
                         </h3>
                         <button
                             className="db-recent-view-all"
-                            onClick={() => navigate('/')}
+                            onClick={() => {
+                                const routes = {
+                                    Sales: '/',
+                                    AMC: '/amc',
+                                    Repairing: '/repairing',
+                                    Stamping: '/stamping'
+                                };
+                                navigate(routes[activeModule] || '/');
+                            }}
                         >
                             View All <FaArrowRight />
                         </button>
                     </div>
                     <div className="db-recent-body">
-                        {recentSales.length === 0 ? (
-                            <div className="db-recent-empty">No recent sales</div>
+                        {recentRecords.length === 0 ? (
+                            <div className="db-recent-empty">No recent {moduleLabel.toLowerCase()} records</div>
                         ) : (
                             <div className="db-recent-table-wrap">
                                 <table className="db-recent-table">
                                     <thead>
                                         <tr>
                                             <th>#</th>
-                                            <th>Invoice No</th>
+                                            <th>Number</th>
                                             <th>Customer</th>
                                             <th>Type</th>
                                             <th>Amount</th>
@@ -619,32 +690,32 @@ const Dashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {recentSales.map((sale, idx) => {
-                                            const type = sale.isChallan
+                                        {recentRecords.map((rec, idx) => {
+                                            const type = rec.isChallan
                                                 ? 'Challan'
-                                                : (sale.isGstMode ? 'GST' : 'Non-GST');
+                                                : (rec.isGstMode ? 'GST' : 'Non-GST');
                                             return (
-                                                <tr key={sale.saleId}>
+                                                <tr key={rec.id}>
                                                     <td>{idx + 1}</td>
                                                     <td className="db-recent-invoice">
-                                                        <strong>{sale.invoiceNumber}</strong>
+                                                        <strong>{rec.number}</strong>
                                                     </td>
-                                                    <td>{sale.customerName}</td>
+                                                    <td>{rec.customerName}</td>
                                                     <td>
                                                         <span className={`db-recent-tag db-recent-tag-${type === 'Challan' ? 'challan' : (type === 'GST' ? 'gst' : 'nongst')}`}>
                                                             {type}
                                                         </span>
                                                     </td>
                                                     <td className="db-recent-amount">
-                                                        {formatCurrencyFull(sale.grandTotal)}
+                                                        {formatCurrencyFull(rec.grandTotal)}
                                                     </td>
                                                     <td>
-                                                        <span className={`db-recent-status db-recent-status-${sale.paymentStatus === 'Paid' ? 'paid' : 'pending'}`}>
-                                                            {sale.paymentStatus === 'Paid' ? <FaCheckCircle /> : <FaClock />}
-                                                            {' '}{sale.paymentStatus || 'Paid'}
+                                                        <span className={`db-recent-status db-recent-status-${rec.paymentStatus === 'Paid' ? 'paid' : 'pending'}`}>
+                                                            {rec.paymentStatus === 'Paid' ? <FaCheckCircle /> : <FaClock />}
+                                                            {' '}{rec.paymentStatus || 'Paid'}
                                                         </span>
                                                     </td>
-                                                    <td>{formatDate(sale.saleDate)}</td>
+                                                    <td>{formatDate(rec.date)}</td>
                                                 </tr>
                                             );
                                         })}

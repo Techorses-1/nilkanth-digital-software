@@ -28,8 +28,8 @@ const itemSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Indexes
-itemSchema.index({ itemName: 1 });
+// ✅ Removed duplicate itemName index — unique:true already creates it
+// HSN index kept (not unique, so no duplicate warning)
 itemSchema.index({ hsnCode: 1 });
 
 const Item = mongoose.models.Item || mongoose.model('Item', itemSchema);

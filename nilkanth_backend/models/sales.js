@@ -110,12 +110,10 @@ const salesSchema = new mongoose.Schema({
             required: true,
             trim: true
         },
-        // ✅ Master product description (from Product model)
         productDescription: {
             type: String,
             trim: true
         },
-        // ✅ NEW: Per-invoice description (user enters)
         invoiceDescription: {
             type: String,
             trim: true,
@@ -168,7 +166,6 @@ const salesSchema = new mongoose.Schema({
             required: true,
             min: 0
         },
-        // ===== UNIQUE NUMBERS FOR EACH UNIT =====
         uniqueNumbers: [{
             number: {
                 type: String,
@@ -260,8 +257,7 @@ const salesSchema = new mongoose.Schema({
 });
 
 // ===== INDEXES =====
-salesSchema.index({ invoiceNumber: 1 });
-salesSchema.index({ internalInvoiceNumber: 1 });
+// ✅ Removed invoiceNumber & internalInvoiceNumber — unique:true already creates them
 salesSchema.index({ customerId: 1 });
 salesSchema.index({ customerName: 1 });
 salesSchema.index({ saleDate: -1 });
@@ -297,7 +293,6 @@ salesSchema.methods.recalculateTotals = function () {
     this.subtotal = subtotal;
     this.totalDiscount = totalDiscount;
 
-    // ✅ If Challan mode OR Non-GST mode, NO tax calculation
     if (this.isChallan || !this.isGstMode) {
         this.totalTax = 0;
         this.taxBreakdown = { cgst: 0, sgst: 0, igst: 0, gst: 0 };
@@ -305,7 +300,6 @@ salesSchema.methods.recalculateTotals = function () {
         return this;
     }
 
-    // ✅ GST Mode - Calculate tax
     const taxableAmount = this.subtotal - this.totalDiscount;
     const taxRate = this.taxSlab / 100;
 
